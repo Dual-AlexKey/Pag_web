@@ -1,0 +1,238 @@
+/* Estilo para el rectángulo principal (vertical) */
+.rectangulo {
+    width: 220px;  /* Ancho ajustado */
+    min-height: 400px; /* Altura ajustada */
+    background-color: #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilo para el rectángulo de cabecera (horizontal) */
+.rectangulo-cabecera {
+    width: 100%;
+    height: 60px;
+    background-color: #dcdcdc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Estilo para los botones en la cabecera */
+.botones-cabecera {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    display: flex;
+    gap: 12px;
+}
+
+.boton-cabecera {
+    background-color: #dcdcdc;
+    color: #222;
+    width: 85px;
+    padding: 8px;
+    border: 2px solid #222;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.boton-cabecera:hover {
+    background-color: #c0c0c0;
+}
+/* Estilo para los rectángulos verdes decorativos debajo de la cabecera */
+.rectangulo-verde {
+    width: 100%;
+    height: 12px;
+    background-color: #4CAF50;
+}
+
+/* Estilo para los botones */
+.boton {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+    position: relative;
+}
+/* Estilo para el botón de cerrar "X" */
+.boton-cerrar {
+    background-color: #f44336; /* Rojo */
+    color: white;
+    border: none;
+    padding: 5px 10px; /* Ajustado para hacerlo cuadrado */
+    font-size: 16px;
+    font-weight: bold;
+    position: absolute;
+    right: 30px; /* Posición en la esquina superior derecha del bloque verde */
+    cursor: pointer;
+    margin-top: 15px;
+}
+.boton-nvpag {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px; /* Ajustado para hacerlo cuadrado */
+    font-size: 16px;
+    font-weight: bold;
+    position: absolute;
+    right: 30px; /* Posición en la esquina superior derecha del bloque verde */
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.boton-cerrar:hover {
+    background-color: #d32f2f; /* Rojo oscuro al pasar el cursor */
+}
+
+
+.boton:hover {
+    background-color: #45a049;
+}
+
+/* Menú oculto */
+.menu {
+    display: none;
+    width: 100%;
+}
+
+.menu .boton {
+    background-color: #3e8e41;
+    padding: 12px;
+}
+
+.menu .boton:hover {
+    background-color: #367a34;
+}
+
+/* Estilo para el icono de apertura/cierre (+ y -) */
+.icono {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  right: 0; /* Posiciona el icono a la derecha del contenedor */
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+/* Contenedor principal */
+.contenedor-principal {
+    display: flex;
+    gap: 2px;
+}
+
+/* Contenedor de la derecha */
+.contenido-derecha {
+    flex: 1;
+    background-color: #fff;
+    min-height: 400px;
+    padding: 15px;
+}
+/* WebConfig.html */
+.bloque-verde, .bloque-gris {
+    width: 100%;
+    padding: 0.5px; /* Reducido para evitar margen excesivo */
+    font-size: 14px; /* Reduce el tamaño de la letra */
+}
+
+.bloque-verde {
+    background-color: #4CAF50; 
+    color: white;
+}
+
+.bloque-gris {
+    background-color: #dcdcdc;
+}
+
+
+/* Estilos para el footer */
+.footer {
+    background-color: #222;
+    color: white;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 14px;
+}
+.Menus {
+    font-size: 16px;
+    color: #555;
+}
+
+/* Celdas de etiquetas */
+.colgrishome {
+    text-align: right;
+    font-size: 16px;
+    color: #555;
+}
+.tableborderfull {
+    width: 100%;
+}
+.tableborderfull td {
+    padding: 8px;
+    vertical-align: middle;
+}
+.tableborderfull td.colgrishome {
+    width: 250px; /* Puedes ajustar el ancho si es necesario */
+}
+
+/* Celdas de entrada de datos */
+.Tab-menu {
+    background-color: #f9f9f9;
+
+}
+.tab-menuinsert {
+    text-align: left;
+    font-size: 16px;
+    color: #555;
+    width: 100px;
+}
+
+/* Celdas de entrada de datos */
+.colblancocen {
+    background-color: #f9f9f9;
+
+}
+
+input[type="text"], input[type="url"], textarea, select {
+    width: 70%;
+    padding: 9px;
+    font-size: 12px;
+    margin-top: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus, textarea:focus, select:focus {
+    border-color: #66afe9;
+    outline: none;
+}
+
+/* Botones */
+iframe {
+    color: #fff;
+    background-color: #5cb85c;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+iframe:hover {
+    background-color: #4cae4c;
+}
+
+/* Estilos de las opciones del select */
+select {
+    height: 35px;
+}
