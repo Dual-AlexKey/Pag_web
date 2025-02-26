@@ -126,15 +126,19 @@ function guardarFormulario() {
         alert("El nombre no puede estar vacío.");
     }
 }
-
+    
 function cambiarEstilos() {
     const modulo = document.getElementById('modulo').value;
     const estilosDiv = document.getElementById('estilos');
+    const estiloSeleccionado = estilosDiv.getAttribute('data-seleccionado'); // Estilo guardado en PHP
+
     
     // Limpiar las opciones actuales
     estilosDiv.innerHTML = '';
 
     let estilos = [];
+    //resumen=0, galeria=1, portafolio=2,acordion=3,album=4,videos=5,registro=6,recuperar=7,
+    //login=8,perfil=9,panel=10,contactos=11,pedidos=12,reserva=13,facturacion=14,suscribe=15
 
     // Definir los estilos según el módulo seleccionado
     if (modulo === 'Contenidos') {
@@ -174,7 +178,7 @@ function cambiarEstilos() {
         const divEstilo = document.createElement('div');
         divEstilo.innerHTML = `
             <img src="${estilo.src}" alt="${estilo.alt}"><br>
-            <input type="radio" name="estilo" id="${estilo.name}" value="${estilo.name}"> ${estilo.name}
+            <input type="radio" name="estilos" value="${estilo.name}" ${estilo.name === estiloSeleccionado ? 'checked' : ''}> ${estilo.name}
         `;
         estilosDiv.appendChild(divEstilo);
     });
@@ -182,6 +186,8 @@ function cambiarEstilos() {
 
 // Llamar a la función al cargar la página para que el módulo predeterminado (Módulo 1) tenga los estilos cargados
 window.onload = cambiarEstilos;
+cambiarEstilos();
+
 
 function actualizarURL() {
     let nombre = document.getElementById("nombre").value;

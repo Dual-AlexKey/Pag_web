@@ -1,0 +1,8 @@
+Datos recibidos: id=24, tabla=menu_pie_pie, nombre=prub2, modulo=Catalogo, estilos=Resumen, link=prub2
+Menus seleccionados: menu_cabecera_cabecera
+Eliminando de menu_pie_pie con id 24
+Ejecutando en menu_cabecera_cabecera con id 24
+Datos recibidos: id=28, tabla=menu_cabecera_cabecera, nombre=prub12, modulo=Contenidos, estilos=Portafolio, link=prub12
+Menus seleccionados: menu_pie_pie
+Eliminando de menu_cabecera_cabecera con id 28
+Ejecutando en menu_pie_pie con id 28

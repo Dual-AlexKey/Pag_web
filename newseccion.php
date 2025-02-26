@@ -17,7 +17,7 @@ include('conect/sendccion.php');
 ?>
 
 <div class="contenido-derecha">
-        <a href="panel.php"><button class="boton-cerrar">X</button></a>
+        <a href="secciones.php"><button class="boton-cerrar">X</button></a>
         <div class="bloque-verde"><h2>Nueva Seccion</h2></div>
         <div id="capaformulario">
             <form action="conect/sendccion.php" method="post">
@@ -49,8 +49,8 @@ include('conect/sendccion.php');
                     <tr>
                         <td class="colgrishome">Estilos:</td>
                         <td class="colgrishome">
-                            <div style="display: flex; gap: 20px; align-items: right;" id="estilos">
-                                <!-- Las opciones de estilo se agregarán aquí dinámicamente -->
+                            <div style="display: flex; gap: 20px; align-items: right;" id="estilos" name="estilos">
+                                <!-- Las opciones de estilo se agregarán aquí dinámicamente --> 
                             </div>
                         </td>
                     </tr>
@@ -86,14 +86,14 @@ include('conect/sendccion.php');
                         <?php endif; ?>
                     </td>
                 </tr>
-                    <tr>
-                        <td align="center">
-                            <button name="aceptar"  class="boton" onclick="window.location = 'secciones.php'" type="submit">Aceptar</button>
-                        </td>
-                        <td align="center">
-                            <button name="Cancelar"  class="boton" onclick="window.location = 'secciones.php'">Cancelar</button>
-                        </td>
-                    </tr>
+                <tr>
+                    <td align="center">
+                        <button name="aceptar" class="boton" type="submit">Aceptar</button>
+                    </td>
+                    <td align="center">
+                        <button name="Cancelar" class="boton" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
+                    </td>
+                </tr>
                 </table>
             </form>
         </div>

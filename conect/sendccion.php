@@ -6,6 +6,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombre = $_POST["nombre"];
     $link = $_POST["link"];
     $modulo = $_POST["modulo"];
+    $estilos = !empty($_POST["estilos"]) ? $_POST["estilos"] : null;
     $publicar = isset($_POST["publicar"]) ? $_POST["publicar"] : [];
 
     if (!empty($publicar)) {
@@ -13,10 +14,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Evitar inyección SQL validando el nombre de la tabla
             $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla);
 
-            $sql = "INSERT INTO `$tabla` (nombre, link, modulo,Num_nivel) VALUES (?, ?, ?,'1')";
+            $sql = "INSERT INTO `$tabla` (nombre, link, modulo,Num_nivel,estilos) VALUES (?, ?, ?,'1',?)";
             $stmt = $conn->prepare($sql);
             if ($stmt) {
-                $stmt->bind_param("sss", $nombre, $link, $modulo);
+                $stmt->bind_param("ssss", $nombre, $link, $modulo,$estilos);
                 $stmt->execute();
                 $stmt->close();
             } else {

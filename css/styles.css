@@ -50,6 +50,11 @@
     height: 12px;
     background-color: #4CAF50;
 }
+.btn_st{
+    display: inline-block;
+    
+}
+
 
 /* Estilo para los botones */
 .boton {

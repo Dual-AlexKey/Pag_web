@@ -42,7 +42,7 @@ if (empty($nombres_tablas)) {
 // ✅ Unir correctamente los datos de cada tabla
 $queries = [];
 foreach ($nombres_tablas as $tabla) {
-    $queries[] = "SELECT '$tabla' AS tabla, id, nombre, modulo, orden, nro_item, visitas, link, Num_nivel, cod FROM `$tabla` WHERE cod = '$cod_parametro'";
+    $queries[] = "SELECT '$tabla' AS tabla, id, nombre, modulo, orden, nro_item, visitas, link, Num_nivel, cod, estilos FROM `$tabla` WHERE cod = '$cod_parametro'";
 }
 
 $sql_final = implode(" UNION ALL ", $queries);
@@ -50,13 +50,17 @@ $result = $conn->query($sql_final);
 
 // ✅ Obtener los datos correctos
 $fila = $result->fetch_assoc();
+
+// ✅ Extraer valores de la base de datos
+$moduloSeleccionado = isset($fila['modulo']) ? $fila['modulo'] : ''; 
+$estiloSeleccionado = isset($fila['estilos']) ? $fila['estilos'] : ''; 
 ?>
 
 <div class="contenido-derecha">
-    <a href="panel.php"><button class="boton-cerrar">X</button></a>
+    <a href="secciones.php"><button class="boton-cerrar">X</button></a>
     <div class="bloque-verde"><h2>Editar Sección</h2></div>
     <div id="capaformulario">
-        <form action="conect/sendccion.php" method="post">
+        <form action="conect/modificar_tabla.php" method="post">
             <input type="hidden" name="idcontrol" value="<?php echo htmlspecialchars($fila['id']); ?>">
             <input type="hidden" name="tabla" value="<?php echo htmlspecialchars($fila['tabla']); ?>">
 
@@ -74,78 +78,80 @@ $fila = $result->fetch_assoc();
                     </td>
                 </tr>
                 <tr>
-                    <td class="colgrishome">Módulo:</td>
-                    <td class="colblancocen">
-                        <select id="modulo" name="modulo" required onchange="cambiarEstilos()">
-                            <option value="Contenidos">Contenidos</option>
-                            <option value="Catalogo">Catalogo</option>
-                            <option value="Usuarios">Usuarios</option>
-                            <option value="Formularios">Formularios</option>
-                        </select>
-                    </td>
+            <td class="colgrishome">Módulo:</td>
+            <td class="colblancocen">
+                <select id="modulo" name="modulo" required onchange="cambiarEstilos()">
+                    <option value="Contenidos" <?= $moduloSeleccionado == 'Contenidos' ? 'selected' : '' ?>>Contenidos</option>
+                    <option value="Catalogo" <?= $moduloSeleccionado == 'Catalogo' ? 'selected' : '' ?>>Catálogo</option>
+                    <option value="Usuarios" <?= $moduloSeleccionado == 'Usuarios' ? 'selected' : '' ?>>Usuarios</option>
+                    <option value="Formularios" <?= $moduloSeleccionado == 'Formularios' ? 'selected' : '' ?>>Formularios</option>
+                </select>
+            </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">Estilos:</td>
                     <td class="colgrishome">
-                        <div style="display: flex; gap: 20px; align-items: right;" id="estilos">
-                            <!-- Opciones de estilo dinámicas -->
+                        <div style="display: flex; gap: 20px; align-items: right;" id="estilos" 
+                            data-seleccionado="<?= htmlspecialchars($estiloSeleccionado) ?>">
+                            <!-- Aquí se cargarán dinámicamente los estilos -->
                         </div>
                     </td>
                 </tr>
                 <tr>
-    <td class="colgrishome">Publicar en Menú:</td>
-    <td class="colgrishome">
-        <?php
-        // ✅ Obtener los menús disponibles
-        $sql_menus = "SHOW TABLES LIKE 'menu_%'";
-        $result_menus = $conn->query($sql_menus);
-        $menus = [];
+                    <td class="colgrishome">Publicar en Menú:</td>
+                    <td class="colgrishome">
+                        <?php
+                        // ✅ Obtener los menús disponibles
+                        $sql_menus = "SHOW TABLES LIKE 'menu_%'";
+                        $result_menus = $conn->query($sql_menus);
+                        $menus = [];
 
-        while ($row_menu = $result_menus->fetch_array()) {
-            $menus[] = $row_menu[0];
-        }
+                        while ($row_menu = $result_menus->fetch_array()) {
+                            $menus[] = $row_menu[0];
+                        }
 
-        if (!empty($menus)): ?>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                <?php foreach ($menus as $index => $menu): ?>
-                    <?php
-                    // Quitar "menu_" del inicio
-                    $menu_limpio = preg_replace('/^menu_/', '', $menu);
+                        if (!empty($menus)): ?>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <?php foreach ($menus as $index => $menu): ?>
+                                    <?php
+                                    // Quitar "menu_" del inicio
+                                    $menu_limpio = preg_replace('/^menu_/', '', $menu);
 
-                    // Lista de ubicaciones dinámicas
-                    $ubicaciones = ['cabecera', 'pie', 'lateral', 'footer'];
+                                    // Lista de ubicaciones dinámicas
+                                    $ubicaciones = ['cabecera', 'pie', 'lateral', 'footer'];
 
-                    // Eliminar cualquier sufijo que coincida con una ubicación
-                    foreach ($ubicaciones as $ubicacion) {
-                        $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);
-                    }
+                                    // Eliminar cualquier sufijo que coincida con una ubicación
+                                    foreach ($ubicaciones as $ubicacion) {
+                                        $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);
+                                    }
 
-                    // ✅ Verificar si la tabla actual es la que está en `$fila['tabla']`
-                    $checked = ($menu === $fila['tabla']) ? 'checked' : '';
-                    ?>
-                    <label style="display: flex; align-items: center;">
-                        <input type="checkbox" id="publicar_<?php echo $index; ?>" name="publicar[]" value="<?php echo $menu; ?>" <?php echo $checked; ?>>
-                        <span style="margin-left: 5px;"><?php echo htmlspecialchars($menu_limpio); ?></span>
-                    </label>
-                    <?php if (($index + 1) % 3 == 0): ?>
-                        <br>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <p>No hay menús disponibles.</p>
-        <?php endif; ?>
-    </td>
-</tr>
+                                    // ✅ Verificar si la tabla actual es la que está en `$fila['tabla']`
+                                    $checked = ($menu === $fila['tabla']) ? 'checked' : '';
+                                    ?>
+                                    <label style="display: flex; align-items: center;">
+                                        <input type="checkbox" id="publicar_<?php echo $index; ?>" name="publicar[]" value="<?php echo $menu; ?>" <?php echo $checked; ?>>
+                                        <span style="margin-left: 5px;"><?php echo htmlspecialchars($menu_limpio); ?></span>
+                                    </label>
+                                    <?php if (($index + 1) % 3 == 0): ?>
+                                        <br>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p>No hay menús disponibles.</p>
+                        <?php endif; ?>
+                    </td>
+                </tr>
 
                 <tr>
                     <td align="center">
                         <button name="aceptar" class="boton" type="submit">Aceptar</button>
                     </td>
                     <td align="center">
-                        <button name="Cancelar" class="boton" onclick="window.location = 'secciones.php'">Cancelar</button>
+                        <button name="Cancelar" class="boton" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
                     </td>
                 </tr>
+
             </table>
         </form>
     </div>

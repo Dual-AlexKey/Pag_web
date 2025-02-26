@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             visitas INT,
             link VARCHAR(255) NOT NULL,
             Num_nivel VARCHAR(3),
-            estilo VARCHAR(255),
+            estilos VARCHAR(255),
             cod VARCHAR(10) UNIQUE
         )";
         

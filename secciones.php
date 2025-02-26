@@ -54,12 +54,20 @@ while ($row = $result->fetch_array()) {
                 $nombre = urlencode($row["nombre"]);
                 $cod = urlencode($row["cod"]); // Capturar el código
             
-                // Definir las páginas para cada botón
-                $paginas = ["editccion.php", "panel.php", "ajustes.php", "config.php", "opciones.php"];
-            
-                foreach ($paginas as $index => $pagina) {
-                    $button_num = $index + 1;
-                    echo "<a href='$pagina?cod=$cod' class='btn btn-edit'>Editar $button_num</a> ";
+                $botones = [
+                    ["pagina" => "editccion.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
+                    ["pagina" => "panel.php", "imagen" => "https://i.ibb.co/hPQ0zQ5/ws-menu.png"],
+                    ["pagina" => "ajustes.php", "imagen" => "https://i.ibb.co/VYrngfWv/wp-page.png"],
+                    ["pagina" => "config.php", "imagen" => "https://i.ibb.co/Fq6n7h1M/wp-tools.png"],
+                    ["pagina" => "conect/eliminar_elemento.php", "imagen" => "https://i.ibb.co/LdTnB39W/wp-borrar.png"]
+                ];
+    
+                foreach ($botones as $index => $boton) {
+                    $width = ($boton['pagina'] === "panel.php") ? "25px" : "25px";
+                    $height = ($boton['pagina'] === "panel.php") ? "15px" : "25px";
+                    echo "<a href='{$boton['pagina']}?cod=$cod' class='btn_st'>
+                            <img src='{$boton['imagen']}' alt='Botón' style='width: $width; height: $height; vertical-align: middle;'>
+                          </a> ";
                 }
             
                 echo "</td>";
