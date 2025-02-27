@@ -1,100 +1,87 @@
 <?php
 include 'conexion.php';
 
-// Habilitar errores para depuración
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Obtener los datos del formulario
+    $idcontrol = $_POST["idcontrol"];
+    $nombre = $_POST["nombre"];
+    $link = $_POST["link"];
+    $modulo = $_POST["modulo"];
+    $estilos = !empty($_POST["estilos"]) ? $_POST["estilos"] : null;
+    $publicar = isset($_POST["publicar"]) ? $_POST["publicar"] : [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = isset($_POST['idcontrol']) ? intval($_POST['idcontrol']) : 0;
-    $tabla = isset($_POST['tabla']) ? trim($_POST['tabla']) : '';
-    $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
-    $modulo = isset($_POST['modulo']) ? trim($_POST['modulo']) : '';
-    $estilos = isset($_POST['estilos']) ? trim($_POST['estilos']) : '';
-    $link = isset($_POST['link']) ? trim($_POST['link']) : '';
-    $menusSeleccionados = isset($_POST['publicar']) ? $_POST['publicar'] : [];
+    if (!empty($idcontrol) && !empty($publicar)) {
+        // Buscar la tabla donde estaba registrado el ID
+        $sql_buscar_tabla = "SHOW TABLES LIKE 'menu_%'";
+        $result_tablas = $conn->query($sql_buscar_tabla);
+        
+        while ($fila = $result_tablas->fetch_array()) {
+            $tabla = $fila[0];
 
-    if ($id > 0 && !empty($tabla) && !empty($nombre) && !empty($modulo) && !empty($estilos)) {
-        $conn->begin_transaction();
+            // Verificar si la tabla contiene el ID
+            $sql_check = "SELECT cod FROM $tabla WHERE id = ?";
+            $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bind_param("s", $idcontrol);
+            $stmt_check->execute();
+            $stmt_check->bind_result($cod_parametro);
+            $stmt_check->fetch();
+            $stmt_check->close();
 
-        // ✅ 1. Actualizar la tabla principal
-        $sql_update = "UPDATE `$tabla` SET nombre = ?, modulo = ?, estilos = ?, link = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql_update);
-        if (!$stmt) die("Error en la preparación: " . $conn->error);
-        $stmt->bind_param("ssssi", $nombre, $modulo, $estilos, $link, $id);
-        if (!$stmt->execute()) die("Error al actualizar: " . $stmt->error);
-        $stmt->close();
-
-        // ✅ 2. Obtener las tablas "menu_..." actuales
-        $sql_menus = "SHOW TABLES LIKE 'menu_%'";
-        $result_menus = $conn->query($sql_menus);
-        $tablas_menu = [];
-        while ($row = $result_menus->fetch_array()) {
-            $tablas_menu[] = $row[0];
-        }
-
-        if (empty($tablas_menu)) {
-            echo "<script>alert('No hay tablas de menú disponibles.'); window.history.back();</script>";
-            exit();
-        }
-
-        // ✅ 3. Eliminar entradas de las tablas donde ya no debería estar
-        foreach ($tablas_menu as $menu_tabla) {
-            if (!in_array($menu_tabla, $menusSeleccionados)) {
-                $sql_delete = "DELETE FROM `$menu_tabla` WHERE cod = ?";
-                $stmt = $conn->prepare($sql_delete);
-                if (!$stmt) die("Error al preparar eliminación: " . $conn->error);
-                $stmt->bind_param("s", $id);
-                if (!$stmt->execute()) die("Error al eliminar: " . $stmt->error);
-                $stmt->close();
+            if (!empty($cod_parametro)) {
+                $tabla_anterior = $tabla;
+                break;
             }
         }
 
-        // ✅ 4. Insertar o actualizar en los menús seleccionados
-        foreach ($menusSeleccionados as $menu_tabla) {
-            if (in_array($menu_tabla, $tablas_menu)) {
-                $sql_check = "SELECT COUNT(*) FROM `$menu_tabla` WHERE cod = ?";
-                $stmt = $conn->prepare($sql_check);
-                $stmt->bind_param("s", $id);
-                $stmt->execute();
-                $stmt->bind_result($existe);
-                $stmt->fetch();
-                $stmt->close();
-
-                if ($existe > 0) {
-                    $sql_update_menu = "UPDATE `$menu_tabla` SET nombre = ?, modulo = ?, estilos = ?, link = ? WHERE cod = ?";
-                    $stmt = $conn->prepare($sql_update_menu);
-                    $stmt->bind_param("sssss", $nombre, $modulo, $estilos, $link, $id);
-                } else {
-                    $sql_insert = "INSERT INTO `$menu_tabla` (cod, nombre, modulo, estilos, link) VALUES (?, ?, ?, ?, ?)";
-                    $stmt = $conn->prepare($sql_insert);
-                    $stmt->bind_param("sssss", $id, $nombre, $modulo, $estilos, $link);
-                }
-                if (!$stmt->execute()) die("Error en la operación de menú: " . $stmt->error);
-                $stmt->close();
-            }
+        if (!empty($tabla_anterior)) {
+            // ✅ Eliminar el registro de la tabla anterior
+            $sql_delete = "DELETE FROM $tabla_anterior WHERE id = ?";
+            $stmt_delete = $conn->prepare($sql_delete);
+            $stmt_delete->bind_param("s", $idcontrol);
+            $stmt_delete->execute();
+            $stmt_delete->close();
         }
 
-        // ✅ 5. Crear el trigger dinámico si no existe
-        foreach ($menusSeleccionados as $nombre_tabla) {
-            $conn->query("DROP TRIGGER IF EXISTS `before_insert_cod_$nombre_tabla`");
-            preg_match('/menu_([a-zA-Z0-9]+)_/', $nombre_tabla, $matches);
-            $inicial = isset($matches[1]) ? substr($matches[1], 0, 1) : 'X';
-            $trigger_sql = "CREATE TRIGGER `before_insert_cod_$nombre_tabla`\n            BEFORE INSERT ON `$nombre_tabla`\n            FOR EACH ROW BEGIN\n                DECLARE max_cod INT;\n                SELECT IFNULL(MAX(SUBSTRING(cod, 2)), 0) + 1 INTO max_cod FROM `$nombre_tabla` WHERE cod REGEXP '^[a-zA-Z]\\d+$';\n                IF NEW.cod IS NULL OR NEW.cod = '' THEN\n                    SET NEW.cod = CONCAT('$inicial', max_cod);\n                END IF;\n            END;";
-            if (!$conn->query($trigger_sql)) {
-                die("Error al crear el trigger: " . $conn->error);
-            }
+        // ✅ Insertar en la primera tabla (dejando que el trigger genere el cod)
+        $primera_tabla = array_shift($publicar);
+        $sql_insert = "INSERT INTO $primera_tabla (nombre, link, modulo, Num_nivel, estilos)
+                       VALUES (?, ?, ?, '1', ?)";
+        
+        $stmt_insert = $conn->prepare($sql_insert);
+        $stmt_insert->bind_param("ssss", $nombre, $link, $modulo, $estilos);
+        $stmt_insert->execute();
+        $nuevo_id = $stmt_insert->insert_id; // Capturar el ID insertado
+        $stmt_insert->close();
+
+        // Recuperar el nuevo "cod" generado por el trigger
+        $sql_get_cod = "SELECT cod FROM $primera_tabla WHERE id = ?";
+        $stmt_get_cod = $conn->prepare($sql_get_cod);
+        $stmt_get_cod->bind_param("i", $nuevo_id);
+        $stmt_get_cod->execute();
+        $stmt_get_cod->bind_result($nuevo_cod);
+        $stmt_get_cod->fetch();
+        $stmt_get_cod->close();
+
+        // ✅ Insertar en las demás tablas usando el mismo "cod"
+        foreach ($publicar as $tabla) {
+            $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla); // Seguridad para evitar inyección SQL
+            
+            $sql_insert_extra = "INSERT INTO $tabla (cod, nombre, link, modulo, Num_nivel, estilos)
+                                 VALUES (?,?, ?, ?, '1', ?)";
+            
+            $stmt_insert_extra = $conn->prepare($sql_insert_extra);
+            $stmt_insert_extra->bind_param("sssss",$cod_parametro, $nombre, $link, $modulo, $estilos);
+            $stmt_insert_extra->execute();
+            $stmt_insert_extra->close();
         }
 
-        $conn->commit();
-        header("Location: ../secciones.php?msg=success");
-        exit();
+        echo "Registro actualizado correctamente en todas las tablas.";
     } else {
-        echo "<script>alert('Error: Datos inválidos.'); window.history.back();</script>";
-        exit();
+        echo "Error: No se encontró el ID o la nueva tabla.";
     }
-} else {
-    echo "Método no permitido.";
+
+    // Redirigir a secciones.php después de la actualización
+    header("Location: ../secciones.php");
+    exit();
 }
-$conn->close();
 ?>

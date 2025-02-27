@@ -35,10 +35,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Crear trigger sin DELIMITER
             $trigger_sql = "CREATE TRIGGER `before_insert_cod_$nombre_tabla`
             BEFORE INSERT ON `$nombre_tabla`
-            FOR EACH ROW BEGIN
+            FOR EACH ROW 
+            BEGIN
                 DECLARE max_cod INT;
                 SELECT IFNULL(MAX(SUBSTRING(cod, 2)), 0) + 1 INTO max_cod FROM `$nombre_tabla`;
-                IF NEW.cod IS NULL THEN
+
+                -- Solo generar un nuevo cod si está vacío o NULL
+                IF NEW.cod = '' OR NEW.cod IS NULL THEN
                     SET NEW.cod = CONCAT('$inicial', max_cod);
                 END IF;
             END;";
