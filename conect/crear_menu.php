@@ -10,7 +10,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Crear la tabla con 'id' autoincrementable y 'cod' como VARCHAR (para incluir la letra)
         $sql = "CREATE TABLE IF NOT EXISTS `$nombre_tabla` (
-            id INT AUTO_INCREMENT PRIMARY KEY, 
             nombre VARCHAR(255) NOT NULL,
             modulo VARCHAR(255) NOT NULL,
             orden VARCHAR(255),

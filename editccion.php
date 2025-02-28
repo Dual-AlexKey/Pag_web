@@ -42,7 +42,7 @@ if (empty($nombres_tablas)) {
 // ✅ Unir correctamente los datos de cada tabla
 $queries = [];
 foreach ($nombres_tablas as $tabla) {
-    $queries[] = "SELECT '$tabla' AS tabla, id, nombre, modulo, orden, nro_item, visitas, link, Num_nivel, cod, estilos FROM `$tabla` WHERE cod = '$cod_parametro'";
+    $queries[] = "SELECT '$tabla' AS tabla, nombre, modulo, orden, nro_item, visitas, link, Num_nivel, cod, estilos FROM `$tabla` WHERE cod = '$cod_parametro'";
 }
 
 $sql_final = implode(" UNION ALL ", $queries);
@@ -61,7 +61,7 @@ $estiloSeleccionado = isset($fila['estilos']) ? $fila['estilos'] : '';
     <div class="bloque-verde"><h2>Editar Sección</h2></div>
     <div id="capaformulario">
         <form action="conect/modificar_tabla.php" method="post">
-            <input type="hidden" name="idcontrol" value="<?php echo htmlspecialchars($fila['id']); ?>">
+            <input type="hidden" name="cod" value="<?php echo htmlspecialchars($fila['cod']); ?>">
             <input type="hidden" name="tabla" value="<?php echo htmlspecialchars($fila['tabla']); ?>">
 
             <table class="tableborderfull">
