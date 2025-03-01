@@ -176,12 +176,15 @@
 
 /* Celdas de etiquetas */
 .colgrishome {
-    text-align: right;
     font-size: 16px;
     color: #555;
+    text-align: right;
+    font-weight: bold;
+    padding-right: 10px;
 }
 .tableborderfull {
     width: 100%;
+    border-collapse: collapse;
 }
 .tableborderfull td {
     padding: 8px;
@@ -206,7 +209,8 @@
 /* Celdas de entrada de datos */
 .colblancocen {
     background-color: #f9f9f9;
-
+    text-align: left;
+    padding-left: 10px;
 }
 
 input[type="text"], input[type="url"], textarea, select {
@@ -219,25 +223,125 @@ input[type="text"], input[type="url"], textarea, select {
     box-sizing: border-box;
 }
 
-input[type="text"]:focus, textarea:focus, select:focus {
-    border-color: #66afe9;
-    outline: none;
-}
-
-/* Botones */
-iframe {
-    color: #fff;
-    background-color: #5cb85c;
-    padding: 5px 10px;
-    border-radius: 5px;
-    text-decoration: none;
-}
-
-iframe:hover {
-    background-color: #4cae4c;
-}
-
 /* Estilos de las opciones del select */
 select {
     height: 35px;
+}
+
+/* Estilos de tablero*/
+
+/* Contenedor principal */
+.contenedor-tabla {
+    display: flex;  
+    justify-content: space-between;
+    margin: 20px;
+}
+.contenedor-button {
+    display: flex;  
+    margin: 20px;
+}
+
+
+/* Estilos para los botones de acción */
+.acciones-botones {
+    display: flex;
+    height: 10%;
+}
+
+.acciones-botones button {
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    transition: background-color 0.3s;
+}
+
+.acciones-botones button:hover {
+    background-color: #e1e1e1;
+}
+
+/* Estilos para los botones individuales de acción */
+.accion-boton {
+    padding: 5px 15px;
+    display: flex;
+
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.accion-boton:hover {
+    background-color: #ddd;
+    transform: scale(1.05); /* Efecto de "agrandamiento" al pasar el cursor */
+}
+
+.accion-boton:active {
+    background-color: #bbb;
+    transform: scale(0.98); /* Efecto de "presionar" el botón */
+}
+
+
+
+/* Estilos para la tabla SQL */
+.columna-tabla {
+    width: 450px;
+    height: 270px;
+    border: 1px solid #ddd;
+    overflow-y: auto; /* Habilita el scroll vertical */
+
+}
+.columna-tabla th, .columna-tabla td {
+    border: none; /* Eliminar bordes de las celdas en la tabla SQL */
+}
+
+
+.columna-formulario-izquierda {
+    margin-right: 20px;
+    width: 50%;
+}
+
+select, input[type="text"], input[type="date"], input[type="file"] {
+    width: 90%;
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Estilos para los checkboxes */
+label {
+    margin-right: 10px;
+}
+
+/* Estilos para los botones de Aceptar y Cancelar */
+.boton-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.botonesAyC {
+    padding: 8px 15px;
+    font-size: 14px;
+    margin: 0 10px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+table th, table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+table input[type="checkbox"] {
+    margin: 0;
 }
