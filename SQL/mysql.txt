@@ -1,0 +1,42 @@
+CREATE DATABASE EmpresaDB;
+USE EmpresaDB;
+drop table Empresa
+CREATE TABLE Empresa (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    url_pagina VARCHAR(255),
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    idioma VARCHAR(3),
+    logo VARCHAR(255),
+    favicon VARCHAR(255),
+    seo_titulo VARCHAR(255) NOT NULL,
+    seo_descripcion VARCHAR(255) NOT NULL,
+    seo_metatags VARCHAR(255) NOT NULL,
+    pie_pagina VARCHAR(255) NOT NULL,
+    empresa varchar(255),
+    ruc VARCHAR(20) NOT NULL UNIQUE,
+    descripcion TEXT,
+    pais VARCHAR(100) NOT NULL,
+    dpto VARCHAR(100),
+	city VARCHAR(100),
+    direccion_principal VARCHAR(255),
+    email_contactos VARCHAR(100),
+    email_ventas VARCHAR(100),
+    telefono_fijo VARCHAR(20),
+    telefono_movil VARCHAR(20),
+    moneda VARCHAR(3),
+    precios VARCHAR(3),
+    carrito_compras VARCHAR(3),
+    zona_usuarios VARCHAR(3),
+    terminos_condiciones VARCHAR(255)
+);
+
+insert 	
+INSERT INTO menu_cc_pie (nombre) VALUES ('uno');
+
+INSERT INTO menu_cc_pie (nombre) VALUES ('dos');
+
+ 
+
+	select*from menu_cabecera_cabecera;
+		select*from menu_pie_pie
+    SHOW TABLES LIKE 'menu_%';
