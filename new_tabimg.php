@@ -54,25 +54,25 @@ foreach ($codigos as $cod) {
 <!-- Contenedor principal con las dos columnas -->
 <div class="contenido-derecha">
     <a href="tablero.php"><button class="boton-cerrar">X</button></a>
-    <div class="bloque-verde"><h2>Nueva Sección</h2></div>
+    <div class="bloque-verde"><h2>Imagen</h2></div>
     
     <div id="capaformulario">
-        <form action="conect/sendtablero.php" method="post" enctype="multipart/form-data">
-            <input type="hidden" id="idcontrol">
-            
+        <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="formulario_tipo" value="Imagen">            
             <!-- Campos Título, Imagen y URL en la parte superior -->
             <div class="columna-formulario">
                 <table class="tableborderfull">
                     <tr>
                         <td class="colgrishome">Título:</td>
                         <td class="colblancocen">
-                            <input type="text" id="titulo" name="titulo" required oninput="actualizarURL()">
+                            <input type="text" id="nombre" name="nombre" required oninput="actualizarURL()">
                         </td>
                     </tr>
                     <tr>
                         <td class="colgrishome">Imagen:</td>
                         <td class="colblancocen">
-                            <input type="file" id="imagen" name="imagen" required>
+                            <input type="text" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg">
+                            <input type="file" id="imagen" name="imagen" accept="image/*" >
                         </td>
                     </tr>
                     <tr>
@@ -83,126 +83,119 @@ foreach ($codigos as $cod) {
                     </tr>
                 </table>
             </div>
-
             <div class="bloque-verde"><h2>Publicacion</h2></div>
-        <div class="contenedor-button">
-            <div class="acciones-botones">
-                    <button type="button" class="accion-boton">+</button>
-                    <button type="button" class="accion-boton">-</button>
-                    <button type="button" class="accion-boton">::</button>
-                </div>
-            </div>
-            <div class="contenedor-tabla">
-                
-                <!-- Botones de acción (antes de la tabla SQL) -->
-               
-               
-                <!-- Columna de la tabla SQL -->
-                <div class="columna-tabla">
-               
+            <div class="columna-formulario">
+            <table class="tableborderfull">
+                <tr>
+                    <td>
+                        <div class="contenedor-button">
+                            <div class="acciones-botones">
+                                <button type="button" class="accion-boton">+</button>
+                                <button type="button" class="accion-boton">-</button>
+                                <button type="button" class="accion-boton">::</button>
+                            </div>
+                        <div class="columna-tabla">
+                            <table class="tableborderfull">
+                                <?php
+                                // Mostrar solo el campo 'nombre' y el checkbox
+                                foreach ($datos_unicos as $dato) {
+                                    echo "<tr>";
+                                    echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($dato['cod']) . "'></td>";
+                                    echo "<td>" . htmlspecialchars($dato['nombre']) . "</td>";  // Mostrar solo el campo 'nombre'
+                                    echo "</tr>";
+                                }
+                                ?>
+                            </table>
+                        </div>
+                    </td>
+                    <td>
                     <table class="tableborderfull">
-                        
-                            <?php
-                            // Mostrar solo el campo 'nombre' y el checkbox
-                            foreach ($datos_unicos as $dato) {
-                                echo "<tr>";
-                                echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($dato['cod']) . "'></td>";
-                                echo "<td>" . htmlspecialchars($dato['nombre']) . "</td>";  // Mostrar solo el campo 'nombre'
-                                echo "</tr>";
-                            }
-                            ?>
-                        
+                            <tr>
+                                <td class="colgrishome">Ubicación:</td>
+                                <td class="colblancocen">
+                                    <select id="ubicacion" name="ubicacion" required>
+                                        <option value="Cuerpo top 1">Cuerpo top 1</option>
+                                        <option value="Cuerpo top 2">Cuerpo top 2</option>
+                                        <option value="Cuerpo top 3">Cuerpo top 3</option>
+                                        <option value="Columna Izquierda">Columna Izquierda</option>
+                                        <option value="Columna Central">Columna Central</option>
+                                        <option value="Columna Derecha">Columna Derecha</option>
+                                        <option value="Cuerpo Bottom 1">Cuerpo Bottom 1</option>
+                                        <option value="Cuerpo Bottom 2">Cuerpo Bottom 2</option>
+                                        <option value="Cuerpo Bottom 3">Cuerpo Bottom 3</option>
+                                        <option value="Pie de Pagina">Pie de Pagina</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="colgrishome">Orden:</td>
+                                <td class="colblancocen">
+                                    <input type="text" id="Orden" name="Orden">
+                                </td>
+                            </tr>                            
+                            <!-- Otras secciones con columnas, márgenes, fechas, etc. -->
+                            <tr>
+                                <td class="colgrishome">Columnas:</td>
+                                <td class="colblancocen">
+                                    <select id="columnas" name="columnas" required>
+                                        <?php for ($i = 1; $i <= 12; $i++) { ?>
+                                            <option value="<?= $i ?>">Columna <?= $i ?></option>
+                                        <?php } ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="colgrishome">Columnas Móviles:</td>
+                                <td class="colblancocen">
+                                    <select id="columnas_moviles" name="columnas_moviles" required>
+                                        <option value=""></option>
+                                        <?php for ($i = 1; $i <= 12; $i++) { ?>
+                                            <option value="<?= $i ?>">Columna <?= $i ?></option>
+                                        <?php } ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="colgrishome">Estilo:</td>
+                                <td class="colblancocen">
+                                    <select id="estilo" name="estilo" required>
+                                        <?php for ($i = 1; $i <= 12; $i++) { ?>
+                                            <option value="<?= $i ?>">Estilo <?= $i ?></option>
+                                        <?php } ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="colgrishome">Margenes:</td>
+                                <td class="colblancocen">
+                                    <label><input type="checkbox" name="margen[]" value="IZQ"> IZQ</label>
+                                    <label><input type="checkbox" name="margen[]" value="DER"> DER</label>
+                                    <label><input type="checkbox" name="margen[]" value="SUP"> SUP</label>
+                                    <label><input type="checkbox" name="margen[]" value="INF"> INF</label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="colgrishome">Fecha Inicio:</td>
+                                <td class="colblancocen">
+                                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?= date('Y-m-d') ?>" required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="colgrishome">Fecha Final:</td>
+                                <td class="colblancocen">
+                                    <input type="date" id="fecha_final" name="fecha_final" value="" placeholder="dd/mm/aaaa" required>
+                                </td>
+                            </tr>
                     </table>
-                    
-                </div>
-                
-
-                <!-- Columna con los campos (Ubicación, Fecha Inicio, etc.), movida más a la izquierda -->
-                <div class="columna-formulario-izquierda">
-                    <table class="tableborderfull">
-                        <tr>
-                            <td class="colgrishome">Ubicación:</td>
-                            <td class="colblancocen">
-                                <select id="ubicacion" name="ubicacion" required>
-                                    <option value="D">Cuerpo top 1</option>
-                                    <option value="E">Cuerpo top 2</option>
-                                    <option value="F">Cuerpo top 3</option>
-                                    <option value="G">Columna Izquierda</option>
-                                    <option value="H">Columna Central</option>
-                                    <option value="I">Columna Derecha</option>
-                                    <option value="J">Cuerpo Bottom 1</option>
-                                    <option value="K">Cuerpo Bottom 2</option>
-                                    <option value="L">Cuerpo Bottom 3</option>
-                                    <option value="M">Pie de Pagina</option>
-                                </select>
-                            </td>
-                        </tr>
-                        
-                        <!-- Otras secciones con columnas, márgenes, fechas, etc. -->
-                        <tr>
-                            <td class="colgrishome">Columnas:</td>
-                            <td class="colblancocen">
-                                <select id="columnas" name="columnas" required>
-                                    <?php for ($i = 1; $i <= 12; $i++) { ?>
-                                        <option value="<?= $i ?>">Columna <?= $i ?></option>
-                                    <?php } ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="colgrishome">Columnas Móviles:</td>
-                            <td class="colblancocen">
-                                <select id="columnas_moviles" name="columnas_moviles" required>
-                                    <option value="">Columna Vacía</option>
-                                    <?php for ($i = 1; $i <= 12; $i++) { ?>
-                                        <option value="<?= $i ?>">Columna <?= $i ?></option>
-                                    <?php } ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="colgrishome">Estilo:</td>
-                            <td class="colblancocen">
-                                <select id="estilo" name="estilo" required>
-                                    <?php for ($i = 1; $i <= 12; $i++) { ?>
-                                        <option value="<?= $i ?>">Estilo <?= $i ?></option>
-                                    <?php } ?>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="colgrishome">Margenes:</td>
-                            <td class="colblancocen">
-                                <label><input type="checkbox" name="margen[]" value="IZQ"> IZQ</label>
-                                <label><input type="checkbox" name="margen[]" value="DER"> DER</label>
-                                <label><input type="checkbox" name="margen[]" value="SUP"> SUP</label>
-                                <label><input type="checkbox" name="margen[]" value="INF"> INF</label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="colgrishome">Fecha Inicio:</td>
-                            <td class="colblancocen">
-                                <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?= date('Y-m-d') ?>" required>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="colgrishome">Fecha Final:</td>
-                            <td class="colblancocen">
-                                <input type="date" id="fecha_final" name="fecha_final" value="" placeholder="dd/mm/aaaa" required>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                  
-                
+                    </td>
+                </tr>
+            </table>
             </div>
-
             <!-- Botones de Aceptar y Cancelar -->
             <div class="boton-container">
                 <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
                 <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
             </div>
-
         </form>
     </div>
 </div>

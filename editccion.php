@@ -142,17 +142,11 @@ $estiloSeleccionado = isset($fila['estilos']) ? $fila['estilos'] : '';
                         <?php endif; ?>
                     </td>
                 </tr>
-
-                <tr>
-                    <td align="center">
-                        <button name="aceptar" class="boton" type="submit">Aceptar</button>
-                    </td>
-                    <td align="center">
-                        <button name="Cancelar" class="boton" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
-                    </td>
-                </tr>
-
             </table>
+            <div class="boton-container">
+                    <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
+                    <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
+            </div>
         </form>
     </div>
 </div>

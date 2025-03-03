@@ -176,17 +176,11 @@ include('estilo/menu.php');
                         <td class="colgrishome" align="right" valign="top">Terminos y condiciones</td>
                         <td class="colblancocen"><textarea name="terminos_condiciones" rows="10" cols="65"><?php echo htmlspecialchars($empresa['terminos_condiciones'] ?? ''); ?></textarea></td>
                     </tr>
-
-                    
-                    <tr>
-                        <td colspan="2" align="center">
-                            <input name="guardar"  class="boton" onclick="window.location = 'panel.php'" type="submit">
-                        </td>
-                        <td colspan="2" align="center">
-                            <button type="button" class="boton" onclick="window.location = 'panel.php'">Cerrar</button>
-                        </td>
-                    </tr>
                 </table>
+                <div class="boton-container">
+                    <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
+                    <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
+                </div>
             </form>
         </div>
     </div>

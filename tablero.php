@@ -6,6 +6,14 @@ include('estilo/data.php');
 include('estilo/header.php');
 // Incluir el menu.php
 include('estilo/menu.php');
+
+$sql = "SHOW TABLES LIKE 'tablero'";
+$result = $conn->query($sql);
+
+$menu_tables = [];
+while ($row = $result->fetch_array()) {
+    $menu_tables[] = $row[0]; // Guardar nombres de tablas
+}
 ?>
     <div class="contenido-derecha">
         <a href="panel.php"><button class="boton-cerrar">X</button></a>
@@ -25,7 +33,7 @@ include('estilo/menu.php');
         </tr>
 
         <?php
-       /* foreach ($menu_tables as $table) {
+       foreach ($menu_tables as $table) {
             // Consultar datos de cada tabla encontrada
             $sql = "SELECT * FROM `$table`";
             $result = $conn->query($sql);
@@ -34,29 +42,25 @@ include('estilo/menu.php');
                 echo "<tr>";
                 echo "<td>||</td>";
                 echo "<td>" . htmlspecialchars($row["nombre"]) . "</td>";
-                echo "<td>" . htmlspecialchars($row["modulo"]) . "</td>";
+                echo "<td>" . htmlspecialchars($row["formu"]) . "</td>";
+                echo "<td>" . htmlspecialchars($row["altura"]) . "</td>";
+                echo "<td>" . htmlspecialchars($row["ubicacion"]) . "</td>";
                 echo "<td>" . htmlspecialchars($row["orden"]) . "</td>";
-                echo "<td>" . htmlspecialchars($row["nro_item"]) . "</td>";
-                echo "<td>" . htmlspecialchars($row["visitas"]) . "</td>";
                 echo "<td>";
                 
                 // Obtener valores
                 $nombre = urlencode($row["nombre"]);
-                $cod = urlencode($row["cod"]); // Capturar el código
+                $id = urlencode($row["id"]); // Capturar el código
             
                 $botones = [
                     ["pagina" => "editccion.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
-                    ["pagina" => "panel.php", "imagen" => "https://i.ibb.co/hPQ0zQ5/ws-menu.png"],
-                    ["pagina" => "ajustes.php", "imagen" => "https://i.ibb.co/VYrngfWv/wp-page.png"],
-                    ["pagina" => "config.php", "imagen" => "https://i.ibb.co/Fq6n7h1M/wp-tools.png"],
+                    ["pagina" => "panel.php", "imagen" => "https://i.ibb.co/S7Gq2mpG/ws-fotos.png"],
                     ["pagina" => "conect/eliminar_elemento.php", "imagen" => "https://i.ibb.co/LdTnB39W/wp-borrar.png"]
                 ];
     
                 foreach ($botones as $index => $boton) {
-                    $width = ($boton['pagina'] === "panel.php") ? "25px" : "25px";
-                    $height = ($boton['pagina'] === "panel.php") ? "15px" : "25px";
-                    echo "<a href='{$boton['pagina']}?cod=$cod' class='btn_st'>
-                            <img src='{$boton['imagen']}' alt='Botón' style='width: $width; height: $height; vertical-align: middle;'>
+                    echo "<a href='{$boton['pagina']}?id=$id' class='btn_st'>
+                            <img src='{$boton['imagen']}' alt='Botón' style='width: 25px; height: 25px; vertical-align: middle;'>
                           </a> ";
                 }
             
@@ -64,7 +68,7 @@ include('estilo/menu.php');
                 echo "</tr>";
             }
             
-        }*/
+        }
         ?>
 
     </table>

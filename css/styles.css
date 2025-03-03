@@ -9,6 +9,9 @@
     padding: 0;
     box-sizing: border-box;
 }
+.imagen{
+    height: 10px;
+}
 
 /* Estilo para el rectángulo de cabecera (horizontal) */
 .rectangulo-cabecera {
@@ -180,7 +183,6 @@
     color: #555;
     text-align: right;
     font-weight: bold;
-    padding-right: 10px;
 }
 .tableborderfull {
     width: 100%;
@@ -230,15 +232,9 @@ select {
 
 /* Estilos de tablero*/
 
-/* Contenedor principal */
-.contenedor-tabla {
-    display: flex;  
-    justify-content: space-between;
-    margin: 20px;
-}
+
 .contenedor-button {
     display: flex;  
-    margin: 20px;
 }
 
 
@@ -246,6 +242,8 @@ select {
 .acciones-botones {
     display: flex;
     height: 10%;
+    margin-top: -145px;
+
 }
 
 .acciones-botones button {
@@ -293,7 +291,8 @@ select {
     height: 270px;
     border: 1px solid #ddd;
     overflow-y: auto; /* Habilita el scroll vertical */
-
+    margin-left: -85px;
+    margin-top: -110px;
 }
 .columna-tabla th, .columna-tabla td {
     border: none; /* Eliminar bordes de las celdas en la tabla SQL */
@@ -303,6 +302,7 @@ select {
 .columna-formulario-izquierda {
     margin-right: 20px;
     width: 50%;
+    display: flex;
 }
 
 select, input[type="text"], input[type="date"], input[type="file"] {
@@ -337,9 +337,8 @@ label {
 }
 
 table th, table td {
-    padding: 10px;
     border: 1px solid #ddd;
-    text-align: center;
+    text-align: left;
 }
 
 table input[type="checkbox"] {
