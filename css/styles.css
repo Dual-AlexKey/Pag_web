@@ -1,0 +1,383 @@
+/* Estilo para el rectángulo principal (vertical) */
+.rectangulo {
+    width: 220px;  /* Ancho ajustado */
+    min-height: 400px; /* Altura ajustada */
+    background-color: #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    box-sizing: border-box;
+}
+.imagen{
+    height: 10px;
+}
+
+/* Estilo para el rectángulo de cabecera (horizontal) */
+.rectangulo-cabecera {
+    width: 100%;
+    height: 60px;
+    background-color: #dcdcdc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Estilo para los botones en la cabecera */
+.botones-cabecera {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    display: flex;
+    gap: 12px;
+}
+
+.boton-cabecera {
+    background-color: #dcdcdc;
+    color: #222;
+    width: 85px;
+    padding: 8px;
+    border: 2px solid #222;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.boton-cabecera:hover {
+    background-color: #c0c0c0;
+}
+/* Estilo para los rectángulos verdes decorativos debajo de la cabecera */
+.rectangulo-verde {
+    width: 100%;
+    height: 12px;
+    background-color: #4CAF50;
+}
+.btn_st{
+    display: inline-block;
+    
+}
+
+
+/* Estilo para los botones */
+.boton {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+    position: relative;
+}
+/* Estilo para el botón de cerrar "X" */
+.boton-cerrar {
+    background-color: #f44336; /* Rojo */
+    color: white;
+    border: none;
+    padding: 5px 10px; /* Ajustado para hacerlo cuadrado */
+    font-size: 16px;
+    font-weight: bold;
+    position: absolute;
+    right: 30px; /* Posición en la esquina superior derecha del bloque verde */
+    cursor: pointer;
+    margin-top: 15px;
+}
+.boton-nvpag {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px; /* Ajustado para hacerlo cuadrado */
+    font-size: 16px;
+    font-weight: bold;
+    position: absolute;
+    right: 30px; /* Posición en la esquina superior derecha del bloque verde */
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.contenedor-botones {
+    width: 100%;
+    background-color: #dcdcdc;
+
+}
+.contenedor-botones td:last-child {
+    text-align: right; /* Alinea los botones completamente a la izquierda */
+}
+.contenedor-botones td:first-child {
+    width: 1%; /* Mantiene el texto "Insertar" con el tamaño justo necesario */
+    white-space: nowrap; /* Evita que "Insertar" se divida en varias líneas */
+}
+
+.boton-tab {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+
+
+.boton-cerrar:hover {
+    background-color: #d32f2f; /* Rojo oscuro al pasar el cursor */
+}
+
+
+.boton:hover {
+    background-color: #45a049;
+}
+
+/* Menú oculto */
+.menu {
+    display: none;
+    width: 100%;
+}
+
+.menu .boton {
+    background-color: #3e8e41;
+    padding: 12px;
+}
+
+.menu .boton:hover {
+    background-color: #367a34;
+}
+
+/* Estilo para el icono de apertura/cierre (+ y -) */
+.icono {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  right: 0; /* Posiciona el icono a la derecha del contenedor */
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+/* Contenedor principal */
+.contenedor-principal {
+    display: flex;
+    gap: 2px;
+}
+
+/* Contenedor de la derecha */
+.contenido-derecha {
+    flex: 1;
+    background-color: #fff;
+    min-height: 400px;
+    padding: 15px;
+}
+/* WebConfig.html */
+.bloque-verde, .bloque-gris {
+    width: 100%;
+    padding: 0.5px; /* Reducido para evitar margen excesivo */
+    font-size: 14px; /* Reduce el tamaño de la letra */
+}
+
+.bloque-verde {
+    background-color: #4CAF50; 
+    color: white;
+}
+
+.bloque-gris {
+    background-color: #dcdcdc;
+}
+
+
+/* Estilos para el footer */
+.footer {
+    background-color: #222;
+    color: white;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 14px;
+}
+.Menus {
+    font-size: 16px;
+    color: #555;
+}
+
+/* Celdas de etiquetas */
+.colgrishome {
+    font-size: 16px;
+    color: #555;
+    text-align: right;
+    font-weight: bold;
+}
+.tableborderfull {
+    width: 100%;
+    border-collapse: collapse;
+}
+.tableborderfull td {
+    padding: 8px;
+    vertical-align: middle;
+}
+.tableborderfull td.colgrishome {
+    width: 250px; /* Puedes ajustar el ancho si es necesario */
+}
+
+/* Celdas de entrada de datos */
+.Tab-menu {
+    background-color: #f9f9f9;
+
+}
+.tab-menuinsert {
+    text-align: left;
+    font-size: 16px;
+    color: #555;
+    width: 100px;
+}
+
+/* Celdas de entrada de datos */
+.colblancocen {
+    background-color: #f9f9f9;
+    text-align: left;
+    padding-left: 10px;
+}
+
+input[type="text"], input[type="url"], textarea, select {
+    width: 70%;
+    padding: 9px;
+    font-size: 12px;
+    margin-top: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+/* Estilos de las opciones del select */
+select {
+    height: 35px;
+}
+
+/* Estilos de tablero*/
+
+
+.contenedor-button {
+    display: flex;  
+}
+
+
+/* Estilos para los botones de acción */
+.acciones-botones {
+    display: flex;
+    height: 10%;
+    margin-top: -145px;
+
+}
+
+.acciones-botones button {
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    transition: background-color 0.3s;
+}
+
+.acciones-botones button:hover {
+    background-color: #e1e1e1;
+}
+
+/* Estilos para los botones individuales de acción */
+.accion-boton {
+    padding: 5px 15px;
+    display: flex;
+
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.accion-boton:hover {
+    background-color: #ddd;
+    transform: scale(1.05); /* Efecto de "agrandamiento" al pasar el cursor */
+}
+
+.accion-boton:active {
+    background-color: #bbb;
+    transform: scale(0.98); /* Efecto de "presionar" el botón */
+}
+
+
+
+/* Estilos para la tabla SQL */
+.columna-tabla {
+    width: 450px;
+    height: 270px;
+    border: 1px solid #ddd;
+    overflow-y: auto; /* Habilita el scroll vertical */
+    margin-left: -85px;
+    margin-top: -110px;
+}
+.columna-tabla th, .columna-tabla td {
+    border: none; /* Eliminar bordes de las celdas en la tabla SQL */
+}
+
+.sin-borde {
+    border-collapse: collapse;
+    border: none;
+}
+
+.sin-borde td {
+    border: none;
+    outline: none;
+    vertical-align: top;
+}
+
+
+.columna-formulario-izquierda {
+    margin-right: 20px;
+    width: 50%;
+    display: flex;
+}
+
+select, input[type="text"], input[type="date"], input[type="file"] {
+    width: 90%;
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Estilos para los checkboxes */
+label {
+    margin-right: 10px;
+}
+
+/* Estilos para los botones de Aceptar y Cancelar */
+.boton-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.botonesAyC {
+    padding: 8px 15px;
+    font-size: 14px;
+    margin: 0 10px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+table input[type="checkbox"] {
+    margin: 0;
+}

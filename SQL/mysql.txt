@@ -1,0 +1,81 @@
+CREATE DATABASE EmpresaDB;
+USE EmpresaDB;
+drop table Empresa
+CREATE TABLE Empresa (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    url_pagina VARCHAR(255),
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    idioma VARCHAR(3),
+    logo VARCHAR(255),
+    favicon VARCHAR(255),
+    seo_titulo VARCHAR(255) NOT NULL,
+    seo_descripcion VARCHAR(255) NOT NULL,
+    seo_metatags VARCHAR(255) NOT NULL,
+    pie_pagina VARCHAR(255) NOT NULL,
+    empresa varchar(255),
+    ruc VARCHAR(20) NOT NULL UNIQUE,
+    descripcion TEXT,
+    pais VARCHAR(100) NOT NULL,
+    dpto VARCHAR(100),
+	city VARCHAR(100),
+    direccion_principal VARCHAR(255),
+    email_contactos VARCHAR(100),
+    email_ventas VARCHAR(100),
+    telefono_fijo VARCHAR(20),
+    telefono_movil VARCHAR(20),
+    moneda VARCHAR(3),
+    precios VARCHAR(3),
+    carrito_compras VARCHAR(3),
+    zona_usuarios VARCHAR(3),
+    terminos_condiciones VARCHAR(255)
+);
+
+insert 	
+INSERT INTO menu_cabecera_cabecera 
+(nombre, modulo, orden, nro_item, visitas, link, Num_nivel, estilos, cod) 
+VALUES 
+('1', 'Contenidos', '1', 1, 100, '1', '1', 'Blog', 'c1'),
+('2', 'Contenidos', '2', 2, 50, '2', '1', 'Blog', 'c2');
+
+INSERT INTO menu_pie_pie 
+(nombre, modulo, orden, nro_item, visitas, link, Num_nivel, estilos, cod) 
+VALUES 
+('aa', 'Contenidos', '1', 3, 25, 'aa', '1', 'Resumen', 'p1'),
+('bb', 'Contenidos', '2', 4, 30, 'bb', '1', 'Resumen', 'p2');
+
+ 
+ 
+ CREATE TABLE tablero (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    formu VARCHAR(50) NOT NULL,         -- Identifica el formulario de origen
+    nombre VARCHAR(255) NOT NULL,       -- Nombre general para todos los formularios
+    link VARCHAR(255) DEFAULT NULL,     -- Solo para formularios que usan links
+    imagen VARCHAR(255) DEFAULT NULL,   -- Guarda la ruta de la imagen (img/imagen.jpg)
+    codigo TEXT DEFAULT NULL,           -- Para código en textarea (HTML)
+    codigohtml TEXT DEFAULT NULL,       -- Para `new_ventana`
+    modulo VARCHAR(100) DEFAULT NULL,   -- Para `new_tabconte`
+    seccion VARCHAR(100) DEFAULT NULL,  -- Para `new_tabconte`
+    categoria VARCHAR(100) DEFAULT NULL,-- Para `new_tabconte`
+    nro_items INT DEFAULT NULL,         -- Para `new_tabconte`
+    items_visibles INT DEFAULT NULL,    -- Para `new_tabconte`
+    ordennum VARCHAR(50) DEFAULT NULL,  -- Para `new_tabconte`
+    estilocheck TINYINT(1) DEFAULT 0,   -- Checkbox para `new_tabconte`
+    mostrar TINYINT(1) DEFAULT 0,       -- Checkbox para `new_tabconte`
+    altura INT DEFAULT NULL,            -- Para `new_tabbanner`
+    apps VARCHAR(100) DEFAULT NULL,     -- Para `new_tabapps`
+    tabla TEXT DEFAULT NULL,            -- Guarda los nombres de las tablas seleccionadas
+    ubicacion VARCHAR(50) DEFAULT NULL, -- Ubicación del contenido
+    orden INT DEFAULT NULL,             -- Orden del contenido
+    columnas INT DEFAULT NULL,          -- Número de columnas
+    columnas_moviles INT DEFAULT NULL,  -- Columnas móviles
+    estilo VARCHAR(50) DEFAULT NULL,    -- Estilo aplicado
+    margen VARCHAR(50) DEFAULT NULL,    -- Margen seleccionado
+    fecha_inicio DATE DEFAULT NULL,     -- Fecha de inicio
+    fecha_final DATE DEFAULT NULL       -- Fecha de finalización
+);
+
+ 
+
+	select*from tablero;
+		select*from menu_pie_pie
+    SHOW TABLES LIKE 'menu_%';
