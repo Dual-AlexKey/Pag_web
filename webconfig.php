@@ -34,7 +34,7 @@ include('estilo/menu.php');
                     </tr>
                     <tr>
                         <td class="colgrishome">Idioma</td>
-                        <td class="colblancoend" >
+                        <td class="colblancocen" >
                             <select name="idioma">
                                 <option value="0" <?php echo ($empresa['idioma'] == '0') ? 'selected' : ''; ?>>English</option>
                                 <option value="1" <?php echo ($empresa['idioma'] == '1') ? 'selected' : ''; ?>>Español</option>
@@ -82,8 +82,8 @@ include('estilo/menu.php');
                         <td class="colblancocen"><textarea name="descripcion"><?php echo $empresa['descripcion']; ?></textarea></td>
                     </tr>
                     <tr>
-                        <td align="right" class="colgrishome">País</td>
-                        <td class="colblancoend">
+                        <td  class="colgrishome">País</td>
+                        <td class="colblancocen">
                             <select name="pais" id="pais">
                                 <option value="">Seleccione un país</option>
                                 <option value="peru" <?php echo ($empresa['pais'] == 'peru') ? 'selected' : ''; ?>>Perú</option>
@@ -91,8 +91,8 @@ include('estilo/menu.php');
                         </td>
                     </tr>
                     <tr>
-                        <td align="right" class="colgrishome">Región / Departamento</td>
-                        <td class="colblancoend">
+                        <td  class="colgrishome">Región / Departamento</td>
+                        <td class="colblancocen">
                             <select name="dpto" id="dpto">
                                 <option value="">Seleccione un departamento</option>
                                 <?php if ($empresa['pais'] == 'peru'): ?>
@@ -102,8 +102,8 @@ include('estilo/menu.php');
                         </td>
                     </tr>
                     <tr>
-                        <td align="right" class="colgrishome">Ciudad / Provincia</td>
-                        <td class="colblancoend">
+                        <td  class="colgrishome">Ciudad / Provincia</td>
+                        <td class="colblancocen">
                             <select name="city" id="city">
                                 <option value="">Seleccione una provincia</option>
                                 <?php if (!empty($empresa['city'])): ?>
@@ -179,7 +179,7 @@ include('estilo/menu.php');
                 </table>
                 <div class="boton-container">
                     <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
-                    <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
+                    <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'panel.php'">Cancelar</button>
                 </div>
             </form>
         </div>

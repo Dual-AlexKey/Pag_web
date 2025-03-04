@@ -102,6 +102,9 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
+
+
+   
     
 
 });
@@ -146,10 +149,10 @@ function cambiarEstilos() {
             { src: 'https://i.ibb.co/1frpx8B2/estiloblog.gif', alt: 'Blog', name: 'Blog' },
             { src: 'https://i.ibb.co/qLdNSmzM/estiloresumen.gif', alt: 'Resumen', name: 'Resumen' },
             { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Galería' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Portafolio' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Acordion' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Album' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Videos' }
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Portafolio', name: 'Portafolio' },
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Acordion', name: 'Acordion' },
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Album', name: 'Album' },
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Videos', name: 'Videos' }
         ];
     } else if (modulo === 'Catalogo') {
         estilos = [
@@ -158,18 +161,18 @@ function cambiarEstilos() {
         ];
     } else if (modulo === 'Usuarios') {
         estilos = [
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Registro' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Recuperar' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Login' },
-            { src: 'https://i.ibb.co/mr84FKDj/estilolistado.gif', alt: 'Blog', name: 'Panel' }
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Registro', name: 'Registro' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Recuperar', name: 'Recuperar' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Login', name: 'Login' },
+            { src: 'https://i.ibb.co/mr84FKDj/estilolistado.gif', alt: 'Panel', name: 'Panel' }
         ];
     } else if (modulo === 'Formularios') {
         estilos = [
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Contactos' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Pedidos' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Reserva' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Facturacion' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Blog', name: 'Suscribe' }
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Contactos', name: 'Contactos' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Pedidos', name: 'Pedidos' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Reserva', name: 'Reserva' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Facturacion', name: 'Facturacion' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Suscribe', name: 'Suscribe' }
         ];
     }
 
@@ -194,5 +197,7 @@ function actualizarURL() {
     let url = nombre.replace(/\s+/g, "-"); // Reemplaza espacios por "-"
     document.getElementById("link").value = url;
 }
+
+
 
 

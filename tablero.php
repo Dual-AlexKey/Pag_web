@@ -18,8 +18,21 @@ while ($row = $result->fetch_array()) {
     <div class="contenido-derecha">
         <a href="panel.php"><button class="boton-cerrar">X</button></a>
         <div class="bloque-verde"><h2>Tablero</h2></div>
-        <a href="new_tabimg.php"><button class="boton-nvpag">Nueva seccion</button></a>
-        <div class="bloque-gris"><h3>Insertar</h3></div>
+        <table class="contenedor-botones">
+            <tr>
+                <td>
+                    <h3 >Insertar</h3>
+                </td>
+                <td>
+                    <a href="new_tabimg.php"><button class="boton-tab">Imagen</button></a>
+                    <a href="new_tabhtml.php"><button class="boton-tab">HTML</button></a>
+                    <a href="new_tabconte.php"><button class="boton-tab">Contenidos</button></a>
+                    <a href="new_tabbanner.php"><button class="boton-tab">Crear Banner</button></a>
+                    <a href="new_tabapps.php"><button class="boton-tab">Apps</button></a>
+                    <a href="new_tabventana.php"><button class="boton-tab">Vetanas</button></a>
+                </td>
+            </tr>
+        </table>
        
         <table class="tableborderfull">
         <tr>

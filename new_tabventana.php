@@ -1,7 +1,10 @@
 <?php
 include 'conect/conexion.php';
+//inclusion de informacion
 include('estilo/data.php');
+// Incluir el header.php
 include('estilo/header.php');
+// Incluir el menu.php
 include('estilo/menu.php');
 include('estilo/tabla_menu.php');
 
@@ -11,43 +14,38 @@ $query = "SHOW TABLES LIKE 'menu_%'";
 $resultado_tablas = mysqli_query($conexion, $query);
 
 while ($row = mysqli_fetch_row($resultado_tablas)) {
-    $tablas_menu[] = $row[0];  // Almacenar los nombres de las tablas
+    $tablas_menu[] = $row[0];  // Almacenar el nombre de las tablas
 }
 
-// **Paso 1: Filtrar registros únicos por 'cod'**
-$codigos_guardados = [];
-$registros_cod = []; // Aquí guardamos los registros únicos por cod
-
+// Obtener los datos de las tablas 'menu_'
+$codigos = [];
 foreach ($tablas_menu as $tabla) {
-    $query = "SELECT * FROM $tabla";
+    $query = "SELECT * FROM $tabla";  // Seleccionar todo de la tabla
     $resultado = mysqli_query($conexion, $query);
 
     while ($row = mysqli_fetch_assoc($resultado)) {
-        $cod = $row['cod'];
+        $cod = $row['cod'];  // Suponiendo que 'cod' es el campo de identificación
 
-        // Guardar solo el primer registro de cada 'cod'
-        if (!in_array($cod, $codigos_guardados)) {
-            $registros_cod[] = $row;
-            $codigos_guardados[] = $cod;
+        if (!in_array($cod, $codigos)) {
+            // Si el código no está en el array de códigos, añadirlo
+            $codigos[] = $cod;
         }
     }
 }
 
-// **Paso 2: Filtrar registros por 'codtab' (solo si tienen valor)**
-$codtab_guardados = [];
-$registros_finales = []; // Aquí guardamos los registros finales
+// Obtener los datos únicos de las tablas 'menu_'
+$datos_unicos = [];
+foreach ($codigos as $cod) {
+    foreach ($tablas_menu as $tabla) {
+        $query = "SELECT * FROM $tabla WHERE cod = '$cod'";  // Filtrar por código
+        $resultado = mysqli_query($conexion, $query);
 
-foreach ($registros_cod as $row) {
-    $codtab = $row['codtab'] ?? null;
-
-    // Si 'codtab' está vacío, agregarlo sin filtrar
-    if (empty($codtab)) {
-        $registros_finales[] = $row;
-    } 
-    // Si 'codtab' tiene valor, agregarlo solo si es único
-    elseif (!in_array($codtab, $codtab_guardados)) {
-        $registros_finales[] = $row;
-        $codtab_guardados[] = $codtab;
+        while ($row = mysqli_fetch_assoc($resultado)) {
+            if ($row['cod'] == $cod && !isset($datos_unicos[$cod])) {
+                $datos_unicos[$cod] = $row;  // Guardar solo el primer registro encontrado para cada código
+                break;
+            }
+        }
     }
 }
 ?>
@@ -55,11 +53,11 @@ foreach ($registros_cod as $row) {
 <!-- Contenedor principal con las dos columnas -->
 <div class="contenido-derecha">
     <a href="tablero.php"><button class="boton-cerrar">X</button></a>
-    <div class="bloque-verde"><h2>HTML</h2></div>
+    <div class="bloque-verde"><h2>Ventana</h2></div>
     
     <div id="capaformulario">
         <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="formulario_tipo" value="HTML">            
+        <input type="hidden" name="formulario_tipo" value="Ventana">            
             <!-- Campos Título, Imagen y URL en la parte superior -->
             <div class="columna-formulario">
                 <table class="tableborderfull">
@@ -67,6 +65,13 @@ foreach ($registros_cod as $row) {
                         <td class="colgrishome">Título:</td>
                         <td class="colblancocen">
                             <input type="text" id="nombre" name="nombre" style="width: 50%;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="colgrishome">Imagen:</td>
+                        <td class="colblancocen">
+                            <input type="text" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;">
+                            <input type="file" id="imagen" name="imagen" accept="image/*" style="width: 40%;">
                         </td>
                     </tr>
                     <tr>
@@ -90,14 +95,15 @@ foreach ($registros_cod as $row) {
                             </div>
                         <div class="columna-tabla">
                             <table class="tableborderfull">
-                            <?php
-                            foreach ($registros_finales as $dato) {
-                                echo "<tr>";
-                                echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($dato['cod']) . "'></td>";
-                                echo "<td>" . htmlspecialchars($dato['nombre']) . "</td>";
+                                <?php
+                                // Mostrar solo el campo 'nombre' y el checkbox
+                                foreach ($datos_unicos as $dato) {
+                                    echo "<tr>";
+                                    echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($dato['cod']) . "'></td>";
+                                    echo "<td>" . htmlspecialchars($dato['nombre']) . "</td>";  // Mostrar solo el campo 'nombre'
                                     echo "</tr>";
-                            }
-                            ?>
+                                }
+                                ?>
                             </table>
                         </div>
                     </td>

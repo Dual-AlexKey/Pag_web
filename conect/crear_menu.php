@@ -18,7 +18,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             link VARCHAR(255) NOT NULL,
             Num_nivel VARCHAR(3),
             estilos VARCHAR(255),
-            cod VARCHAR(10) UNIQUE
+            cod VARCHAR(10) UNIQUE,
+            codtab VARCHAR(10)
         )";
         
         if ($conn->query($sql) === TRUE) {
@@ -29,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Obtener la primera letra del centro (nombre del menú)
             preg_match('/menu_([a-zA-Z0-9]+)_/', $nombre_tabla, $matches);
-            $inicial = isset($matches[1]) ? substr($matches[1], 0, 1) : 'X'; // Si no encuentra, usa 'X'
+            $inicial = isset($matches[1]) ? substr($matches[1], 0, 3) : 'XXX'; // Si no encuentra, usa 'X'
 
             // Crear trigger sin DELIMITER
             $trigger_sql = "CREATE TRIGGER `before_insert_cod_$nombre_tabla`
@@ -37,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             FOR EACH ROW 
             BEGIN
                 DECLARE max_cod INT;
-                SELECT IFNULL(MAX(SUBSTRING(cod, 2)), 0) + 1 INTO max_cod FROM `$nombre_tabla`;
+                SELECT IFNULL(MAX(SUBSTRING(cod, 4)), 0) + 1 INTO max_cod FROM `$nombre_tabla`;
 
                 -- Solo generar un nuevo cod si está vacío o NULL
                 IF NEW.cod = '' OR NEW.cod IS NULL THEN
