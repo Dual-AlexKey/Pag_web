@@ -1,6 +1,6 @@
 CREATE DATABASE EmpresaDB;
 USE EmpresaDB;
-drop table Empresa
+drop table tablero
 CREATE TABLE Empresa (
     id_empresa INT PRIMARY KEY AUTO_INCREMENT,
     url_pagina VARCHAR(255),
@@ -52,7 +52,6 @@ VALUES
     link VARCHAR(255) DEFAULT NULL,     -- Solo para formularios que usan links
     imagen VARCHAR(255) DEFAULT NULL,   -- Guarda la ruta de la imagen (img/imagen.jpg)
     codigo TEXT DEFAULT NULL,           -- Para código en textarea (HTML)
-    codigohtml TEXT DEFAULT NULL,       -- Para `new_ventana`
     modulo VARCHAR(100) DEFAULT NULL,   -- Para `new_tabconte`
     seccion VARCHAR(100) DEFAULT NULL,  -- Para `new_tabconte`
     categoria VARCHAR(100) DEFAULT NULL,-- Para `new_tabconte`
@@ -77,5 +76,9 @@ VALUES
  
 
 	select*from tablero;
-		select*from menu_pie_pie
+		select*from menu_cabecera_cabecera;
+        select*from menu_pie_pie;
+        select*from menu_input_cabecera;
+        select*from menu_prub4_pie
     SHOW TABLES LIKE 'menu_%';
+
