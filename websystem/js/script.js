@@ -102,9 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
-
-
-   
+        
     
 
 });
@@ -198,6 +196,71 @@ function actualizarURL() {
     document.getElementById("link").value = url;
 }
 
+function crearArchivo(event) {
+    event.preventDefault(); // Evita que el formulario se envíe de inmediato
 
+    // ✅ Validación de "Publicar en Menú"
+    let checkboxesMenu = document.querySelectorAll("input[name='publicar[]']");
+    let menuSeleccionado = Array.from(checkboxesMenu).some(checkbox => checkbox.checked);
 
+    // ✅ Validación de "Estilos"
+    let estilosDiv = document.getElementById("estilos");
+
+    if (!estilosDiv || estilosDiv.children.length === 0) {
+        alert("⚠️ Debes seleccionar al menos un estilo.");
+        return;
+    }
+
+    let estilosSeleccionados = false;
+    let elementosEstilos = estilosDiv.querySelectorAll("input, select, option");
+
+    elementosEstilos.forEach(function (elemento) {
+        if ((elemento.type === "checkbox" || elemento.type === "radio") && elemento.checked) {
+            estilosSeleccionados = true;
+        } else if (elemento.tagName === "SELECT" && elemento.value.trim() !== "") {
+            estilosSeleccionados = true;
+        }
+    });
+
+    // ✅ Mensajes de error combinados
+    if (!menuSeleccionado && !estilosSeleccionados) {
+        alert("⚠️ Falta seleccionar información: Estilos y 'Publicar en Menú'.");
+        return;
+    }
+
+    if (!menuSeleccionado) {
+        alert("⚠️ Falta seleccionar información: 'Publicar en Menú'.");
+        return;
+    }
+
+    if (!estilosSeleccionados) {
+        alert("⚠️ Falta seleccionar información: Estilos.");
+        return;
+    }
+
+    // ✅ Validación de "Nombre"
+    let nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) {
+        alert('⚠️ Por favor, ingresa un nombre válido.');
+        return;
+    }
+
+    // ✅ Si todo está validado, crear el archivo
+    let formData = new FormData();
+    formData.append('nombre', nombre);
+
+    fetch('conect/crear_archivo.php', { // Llama al script en websystem/conect/
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log('✅ Archivo creado:', data); // Solo se muestra en la consola
+        document.getElementById("miFormulario").submit(); // Envía el formulario después de crear el archivo
+    })
+    .catch(error => {
+        console.error('❌ Error:', error);
+        alert('Hubo un problema al crear el archivo.');
+    });
+}
 

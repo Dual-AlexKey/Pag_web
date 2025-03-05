@@ -63,6 +63,8 @@ while ($row = $result->fetch_array()) {
                 // Obtener valores para los botones
                 $cod = urlencode($row["cod"]); 
                 $codtab = urlencode($row["codtab"]);
+                $nombre = urlencode($row["nombre"]); 
+
 
                 $botones = [
                     ["pagina" => "editccion.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
@@ -80,6 +82,10 @@ while ($row = $result->fetch_array()) {
                     $url = "{$boton['pagina']}?cod=$cod";
                     if (!empty($codtab)) {
                         $url .= "&codtab=$codtab";
+                        $url .= "&nombre=$nombre";
+                    }
+                    elseif (!empty($nombre)) {
+                        $url .= "&nombre=$nombre";
                     }
 
                     echo "<a href='$url' class='btn_st'>

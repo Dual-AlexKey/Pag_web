@@ -132,12 +132,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     elseif ($tipoFormulario == "Seccion") {
-        $cod = $_POST["cod"];
-        $codtab = isset($_POST["codtab"]) ? $_POST["codtab"] : null;
-        $nombre = $_POST["nombre"];
-        $link = $_POST["link"];
-        $modulo = $_POST["modulo"];
-        $estilos = !empty($_POST["estilos"]) ? (is_array($_POST["estilos"]) ? implode(',', $_POST["estilos"]) : $_POST["estilos"]) : '';
+        $cod = $_POST["cod"] ?? null; // Puede venir vacío
+        $codtab = null; // Se generará si hay múltiples tablas
+        $nombre = $_POST["nombre"] ?? null;
+        $link = $_POST["link"] ?? null;
+        $modulo = $_POST["modulo"] ?? null;
+        $estilos = !empty($_POST["estilos"]) ? (is_array($_POST["estilos"]) ? implode(',', $_POST["estilos"]) : $_POST["estilos"]) : null;
         $publicar = isset($_POST["publicar"]) ? $_POST["publicar"] : [];
         $sef_seccion = true;
 
@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit();
         }
     
-        // Buscar todas las tablas que comienzan con 'menu_'
+        // 🔍 **Buscar todas las tablas que comienzan con 'menu_'**
         $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
         $result_tablas = $conn->query($sql_buscar_tablas);
         $tablas_existentes = [];
@@ -158,48 +158,69 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $tabla = $fila[0];
     
                 // Verificar si el registro existe en la tabla
-                $sql_check = "SELECT COUNT(*) FROM $tabla WHERE cod = ? OR codtab = ?";
+                $sql_check = "SELECT codtab FROM $tabla WHERE cod = ?";
                 $stmt_check = $conn->prepare($sql_check);
                 if ($stmt_check) {
-                    $stmt_check->bind_param("ss", $cod, $codtab);
+                    $stmt_check->bind_param("s", $cod);
                     $stmt_check->execute();
-                    $stmt_check->bind_result($existe);
+                    $stmt_check->bind_result($codtab_existente);
                     $stmt_check->fetch();
                     $stmt_check->close();
     
-                    if ($existe > 0) {
+                    if ($codtab_existente) {
                         $tablas_existentes[] = $tabla;
                         $mantener_cod[] = $tabla;
+                        $codtab = $codtab_existente; // Usar el mismo codtab si ya existe
                     }
                 }
             }
         }
     
-        // 1️⃣ Actualizar registros en las tablas existentes
+        // 🆕 **Generar `codtab` si se guarda en varias tablas y no tiene uno**
+        if (!$codtab && count($publicar) > 1) {
+            $tabla_base = reset($publicar);
+            $prefijo = strtolower(substr($tabla_base, 5, 3)); // Extrae los 3 caracteres después de "menu_"
+    
+            // Buscar el mayor codtab en las tablas seleccionadas
+            $max_cod = 0;
+            foreach ($publicar as $tabla) {
+                $sql_codigo = "SELECT MAX(CAST(SUBSTRING(codtab, 4) AS UNSIGNED)) AS max_cod FROM `$tabla` WHERE codtab LIKE '$prefijo%'";
+                $result_codigo = $conn->query($sql_codigo);
+                if ($result_codigo && $row = $result_codigo->fetch_assoc()) {
+                    $max_cod = max($max_cod, (int) $row["max_cod"]);
+                }
+            }
+    
+            // Generar nuevo codtab incrementado
+            $nuevo_codigo = $max_cod + 1;
+            $codtab = $prefijo . str_pad($nuevo_codigo, 2, "0", STR_PAD_LEFT); // Formato: xyz01
+        }
+    
+        // 📝 **Actualizar registros en tablas existentes**
         foreach ($tablas_existentes as $tabla) {
-            $sql_update = "UPDATE $tabla SET nombre = ?, link = ?, modulo = ?, estilos = ? WHERE cod = ? OR codtab = ?";
+            $sql_update = "UPDATE $tabla SET nombre = ?, link = ?, modulo = ?, estilos = ? WHERE cod = ?";
             $stmt_update = $conn->prepare($sql_update);
             if ($stmt_update) {
-                $stmt_update->bind_param("ssssss", $nombre, $link, $modulo, $estilos, $cod, $codtab);
+                $stmt_update->bind_param("sssss", $nombre, $link, $modulo, $estilos, $cod);
                 $stmt_update->execute();
                 $stmt_update->close();
             }
         }
     
-        // 2️⃣ Eliminar registros si ya no están en ninguna tabla seleccionada
+        // 🗑️ **Eliminar registros de tablas no seleccionadas**
         foreach ($tablas_existentes as $tabla) {
-            if (!in_array($tabla, $publicar) && !array_intersect($mantener_cod, $publicar)) {
-                $sql_delete = "DELETE FROM $tabla WHERE cod = ? OR codtab = ?";
+            if (!in_array($tabla, $publicar)) {
+                $sql_delete = "DELETE FROM $tabla WHERE cod = ?";
                 $stmt_delete = $conn->prepare($sql_delete);
                 if ($stmt_delete) {
-                    $stmt_delete->bind_param("ss", $cod, $codtab);
+                    $stmt_delete->bind_param("s", $cod);
                     $stmt_delete->execute();
                     $stmt_delete->close();
                 }
             }
         }
     
-        // 3️⃣ Insertar en nuevas tablas
+        // ✅ **Insertar en nuevas tablas**
         foreach ($publicar as $tabla) {
             $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla);
     
