@@ -7,7 +7,6 @@ include('estilo/header.php');
 // Incluir el menu.php
 include('estilo/menu.php');
 include('estilo/tabla_menu.php');
-include('conect/sendccion.php');
 
 // Consultar las tablas que comienzan con 'menu_'
 $tablas_menu = [];
@@ -183,7 +182,7 @@ foreach ($codigos as $cod) {
                             <tr>
                                 <td class="colgrishome">Fecha Final:</td>
                                 <td class="colblancocen">
-                                    <input type="date" id="fecha_final" name="fecha_final" value="" placeholder="dd/mm/aaaa" required>
+                                    <input type="date" id="fecha_final" name="fecha_final" placeholder="dd/mm/aaaa">
                                 </td>
                             </tr>
                     </table>

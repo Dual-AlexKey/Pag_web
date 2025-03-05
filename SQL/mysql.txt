@@ -46,7 +46,7 @@ VALUES
  
  
  CREATE TABLE tablero (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,	
     formu VARCHAR(50) NOT NULL,         -- Identifica el formulario de origen
     nombre VARCHAR(255) NOT NULL,       -- Nombre general para todos los formularios
     link VARCHAR(255) DEFAULT NULL,     -- Solo para formularios que usan links

@@ -2,14 +2,16 @@
 include 'conexion.php';
 
 // ✅ Obtener valores desde la URL
+$id_parametro = isset($_GET['id']) ? trim($_GET['id']) : '';
 $cod_parametro = isset($_GET['cod']) ? trim($_GET['cod']) : '';
 $codtab_parametro = isset($_GET['codtab']) ? trim($_GET['codtab']) : '';
 
-if (empty($cod_parametro)) {
-    die("Error: No se proporcionó un código válido.");
+// ✅ Validar que al menos un parámetro esté presente
+if (empty($id_parametro) && empty($cod_parametro) && empty($codtab_parametro)) {
+    die("Error: No se proporcionaron parámetros válidos para eliminar.");
 }
 
-// ✅ Buscar todas las tablas que comienzan con "menu_"
+// ✅ Buscar todas las tablas que comienzan con "menu_" (solo para `cod` y `codtab`)
 $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
 $result_tablas = $conn->query($sql_buscar_tablas);
 
@@ -17,9 +19,10 @@ if ($result_tablas->num_rows == 0) {
     die("Error: No se encontraron tablas en la base de datos.");
 }
 
-// ✅ Filtrar las tablas que contienen el `cod` o `codtab`
+// ✅ Buscar registros en `menu_%` por `cod` y `codtab`
 $nombres_tablas = [];
 $codtab_encontrados = [];
+$se_borro_cod_o_codtab = false; // Nueva variable para saber si se eliminó por cod o codtab
 
 while ($fila = $result_tablas->fetch_array()) {
     $tabla = $fila[0];
@@ -40,38 +43,62 @@ while ($fila = $result_tablas->fetch_array()) {
     $stmt_check->close();
 }
 
-// Si no hay registros con `cod` o `codtab`, mostrar error
-if (empty($nombres_tablas)) {
-    die("Error: No se encontraron registros con este código.");
-}
-
 // ✅ Si hay `codtab`, eliminar primero por `codtab`
 if (!empty($codtab_parametro)) {
     foreach ($nombres_tablas as $tabla => $registros) {
         $sql_delete = "DELETE FROM `$tabla` WHERE codtab = ?";
         $stmt_delete = $conn->prepare($sql_delete);
         $stmt_delete->bind_param("s", $codtab_parametro);
-        $stmt_delete->execute();
+        if ($stmt_delete->execute()) {
+            $se_borro_cod_o_codtab = true;
+        }
         $stmt_delete->close();
     }
 }
 
 // ✅ Luego eliminar los registros restantes con `cod`
-foreach ($nombres_tablas as $tabla => $registros) {
-    $sql_delete = "DELETE FROM `$tabla` WHERE cod = ?";
-    $stmt_delete = $conn->prepare($sql_delete);
-    $stmt_delete->bind_param("s", $cod_parametro);
-    $stmt_delete->execute();
-    $stmt_delete->close();
+if (!empty($cod_parametro)) {
+    foreach ($nombres_tablas as $tabla => $registros) {
+        $sql_delete = "DELETE FROM `$tabla` WHERE cod = ?";
+        $stmt_delete = $conn->prepare($sql_delete);
+        $stmt_delete->bind_param("s", $cod_parametro);
+        if ($stmt_delete->execute()) {
+            $se_borro_cod_o_codtab = true;
+        }
+        $stmt_delete->close();
+    }
 }
 
-// Confirmar eliminación
-echo "Registros eliminados correctamente de las tablas: " . implode(", ", array_keys($nombres_tablas));
+// ✅ Si se proporcionó `id`, buscar y eliminar solo en la tabla `tablero`
+$se_borro_id = false;
 
-// Cerrar conexión
-$conn->close();
+if (!empty($id_parametro)) {
+    $sql_check_id = "SELECT id FROM tablero WHERE id = ?";
+    $stmt_check_id = $conn->prepare($sql_check_id);
+    $stmt_check_id->bind_param("s", $id_parametro);
+    $stmt_check_id->execute();
+    $result_check_id = $stmt_check_id->get_result();
 
-// Redirigir a la página principal
-header("Location: ../secciones.php");
+    if ($result_check_id->num_rows > 0) {
+        $sql_delete_id = "DELETE FROM tablero WHERE id = ?";
+        $stmt_delete_id = $conn->prepare($sql_delete_id);
+        $stmt_delete_id->bind_param("s", $id_parametro);
+        if ($stmt_delete_id->execute()) {
+            $se_borro_id = true;
+        }
+        $stmt_delete_id->close();
+    }
+
+    $stmt_check_id->close();
+}
+
+// ✅ Redireccionar según el tipo de eliminación
+if ($se_borro_id) {
+    header("Location: ../tablero.php");
+} elseif ($se_borro_cod_o_codtab) {
+    header("Location: ../secciones.php");
+} else {
+    die("Error: No se encontraron registros para eliminar.");
+}
 exit();
 ?>

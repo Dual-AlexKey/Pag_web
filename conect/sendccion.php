@@ -14,6 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
+    
     // 🔍 **Buscar todas las tablas que comienzan con 'menu_'**
     $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
     $result_tablas = $conn->query($sql_buscar_tablas);

@@ -12,16 +12,16 @@ include('estilo/menu.php');
 
 include('estilo/tabla_menu.php');
 
-include('conect/sendccion.php');
-
 ?>
 
 <div class="contenido-derecha">
         <a href="secciones.php"><button class="boton-cerrar">X</button></a>
         <div class="bloque-verde"><h2>Nueva Seccion</h2></div>
         <div id="capaformulario">
-            <form action="conect/sendccion.php" method="post">
-             <input type="hidden" id="idcontrol">
+        <form action="conect/guardar_tablero.php" method="post">
+            <input type="hidden" name="formulario_tipo" value="Seccion">
+            <!--<form action="conect/guardar_tablero.php" method="post">
+            <input type="hidden" name="formulario_tipo" value="Seccion">  -->
                 <table class="tableborderfull">
                 <tr>
                     <td class="colgrishome">Nombre:</td>

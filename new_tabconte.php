@@ -7,7 +7,6 @@ include('estilo/header.php');
 // Incluir el menu.php
 include('estilo/menu.php');
 include('estilo/tabla_menu.php');
-include('conect/sendccion.php');
 
 // Consultar las tablas que comienzan con 'menu_'
 $tablas_menu = [];
@@ -19,36 +18,53 @@ while ($row = mysqli_fetch_row($resultado_tablas)) {
 }
 
 // Obtener los datos de las tablas 'menu_'
-$codigos = [];
+$modulos = [];
+
 foreach ($tablas_menu as $tabla) {
-    $query = "SELECT * FROM $tabla";  // Seleccionar todo de la tabla
+    $query = "SELECT DISTINCT nombre FROM $tabla WHERE modulo LIKE '%Contenidos%'";
     $resultado = mysqli_query($conexion, $query);
 
     while ($row = mysqli_fetch_assoc($resultado)) {
-        $cod = $row['cod'];  // Suponiendo que 'cod' es el campo de identificación
+        $modulos[$row['nombre']] = $row['nombre']; // Almacenar el nombre como clave para evitar duplicados
+    }
+}
+$codigos_guardados = [];
+$registros_cod = []; // Aquí guardamos los registros únicos por cod
 
-        if (!in_array($cod, $codigos)) {
-            // Si el código no está en el array de códigos, añadirlo
-            $codigos[] = $cod;
+foreach ($tablas_menu as $tabla) {
+    $query = "SELECT * FROM $tabla";
+    $resultado = mysqli_query($conexion, $query);
+
+    while ($row = mysqli_fetch_assoc($resultado)) {
+        $cod = $row['cod'];
+
+        // Guardar solo el primer registro de cada 'cod'
+        if (!in_array($cod, $codigos_guardados)) {
+            $registros_cod[] = $row;
+            $codigos_guardados[] = $cod;
         }
     }
 }
 
-// Obtener los datos únicos de las tablas 'menu_'
-$datos_unicos = [];
-foreach ($codigos as $cod) {
-    foreach ($tablas_menu as $tabla) {
-        $query = "SELECT * FROM $tabla WHERE cod = '$cod'";  // Filtrar por código
-        $resultado = mysqli_query($conexion, $query);
+// **Paso 2: Filtrar registros por 'codtab' (solo si tienen valor)**
+$codtab_guardados = [];
+$registros_finales = []; // Aquí guardamos los registros finales
 
-        while ($row = mysqli_fetch_assoc($resultado)) {
-            if ($row['cod'] == $cod && !isset($datos_unicos[$cod])) {
-                $datos_unicos[$cod] = $row;  // Guardar solo el primer registro encontrado para cada código
-                break;
-            }
-        }
+foreach ($registros_cod as $row) {
+    $codtab = $row['codtab'] ?? null;
+
+    // Si 'codtab' está vacío, agregarlo sin filtrar
+    if (empty($codtab)) {
+        $registros_finales[] = $row;
+    } 
+    // Si 'codtab' tiene valor, agregarlo solo si es único
+    elseif (!in_array($codtab, $codtab_guardados)) {
+        $registros_finales[] = $row;
+        $codtab_guardados[] = $codtab;
     }
 }
+
+
 ?>
 
 <!-- Contenedor principal con las dos columnas -->
@@ -58,7 +74,7 @@ foreach ($codigos as $cod) {
     
     <div id="capaformulario">
         <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="formulario_tipo" value="Contenido">            
+        <input type="hidden" name="formulario_tipo" value="Contenidos">            
             <!-- Campos Título, Imagen y URL en la parte superior -->
             <div class="columna-formulario">
                 <table class="tableborderfull">
@@ -71,23 +87,29 @@ foreach ($codigos as $cod) {
                     <tr>
                         <td class="colgrishome">Modulo:</td>
                         <td class="colblancocen">
-                            <select id="ubicacion" name="modulo" style="width: 30%;">
-                                <option value="cont">Contenido</option>
-                                <option value="cata">Catálogo</option>
-                                <option value="user">Usuarios</option>
-                                <option value="form">Fromularios</option>
+                            <select id="modulo" name="modulo" style="width: 30%;">
+                            <?php
+                                if (!empty($modulos)) {
+                                    foreach ($modulos as $nombre) {
+                                        echo '<option value="' . htmlspecialchars($nombre) . '">' . htmlspecialchars($nombre) . '</option>';
+                                    }
+                                } else {
+                                    echo '<option value="">No hay módulos disponibles</option>';
+                                }
+                                ?>
                             </select>
                         </td>
                     </tr>
+
                     <tr>
                         <td class="colgrishome">Categoria:</td>
                         <td class="colblancocen">
                             <select id="ubicacion" name="categoria" style="width: 30%;">
-                                <option value="cont">Todas</option>
-                                <option value="cata">Normal</option>
-                                <option value="user">Destacado</option>
-                                <option value="form">Destacado Premium</option>
-                                <option value="form">Super Destacado</option>
+                                <option value="todo">Todas</option>
+                                <option value="norm">Normal</option>
+                                <option value="dest">Destacado</option>
+                                <option value="destp">Destacado Premium</option>
+                                <option value="Super">Super Destacado</option>
                             </select>
                         </td>
                     </tr>
@@ -112,12 +134,46 @@ foreach ($codigos as $cod) {
                     </tr>
                         
                     <tr>
-                        <td class="colgrishome">Imagen:</td>
-                        <td class="colblancocen">
-                        <input type="text" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg" style="width: 400px;">
-                        <input type="file" id="imagen" name="imagen" accept="image/*" style="width: 600px;">
-                        </td>
-                    </tr>
+    <td class="colgrishome">Estilos:</td>
+    <td>
+        <ul style="display: flex; gap: 20px; align-items: center; " id="estilocheck" name="estilocheck">
+            <div style="width: 90px; ">
+                <img src="https://i.ibb.co/qLdNSmzM/estiloresumen.gif" alt="Resumen" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Resumen" > <span style="font-size: 14px;">Resumen</span>
+            </div>
+            <div style="width: 90px;">
+                <img src="https://i.ibb.co/k29qfG19/estilogaleria.gif" alt="Galeria" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Galeria" > <span>Galería</span>
+            </div>  
+            <div style="width: 90px;">
+                <img src="https://i.ibb.co/rR28NxqC/estiloslider.gif" alt="Carrusel" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Carrusel"> <span >Carrusel</span>
+            </div>
+            <div style="width: 90px;">
+                <img src="https://i.ibb.co/Xr8xz0Tp/estiloportafolio.gif" alt="Carrusel_Avanzado" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Carrusel_Avanzado"> <span style="font-size: 14px;">Carrusel Avanzado</span>
+            </div>  
+            <div style="width: 90px;">
+                <img src="https://i.ibb.co/0jsRQx1V/image.png" alt="Clasic_1" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Clasic_1"> <span>Clasic 1</span>
+            </div>  
+            <div style="width: 90px;">
+                <img src="https://i.ibb.co/nWPbjrq/estilomodelo2.gif" alt="Clasic_2" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Clasic_2"> <span>Clasic 2</span>
+            </div>
+            <div style="width: 90px;">
+                <img src="https://i.ibb.co/tytJkbV/estiloacordion.gif" alt="Acordion" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Acordion"> <span style="font-size: 14px;">Acordion</span>
+            </div>
+            <div style="width: 90px;">
+                <img src="https://i.ibb.co/pqGHmxr/estiloslider2.gif" alt="Video" style="width: 80px; height: auto;"><br>
+                <input type="radio" name="estilocheck" value="Video"> <span>Video</span>
+            </div>    
+        </div>
+    </td>
+</tr>
+
+
                     <tr>
                         <td class="colgrishome">Mostrar:</td>
                         <td class="colblancocen">
@@ -162,7 +218,7 @@ foreach ($codigos as $cod) {
                             <table class="tableborderfull">
                                 <?php
                                 // Mostrar solo el campo 'nombre' y el checkbox
-                                foreach ($datos_unicos as $dato) {
+                                foreach ($registros_finales as $dato) {
                                     echo "<tr>";
                                     echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($dato['cod']) . "'></td>";
                                     echo "<td>" . htmlspecialchars($dato['nombre']) . "</td>";  // Mostrar solo el campo 'nombre'
@@ -247,7 +303,7 @@ foreach ($codigos as $cod) {
                             <tr>
                                 <td class="colgrishome">Fecha Final:</td>
                                 <td class="colblancocen">
-                                    <input type="date" id="fecha_final" name="fecha_final" value="" placeholder="dd/mm/aaaa" required>
+                                    <input type="date" id="fecha_final" name="fecha_final" placeholder="dd/mm/aaaa">
                                 </td>
                             </tr>
                     </table>
