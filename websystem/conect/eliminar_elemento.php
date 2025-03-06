@@ -5,45 +5,58 @@ include 'conexion.php';
 $id_parametro = isset($_GET['id']) ? trim($_GET['id']) : '';
 $cod_parametro = isset($_GET['cod']) ? trim($_GET['cod']) : '';
 $codtab_parametro = isset($_GET['codtab']) ? trim($_GET['codtab']) : '';
+
+// Mostrar errores (para depuración)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// ✅ Obtener parámetros
 $archivo_a_borrar = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
 
-// ✅ Validar que al menos un parámetro esté presente
-if (empty($id_parametro) && empty($cod_parametro) && empty($codtab_parametro) && empty($archivo_a_borrar)) {
-    die("Error: No se proporcionaron parámetros válidos para eliminar.");
+// ✅ Validar que se haya proporcionado un nombre
+if (empty($archivo_a_borrar)) {
+    die("Error: No se proporcionó un archivo para eliminar.");
 }
 
 // ✅ Obtener la raíz del proyecto dinámicamente
 $raiz_proyecto = dirname(__DIR__, 2); // 📌 Subimos dos niveles desde "websystem/conect/"
 
-// ✅ Asegurar que el archivo tiene la extensión .php
-if (!str_ends_with($archivo_a_borrar, '.php')) {
-    $archivo_a_borrar .= '.php';
-}
+// ✅ Sanitizar el nombre del archivo (quitar caracteres peligrosos)
+$nombre_sanitizado = preg_replace('/[^a-zA-Z0-9_-]/', '_', $archivo_a_borrar);
 
-// 📌 Construir la ruta final
-$ruta_archivo = $raiz_proyecto . '/' . basename($archivo_a_borrar);
+// ✅ Construir ruta del archivo y de la carpeta que lo contiene
+$directorio = $raiz_proyecto . '/' . $nombre_sanitizado;
+$ruta_archivo = $directorio . '/' . $nombre_sanitizado . '.php';
 
 // 🔍 Mostrar la ruta exacta para depuración (puedes quitar esto luego)
 echo "Buscando archivo en: $ruta_archivo<br>";
 
 // ✅ Evitar eliminar archivos críticos
-if (basename($archivo_a_borrar) === 'eliminar_elemento_php.php') {
+$archivos_protegidos = ['eliminar_elemento_php.php'];
+if (in_array($nombre_sanitizado . '.php', $archivos_protegidos)) {
     die("Error: No puedes eliminar este archivo.");
 }
 
 // ✅ Verificar si el archivo existe antes de borrarlo
 if (file_exists($ruta_archivo)) {
     if (unlink($ruta_archivo)) {
-        echo "✅ Archivo eliminado correctamente: $archivo_a_borrar";
-        $se_borro_cod_o_codtab = false; 
+        echo "✅ Archivo eliminado correctamente: $nombre_sanitizado.php<br>";
 
+        // ✅ Verificar si la carpeta está vacía y eliminarla
+        if (is_dir($directorio) && count(scandir($directorio)) == 2) {
+            if (rmdir($directorio)) {
+                echo "✅ Carpeta eliminada correctamente: $nombre_sanitizado<br>";
+                $se_borro_cod_o_codtab = false; 
+            } else {
+                echo "⚠️ No se pudo eliminar la carpeta.";
+            }
+        }
     } else {
         echo "❌ Error al eliminar el archivo.";
     }
 } else {
     echo "⚠️ El archivo no existe en: $ruta_archivo";
 }
-
 // ✅ Continúa con la eliminación en la base de datos
 $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
 $result_tablas = $conn->query($sql_buscar_tablas);

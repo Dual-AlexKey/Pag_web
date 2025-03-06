@@ -244,23 +244,5 @@ function crearArchivo(event) {
         alert('⚠️ Por favor, ingresa un nombre válido.');
         return;
     }
-
-    // ✅ Si todo está validado, crear el archivo
-    let formData = new FormData();
-    formData.append('nombre', nombre);
-
-    fetch('conect/crear_archivo.php', { // Llama al script en websystem/conect/
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.text())
-    .then(data => {
-        console.log('✅ Archivo creado:', data); // Solo se muestra en la consola
-        document.getElementById("miFormulario").submit(); // Envía el formulario después de crear el archivo
-    })
-    .catch(error => {
-        console.error('❌ Error:', error);
-        alert('Hubo un problema al crear el archivo.');
-    });
 }
 

@@ -11,19 +11,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre'])) {
         die("Error: Nombre inválido.");
     }
 
-    // Sanitizar el nombre del archivo (reemplaza caracteres no permitidos)
-    $nombre = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre) . ".php";
+    // Sanitizar el nombre del archivo y la carpeta (permitir solo letras, números, guiones y guiones bajos)
+    $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
 
-    // Directorio donde se guardará el archivo (fuera de websystem/)
-    $directorio = __DIR__ . '/../../';  
+    // Definir la carpeta y la ruta completa del archivo
+    $directorioBase = __DIR__ . '/../../';  
+    $directorio = $directorioBase . $nombreLimpio; // Carpeta con el nombre limpio
+    $rutaArchivo = $directorio . '/' . $nombreLimpio . '.php'; // Archivo dentro de la carpeta
 
-    // Si el directorio no existe, crearlo
+    // Crear la carpeta si no existe
     if (!is_dir($directorio)) {
         mkdir($directorio, 0777, true);
     }
-
-    // Ruta completa del archivo
-    $rutaArchivo = $directorio . $nombre;
 
     // Contenido del archivo
     $contenido = "<!DOCTYPE html>
@@ -31,17 +30,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre'])) {
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>$nombre</title>
+    <title>$nombreLimpio</title>
 </head>
 <body>
-    <h1>Bienvenido a la página de $nombre</h1>
+    <h1>Bienvenido a la página de $nombreLimpio</h1>
     <p>Esta es una página creada automáticamente.</p>
 </body>
 </html>";
 
-    // Crear el archivo
+    // Crear el archivo dentro de la carpeta
     if (file_put_contents($rutaArchivo, $contenido) !== false) {
-        echo "Página creada exitosamente en <a href='../$nombre' target='_blank'>$nombre</a>";
+        echo "Página creada exitosamente en <a href='../$nombreLimpio/$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
     } else {
         echo "Error al crear el archivo.";
     }
