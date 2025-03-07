@@ -1,0 +1,82 @@
+/* Contenedor TOP */
+.Top-Container {
+    display: flex;
+    flex-direction: column; /* Asegura que cada grupo esté en su propia línea */
+    width: 100%;
+    gap: 10px; /* Espacio entre filas */
+}
+
+/* Contenedor para cada tipo de "Cuerpo Top" */
+.Cuerpo-Group {
+    display: flex;
+    flex-wrap: wrap;  /* Permite que los elementos del mismo tipo se acomoden en fila */
+    justify-content: center; /* Centra los elementos */
+    width: 100%;
+    gap: 5px; /* Espacio entre elementos dentro del grupo */
+}
+
+/* Estilos base para cada "Cuerpo Top" */
+.Cuerpo-top-1, .Cuerpo-top-2, .Cuerpo-top-3 {
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    border: 1px solid #000;
+    flex: 1 1 45%; /* Ajuste automático, máximo 2 por fila */
+    max-width: 45%;
+}
+
+/* Si hay solo uno, que ocupe todo el ancho */
+.Cuerpo-Group > :only-child {
+    flex: 1 1 100%;
+    max-width: 100%;
+}
+
+/* Colores para diferenciar */
+.Cuerpo-top-1 { background-color: #cce5ff; color: #004085; }
+.Cuerpo-top-2 { background-color: #b3d9ff; color: #003366; }
+.Cuerpo-top-3 { background-color: #99ccff; color: #002244; }
+
+/*Contenedor contenido central*/
+/* Contenedor principal */
+.Columna-Container {
+    display: flex;
+    width: 100%;
+}
+
+/* Columnas base */
+.Columna_Izquierda, .Columna_Central, .Columna_Derecha {
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+/* Izquierda y Derecha siempre ocupan 20% si están presentes */
+.Columna_Izquierda, .Columna_Derecha {
+    width: 20%;
+}
+
+/* Columna Central se ajusta automáticamente */
+.Columna_Central {
+    flex-grow: 1; /* Ocupa todo el espacio restante */
+}
+
+/* Alineaciones y colores */
+.Columna_Izquierda {
+    text-align: left;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.Columna_Central {
+    text-align: center;
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.Columna_Derecha {
+    text-align: right;
+    background-color: #cce5ff;
+    color: #004085;
+}
+
