@@ -133,7 +133,7 @@ foreach ($registros_cod as $row) {
                             <tr>
                                 <td class="colgrishome">Orden:</td>
                                 <td class="colblancocen">
-                                    <input type="text" id="Orden" name="Orden">
+                                    <input type="text" id="Orden" name="Orden"  required>
                                 </td>
                             </tr>                            
                             <!-- Otras secciones con columnas, márgenes, fechas, etc. -->

@@ -104,12 +104,12 @@ foreach ($registros_cod as $row) {
                     <tr>
                         <td class="colgrishome">Categoria:</td>
                         <td class="colblancocen">
-                            <select id="ubicacion" name="categoria" style="width: 30%;">
-                                <option value="todo">Todas</option>
-                                <option value="norm">Normal</option>
-                                <option value="dest">Destacado</option>
-                                <option value="destp">Destacado Premium</option>
-                                <option value="Super">Super Destacado</option>
+                            <select id="categoria" name="categoria" style="width: 30%;">
+                                <option value="todas">Todas</option>
+                                <option value="normal">Normal</option>
+                                <option value="destacado">Destacado</option>
+                                <option value="destacado_premium">Destacado Premium</option>
+                                <option value="super_destacado">Super Destacado</option>
                             </select>
                         </td>
                     </tr>
@@ -123,78 +123,76 @@ foreach ($registros_cod as $row) {
                     <tr>
                         <td class="colgrishome">Orden:</td>
                             <td class="colblancocen">
-                                <select id="ordenum" name="ordenum" style="width: 30%;">
-                                    <option value="cont">Los mas reciente</option>
-                                    <option value="cata">Por Fecha Recientes</option>
-                                    <option value="user">Por Titulo Alfabetico</option>
-                                    <option value="form">Por Codigo Interno</option>
-                                    <option value="form">Por Stock</option>
+                                <select id="ordennum" name="ordennum" style="width: 30%;">
+                                    <option value="reciente">Los mas reciente</option>
+                                    <option value="fecha_reciente">Por Fecha Recientes</option>
+                                    <option value="titulo_alfabetico">Por Titulo Alfabetico</option>
+                                    <option value="codigo">Por Codigo Interno</option>
+                                    <option value="stock">Por Stock</option>
                                 </select>
                             </td>
                     </tr>
                         
                     <tr>
-    <td class="colgrishome">Estilos:</td>
-    <td>
-        <ul style="display: flex; gap: 20px; align-items: center; " id="estilocheck" name="estilocheck">
-            <div style="width: 90px; ">
-                <img src="https://i.ibb.co/qLdNSmzM/estiloresumen.gif" alt="Resumen" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Resumen" > <span style="font-size: 14px;">Resumen</span>
-            </div>
-            <div style="width: 90px;">
-                <img src="https://i.ibb.co/k29qfG19/estilogaleria.gif" alt="Galeria" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Galeria" > <span>Galería</span>
-            </div>  
-            <div style="width: 90px;">
-                <img src="https://i.ibb.co/rR28NxqC/estiloslider.gif" alt="Carrusel" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Carrusel"> <span >Carrusel</span>
-            </div>
-            <div style="width: 90px;">
-                <img src="https://i.ibb.co/Xr8xz0Tp/estiloportafolio.gif" alt="Carrusel_Avanzado" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Carrusel_Avanzado"> <span style="font-size: 14px;">Carrusel Avanzado</span>
-            </div>  
-            <div style="width: 90px;">
-                <img src="https://i.ibb.co/0jsRQx1V/image.png" alt="Clasic_1" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Clasic_1"> <span>Clasic 1</span>
-            </div>  
-            <div style="width: 90px;">
-                <img src="https://i.ibb.co/nWPbjrq/estilomodelo2.gif" alt="Clasic_2" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Clasic_2"> <span>Clasic 2</span>
-            </div>
-            <div style="width: 90px;">
-                <img src="https://i.ibb.co/tytJkbV/estiloacordion.gif" alt="Acordion" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Acordion"> <span style="font-size: 14px;">Acordion</span>
-            </div>
-            <div style="width: 90px;">
-                <img src="https://i.ibb.co/pqGHmxr/estiloslider2.gif" alt="Video" style="width: 80px; height: auto;"><br>
-                <input type="radio" name="estilocheck" value="Video"> <span>Video</span>
-            </div>    
-        </div>
-    </td>
-</tr>
-
-
+                        <td class="colgrishome">Estilos:</td>
+                        <td>
+                            <ul style="display: flex; gap: 20px; align-items: center; " id="estilocheck" name="estilocheck">
+                                <div style="width: 90px; ">
+                                    <img src="https://i.ibb.co/qLdNSmzM/estiloresumen.gif" alt="Resumen" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Resumen" > <span style="font-size: 14px;">Resumen</span>
+                                </div>
+                                <div style="width: 90px;">
+                                    <img src="https://i.ibb.co/k29qfG19/estilogaleria.gif" alt="Galeria" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Galeria" > <span>Galería</span>
+                                </div>  
+                                <div style="width: 90px;">
+                                    <img src="https://i.ibb.co/rR28NxqC/estiloslider.gif" alt="Carrusel" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Carrusel"> <span >Carrusel</span>
+                                </div>
+                                <div style="width: 90px;">
+                                    <img src="https://i.ibb.co/Xr8xz0Tp/estiloportafolio.gif" alt="Carrusel_Avanzado" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Carrusel_Avanzado"> <span style="font-size: 14px;">Carrusel Avanzado</span>
+                                </div>  
+                                <div style="width: 90px;">
+                                    <img src="https://i.ibb.co/0jsRQx1V/image.png" alt="Clasic_1" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Clasic_1"> <span>Clasic 1</span>
+                                </div>  
+                                <div style="width: 90px;">
+                                    <img src="https://i.ibb.co/nWPbjrq/estilomodelo2.gif" alt="Clasic_2" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Clasic_2"> <span>Clasic 2</span>
+                                </div>
+                                <div style="width: 90px;">
+                                    <img src="https://i.ibb.co/tytJkbV/estiloacordion.gif" alt="Acordion" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Acordion"> <span style="font-size: 14px;">Acordion</span>
+                                </div>
+                                <div style="width: 90px;">
+                                    <img src="https://i.ibb.co/pqGHmxr/estiloslider2.gif" alt="Video" style="width: 80px; height: auto;"><br>
+                                    <input type="radio" name="estilocheck" value="Video"> <span>Video</span>
+                                </div>    
+                            </div>
+                        </td>
+                    </tr>
                     <tr>
                         <td class="colgrishome">Mostrar:</td>
                         <td class="colblancocen">
                             <table class="sin-borde">
                                 <tr>
                                     <td>
-                                        <label><input type="checkbox" name="margen[]" value="img"> Imagen</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="tit"> Titulo</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="sut"> Sub Titulo</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="res"> Resumen</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="fep"> Fecha Publicacion</label>
+                                        <label><input type="checkbox" name="mostrar[]" value="img"> Imagen</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="tit"> Titulo</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="sut"> Sub Titulo</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="res"> Resumen</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="fep"> Fecha Publicacion</label>
                                     </td>
                                     <td>
-                                        <label><input type="checkbox" name="margen[]" value="tid"> Tiempo /Duracion</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="nrd"> Nro Dormitorios</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="arc"> Area Construida</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="art"> Area Terreno</label><br>
-                                        <label><input type="checkbox" name="margen[]" value="pre"> Precio</label>
+                                        <label><input type="checkbox" name="mostrar[]" value="tid"> Tiempo /Duracion</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="nrd"> Nro Dormitorios</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="arc"> Area Construida</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="art"> Area Terreno</label><br>
+                                        <label><input type="checkbox" name="mostrar[]" value="pre"> Precio</label>
                                     </td>
                                     <td>
-                                        <label><input type="checkbox" name="margen[]" value="lee"> Leer más</label>
+                                        <label><input type="checkbox" name="mostrar[]" value="lee"> Leer más</label>
                                     </td>
                                 </tr>
                             </table>

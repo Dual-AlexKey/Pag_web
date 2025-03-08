@@ -1,0 +1,109 @@
+/* Estilo de la cabecera */
+.rectangulo-cabecera {
+    width: 100%;
+    height: 160px;
+    background-color: #fc3232;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed; /* Fija el header en la parte superior */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Asegura que esté encima de otros elementos */
+}
+
+/* Agregar un margen superior al contenido para evitar que el header lo cubra */
+body {
+    margin: 0;
+    padding-top: 160px; /* Debe ser igual a la altura del header */
+}
+
+
+
+
+
+/* Contenedor TOP */
+.Top-Container {
+    display: flex;
+    flex-direction: column; /* Asegura que cada grupo esté en su propia línea */
+    width: 100%;
+}
+
+/* Contenedor para cada tipo de "Cuerpo Top" */
+.Cuerpo-Group {
+    display: flex;
+    flex-wrap: wrap;  /* Permite que los elementos del mismo tipo se acomoden en fila */
+    justify-content: center; /* Centra los elementos */
+    width: 100%;
+}
+
+/* Estilos base para cada "Cuerpo Top" */
+.Cuerpo-top-1, .Cuerpo-top-2, .Cuerpo-top-3 {
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    border: 1px solid #000;
+    flex: 1 1 30%; /* Ajuste automático, máximo 2 por fila */
+    max-width: 100%;
+}
+
+/* Si hay solo uno, que ocupe todo el ancho */
+.Cuerpo-Group > :only-child {
+    max-width: 100%;
+}
+
+/* Colores para diferenciar */
+.Cuerpo-top-1 { background-color: #cce5ff; color: #004085; }
+.Cuerpo-top-2 { background-color: #b3d9ff; color: #003366; }
+.Cuerpo-top-3 { background-color: #99ccff; color: #002244; }
+
+/*Contenedor contenido central*/
+/* Contenedor principal */
+.Columna-Container {
+    display: flex;
+    width: 100%;
+}
+
+/* Columnas base */
+.Columna_Izquierda, .Columna_Central, .Columna_Derecha {
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    border: 1px solid #000;
+}
+
+/* Izquierda y Derecha siempre ocupan 20% si están presentes */
+.Columna_Derecha {
+    width: 20%;
+}
+.Columna_Izquierda{
+    width: 15%;
+}
+
+/* Columna Central se ajusta automáticamente */
+.Columna_Central {
+    flex-grow: 1; /* Ocupa todo el espacio restante */
+}
+
+/* Alineaciones y colores */
+.Columna_Izquierda {
+    text-align: left;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.Columna_Central {
+    text-align: center;
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.Columna_Derecha {
+    text-align: right;
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+
+
+

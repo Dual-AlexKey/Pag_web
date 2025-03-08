@@ -66,6 +66,7 @@ foreach ($menu_tables as $menu) {
             <input type="hidden" name="cod" value="<?php echo htmlspecialchars($fila['cod']); ?>">
             <input type="hidden" name="tabla" value="<?php echo htmlspecialchars($fila['tabla']); ?>">
             <input type="hidden" name="codtab" value="<?php echo htmlspecialchars($fila['codtab']); ?>">
+            <input type="hidden" name="nameold" value="<?php echo htmlspecialchars($fila['nombre']); ?>">
             <input type="hidden" name="formulario_tipo" value="Editseccion">  
             <table class="tableborderfull">
                 <tr>
