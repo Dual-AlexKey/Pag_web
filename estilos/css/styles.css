@@ -1,40 +1,128 @@
+/* Estilo de la cabecera */
+.rectangulo-cabecera {
+    width: 100%;
+    min-height: 100px; /* Altura mínima */
+    height: auto; /* Permite expansión automática */
+    background-color: #fc3232;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* 📌 Distribuye los elementos de forma equitativa */
+.tabla-Group {
+    display: flex;
+    justify-content: space-between; /* Distribuye los elementos */
+    align-items: center;
+    width: 100%;
+    padding: 0 20px;
+}
+
+/* 📌 Cada contenedor ocupa un espacio fijo */
+.elemento-header {
+    display: flex;
+    flex-direction: column; /* 📌 Asegura que las imágenes dentro se apilen */
+    align-items: center;
+    justify-content: center;
+    flex: 1; /* 📌 Cada bloque ocupa el mismo espacio */
+    max-width: 100%; /* 📌 Evita que se expanda demasiado */
+    text-align: center;
+    padding: 5px;
+    border: 1px solid transparent; /* Solo para depuración (puedes eliminarlo) */
+}
+
+/* 📌 Imágenes dentro del header */
+.elemento-header img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    max-height: 80px; /* Ajusta el tamaño máximo */
+}
+
+/* Agregar un margen superior al contenido para evitar que el header lo cubra */
+body {
+    margin: 0;
+}
+
+.menu-inferior {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap; /* 📌 Hace que los enlaces se acomoden si hay muchos */
+    justify-content: center;
+    position: relative; /* 📌 Se coloca debajo del header */
+    margin-top: auto; /* 📌 Se asegura de estar siempre al final del header */
+    padding: 10px 0;
+    background-color: #fc3232;
+}
+
+/* 📌 Estilos de los enlaces del menú */
+.menu-inferior a {
+    background-color: white;
+    color: black;
+    padding: 8px 12px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.menu-inferior a:hover {
+    background-color: black;
+    color: white;
+}
+
+
 /* Contenedor TOP */
-.Top-Container {
+.Top-Container .Buttom-Container{
     display: flex;
     flex-direction: column; /* Asegura que cada grupo esté en su propia línea */
     width: 100%;
-    gap: 10px; /* Espacio entre filas */
 }
 
 /* Contenedor para cada tipo de "Cuerpo Top" */
-.Cuerpo-Group {
+.Cuerpo-Group{
     display: flex;
     flex-wrap: wrap;  /* Permite que los elementos del mismo tipo se acomoden en fila */
     justify-content: center; /* Centra los elementos */
     width: 100%;
-    gap: 5px; /* Espacio entre elementos dentro del grupo */
+}
+.Buttom-Group{
+    display: flex;
+    flex-wrap: wrap;  /* Permite que los elementos del mismo tipo se acomoden en fila */
+    justify-content: center; /* Centra los elementos */
+    width: 100%;
 }
 
 /* Estilos base para cada "Cuerpo Top" */
-.Cuerpo-top-1, .Cuerpo-top-2, .Cuerpo-top-3 {
+.Cuerpo-top-1, .Cuerpo-top-2, .Cuerpo-top-3,
+.Cuerpo-buttom-1, .Cuerpo-buttom-2, .Cuerpo-buttom-3 {
     text-align: center;
     padding: 10px;
     font-weight: bold;
-    border: 1px solid #000;
-    flex: 1 1 45%; /* Ajuste automático, máximo 2 por fila */
-    max-width: 45%;
+    flex: 1 1 30%; /* Ajuste automático, máximo 2 por fila */
+    max-width: 100%;
 }
 
 /* Si hay solo uno, que ocupe todo el ancho */
 .Cuerpo-Group > :only-child {
-    flex: 1 1 100%;
     max-width: 100%;
 }
 
-/* Colores para diferenciar */
+/* Colores para diferenciar (Top) */
 .Cuerpo-top-1 { background-color: #cce5ff; color: #004085; }
 .Cuerpo-top-2 { background-color: #b3d9ff; color: #003366; }
 .Cuerpo-top-3 { background-color: #99ccff; color: #002244; }
+
+/* Colores para diferenciar (Bottom) */
+.Cuerpo-buttom-1 { background-color: #ffd9cc; color: #850000; }
+.Cuerpo-buttom-2 { background-color: #ffb3b3; color: #660000; }
+.Cuerpo-buttom-3 { background-color: #ff9999; color: #440000; }
 
 /*Contenedor contenido central*/
 /* Contenedor principal */
@@ -48,12 +136,14 @@
     text-align: center;
     padding: 10px;
     font-weight: bold;
-    border: 1px solid #000;
 }
 
 /* Izquierda y Derecha siempre ocupan 20% si están presentes */
-.Columna_Izquierda, .Columna_Derecha {
+.Columna_Derecha {
     width: 20%;
+}
+.Columna_Izquierda{
+    width: 15%;
 }
 
 /* Columna Central se ajusta automáticamente */
@@ -79,4 +169,15 @@
     background-color: #cce5ff;
     color: #004085;
 }
+
+.footer {
+    background-color: #fc3232;
+    color: white;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 14px;
+}
+
+
+
 

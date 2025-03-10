@@ -26,7 +26,11 @@ include('estilo/tabla_menu.php');
                 <td class="colgrishome">Nombre: <input type="text" name="nombre" required></td>
                 <td class="colgrishome">Ubicación: 
                     <select name="ubicacion" required>
-                        <option value="cabecera">Cabecera menú</option>
+                        <option value="cabeceraT">Cabecera Top</option>
+                        <option value="cabeceraL">Cabecera Logo</option>
+                        <option value="cabeceraM">Cabecera Menu</option>
+                        <option value="columnaI">Columna Izquierda</option>
+                        <option value="columnaD">Columna Derecha</option>
                         <option value="pie">Pie de página</option>
                     </select>
                 </td>

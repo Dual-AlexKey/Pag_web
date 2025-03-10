@@ -222,6 +222,13 @@ function crearArchivo(event) {
         }
     });
 
+    // ✅ Validación de "Nombre"
+    let nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) {
+        alert('⚠️ Por favor, ingresa un nombre válido.');
+        return;
+    }
+
     // ✅ Mensajes de error combinados
     if (!menuSeleccionado && !estilosSeleccionados) {
         alert("⚠️ Falta seleccionar información: Estilos y 'Publicar en Menú'.");
@@ -238,11 +245,8 @@ function crearArchivo(event) {
         return;
     }
 
-    // ✅ Validación de "Nombre"
-    let nombre = document.getElementById('nombre').value.trim();
-    if (!nombre) {
-        alert('⚠️ Por favor, ingresa un nombre válido.');
-        return;
-    }
+    // ✅ TODO ESTÁ VALIDADO, AHORA ENVIAMOS EL FORMULARIO
+    document.getElementById("miFormulario").submit(); // Asegúrate de que tu formulario tenga este ID
 }
+
 
