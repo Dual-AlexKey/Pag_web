@@ -52,6 +52,9 @@ foreach ($registros_cod as $row) {
         $codtab_guardados[] = $codtab;
     }
 }
+
+$directorio = "../img/"; // ✅ Directorio correcto basado en la estructura del proyecto
+$archivos = is_dir($directorio) ? scandir($directorio) : [];
 ?>
 
 <!-- Contenedor principal con las dos columnas -->
@@ -74,8 +77,8 @@ foreach ($registros_cod as $row) {
                     <tr>
                         <td class="colgrishome">Imagen:</td>
                         <td class="colblancocen">
-                        <input type="text" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;">
-                        <input type="file" id="imagen" name="imagen" accept="image/*" style="width: 40%;">
+                            <input type="text" id="imagen_link" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;">
+                            <button type="button" class="boton-explorador" onclick="mostrarExplorador()">📂</button>
                         </td>
                     </tr>
                     <tr>
@@ -203,6 +206,40 @@ foreach ($registros_cod as $row) {
     </div>
 </div>
 
+<!-- 🔹 MODAL DEL EXPLORADOR DE IMÁGENES -->
+<div id="modal-explorador" class="modal">
+    <div class="modal-contenido">
+        <span class="cerrar" onclick="cerrarExplorador()">&times;</span>
+        <h3>Explorador de Imágenes</h3>
+
+        <!-- 🔹 FORMULARIO DE SUBIDA DE IMÁGENES -->
+        <form id="form-subida" enctype="multipart/form-data">
+            <input type="file" id="imagen" name="imagen" accept="image/*">
+            <button type="button" class="boton-subir" onclick="subirImagen()">Subir Imagen</button>
+            <button type="button" class="boton-eliminar" onclick="activarEliminar()">Eliminar</button>
+        </form>
+        <!-- 🔹 LISTADO DE IMÁGENES QUE SE ACTUALIZARÁ AUTOMÁTICAMENTE -->
+        <div class="explorador" id="lista-imagenes">
+            <?php
+            $directorio = "../img/";
+            $archivos = is_dir($directorio) ? scandir($directorio) : [];
+            if (!empty($archivos)) {
+                foreach ($archivos as $archivo) {
+                    if ($archivo != "." && $archivo != "..") {
+                        $ruta = $directorio . $archivo;
+                        echo "<div class='item' onclick='seleccionar(\"$ruta\")'>";
+                        echo "<span class='eliminar-x' onclick='eliminarImagen(\"$archivo\", event)'>&times;</span>"; // ✅ Agregar botón de eliminar
+                        echo "<img src='$ruta' alt='$archivo' class='preview'>";
+                        echo "</div>";
+                    }
+                }
+            } else {
+                echo "<p>No se encontraron imágenes.</p>";
+            }
+            ?>
+        </div>
+    </div>
+</div>  
 <?php
 // Incluir el footer.php
 include('estilo/footer.php');

@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const botonesConSubMenu = document.querySelectorAll(".boton.submenu");
+    console.log("JavaScript cargado correctamente.");
+
+    
 
     botonesConSubMenu.forEach(function (boton) {
         boton.addEventListener("click", function () {
@@ -103,7 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
         
-    
 
 });
 function guardarFormulario() {
@@ -249,4 +251,190 @@ function crearArchivo(event) {
     document.getElementById("miFormulario").submit(); // Asegúrate de que tu formulario tenga este ID
 }
 
+// 🔹 ACTUALIZAR EXPLORADOR DE IMÁGENES
+function actualizarExplorador(url) {
+    let listaImagenes = document.querySelector("#lista-imagenes");
+    let botonEliminar = document.querySelector(".boton-eliminar");
 
+    if (!listaImagenes) return;
+
+    let modoEliminarActivo = listaImagenes.classList.contains("eliminar-activo");
+
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, "text/html");
+            let nuevaLista = doc.querySelector("#lista-imagenes").innerHTML;
+            listaImagenes.innerHTML = nuevaLista;
+
+            if (modoEliminarActivo) {
+                setTimeout(() => {
+                    listaImagenes.classList.add("eliminar-activo");
+                    botonEliminar?.classList.add("activo");
+                }, 100);
+            }
+        })
+        .catch(error => console.error("Error al actualizar explorador:", error));
+}
+
+// 🔹 ABRIR Y CERRAR EL MODAL
+function mostrarExplorador() {
+    document.getElementById("modal-explorador").style.display = "block";
+}
+
+function cerrarExplorador() {
+    document.getElementById("modal-explorador").style.display = "none";
+}
+
+// 🔹 SELECCIONAR IMAGEN
+function seleccionar(ruta) {
+    document.getElementById("imagen_link").value = ruta;
+    cerrarExplorador();
+}
+
+
+// 🔹 ACTIVAR/DESACTIVAR MODO ELIMINACIÓN
+function activarEliminar() {
+    let listaImagenes = document.querySelector("#lista-imagenes");
+    let botonEliminar = document.querySelector(".boton-eliminar");
+
+    if (!listaImagenes || !botonEliminar) return;
+
+    let modoEliminarActivo = listaImagenes.classList.contains("eliminar-activo");
+
+    if (modoEliminarActivo) {
+        // 🔹 Desactivar modo eliminación y quitar todas las "X"
+        listaImagenes.classList.remove("eliminar-activo");
+        botonEliminar.classList.remove("activo");
+
+        let botonesX = document.querySelectorAll(".eliminar-x");
+        botonesX.forEach(boton => boton.remove());
+
+    } else {
+        // 🔹 Activar modo eliminación y agregar "X" a todas las imágenes
+        listaImagenes.classList.add("eliminar-activo");
+        botonEliminar.classList.add("activo");
+
+        let items = document.querySelectorAll(".item");
+        items.forEach(item => {
+            if (!item.querySelector(".eliminar-x")) {
+                let nombreImagen = item.querySelector("img").alt;
+                let botonX = document.createElement("span");
+                botonX.classList.add("eliminar-x");
+                botonX.innerHTML = "&times;";
+                botonX.onclick = function(event) {
+                    eliminarImagen(nombreImagen, event, "new_itemimg.php");
+                };
+                item.appendChild(botonX);
+            }
+        });
+    }
+}
+
+
+// 🔹 ELIMINAR UNA IMAGEN Y ACTUALIZAR SIN RECARGAR
+function eliminarImagen(nombreImagen, event, url) {
+    event.stopPropagation();
+
+    if (!confirm("¿Seguro que quieres eliminar esta imagen?")) return;
+
+    fetch("../websystem/img/eliminar_imagen.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "nombre=" + encodeURIComponent(nombreImagen)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Respuesta del servidor:", data);
+        if (data.status === "success") {
+            alert("Imagen eliminada correctamente");
+
+            // ✅ ELIMINAR LA IMAGEN DEL DOM SIN RECARGAR
+            let listaImagenes = document.querySelector("#lista-imagenes");
+            let imagenes = listaImagenes.querySelectorAll(".item");
+
+            imagenes.forEach(img => {
+                if (img.innerHTML.includes(nombreImagen)) {
+                    img.remove(); // ✅ Remover la imagen eliminada del DOM
+                }
+            });
+
+            // ✅ Después de borrar, actualizar el explorador
+            setTimeout(() => {
+                actualizarExplorador(url);
+            }, 200);
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error al eliminar imagen:", error);
+        alert("Ocurrió un error al eliminar la imagen.");
+    });
+}
+
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+function subirImagen(url) {
+    let formSubida = document.querySelector("#form-subida");
+    let inputImagen = document.querySelector("#imagen");
+
+    if (!formSubida || !inputImagen) {
+        console.error("Error: No se encontró el formulario o el input de imagen.");
+        return;
+    }
+
+    let formData = new FormData(formSubida);
+    let archivo = formData.get("imagen");
+
+    if (!archivo || archivo.size === 0) {
+        alert("Por favor, selecciona una imagen.");
+        return;
+    }
+
+    fetch("../websystem/img/subir_imagen.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Respuesta del servidor:", data);
+
+        if (data.status === "success") {
+            alert("Imagen subida correctamente");
+
+            let listaImagenes = document.querySelector("#lista-imagenes");
+            let botonEliminar = document.querySelector(".boton-eliminar");
+            let modoEliminarActivo = listaImagenes.classList.contains("eliminar-activo");
+
+            let nuevoItem = document.createElement("div");
+            nuevoItem.classList.add("item");
+
+            // ✅ Agregar imagen
+            let nuevaImg = document.createElement("img");
+            nuevaImg.src = data.ruta;
+            nuevaImg.alt = data.nombre;
+            nuevaImg.classList.add("preview");
+            nuevoItem.appendChild(nuevaImg);
+
+            // ✅ Si "Eliminar" estaba activado, la imagen nueva también tiene "X"
+            if (modoEliminarActivo) {
+                let botonX = document.createElement("span");
+                botonX.classList.add("eliminar-x");
+                botonX.innerHTML = "&times;";
+                botonX.onclick = function(event) {
+                    eliminarImagen(data.nombre, event, url);
+                };
+                nuevoItem.appendChild(botonX);
+            }
+
+            listaImagenes.appendChild(nuevoItem);
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error al subir imagen:", error);
+        alert("Ocurrió un error al subir la imagen.");
+    });
+}

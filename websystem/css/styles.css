@@ -381,3 +381,151 @@ table th, table td {
 table input[type="checkbox"] {
     margin: 0;
 }
+
+/* 🔹 MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-contenido {
+    background-color: white;
+    margin: 10% auto;
+    padding: 20px;
+    width: 60%;
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+}
+
+.cerrar {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+/* 🔹 SCROLL EN EL EXPLORADOR */
+/* 🔹 Contenedor del explorador de imágenes */
+.explorador {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px;
+    max-height: 300px; /* 🔹 ALTURA FIJA PARA SCROLL */
+    overflow-y: auto; /* 🔹 SCROLL VERTICAL */
+    overflow-x: hidden; /* 🔹 OCULTAR SCROLL HORIZONTAL */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* 🔹 ESTILO DE LOS ÍTEMS */
+.item {
+    display: inline-block;
+    margin: 10px;
+    text-align: center;
+    cursor: pointer;
+    padding: 5px;
+    transition: 0.3s;
+}
+
+.item img.preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+.item:hover {
+    transform: scale(1.1);
+}
+
+/* 🔹 OCULTAR EL TEXTO */
+.item p {
+    display: none; /* 🔹 Elimina el texto debajo de la imagen */
+}
+
+#form-subida {
+    margin-bottom: 15px; /* 🔹 Agrega espacio entre los botones y el explorador */
+}
+/* 🔹 ESTILO DE BOTONES */
+.boton-subir, .boton-eliminar {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* 🔹 BOTÓN "SUBIR IMAGEN" */
+.boton-subir {
+    background-color: #28a745; /* Verde */
+    color: white;
+}
+
+.boton-subir:hover {
+    background-color: #218838;
+}
+/* 🔹 BOTÓN "ELIMINAR" */
+.boton-eliminar {
+    background-color: #dc3545; /* Rojo */
+    color: white;
+    margin-left: 10px; /* 🔹 Espacio entre los botones */
+}
+
+.boton-eliminar.activo {
+    background-color: #6c757d; /* 🔹 Gris */
+    color: white;
+}
+
+/* 🔹 BOTÓN "X" PARA ELIMINAR IMÁGENES */
+.eliminar-x {
+    display: none; /* 🔹 Se oculta por defecto */
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: red;
+    color: white;
+    font-size: 16px;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* 🔹 Muestra la "X" cuando el modo de eliminación está activo */
+.eliminar-activo .eliminar-x {
+    display: block;
+}
+
+
+/* 🔹 Asegurar que las imágenes tengan una posición relativa */
+.item {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+    text-align: center;
+    cursor: pointer;
+    padding: 5px;
+    transition: 0.3s;
+}
+
+.item img.preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 5px;
+    object-fit: cover;
+}
