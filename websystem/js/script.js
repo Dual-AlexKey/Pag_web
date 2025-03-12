@@ -434,4 +434,34 @@ function subirImagen() {
         alert("Ocurrió un error al subir la imagen.");
     });
 }
+// 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN `imagen_link`
+function seleccionar(ruta) {
+    let inputTexto = document.querySelector("#imagen_link");
+
+    if (!inputTexto) {
+        console.error("Error: No se encontró el campo de texto `imagen_link`.");
+        return;
+    }
+
+    console.log("Ruta recibida:", ruta); // ✅ Verificar qué ruta llega
+
+    // ✅ Convertimos "../img/" en "img/"
+    if (ruta.startsWith("../img/")) {
+        ruta = ruta.replace("../img/", "img/");
+        console.log("Ruta modificada:", ruta); // ✅ Verificar que la ruta se ajustó correctamente
+    }
+
+    // ✅ Guardamos la ruta ajustada en el campo de texto
+    inputTexto.value = ruta;
+
+    // ✅ Cerrar el explorador de imágenes después de seleccionar
+    cerrarExplorador();
+}
+// 🔹 FUNCIÓN PARA CERRAR EL EXPLORADOR DE IMÁGENES
+function cerrarExplorador() {
+    let modal = document.querySelector("#modal-explorador");
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
 

@@ -1,6 +1,5 @@
 <?php
 include 'conexion.php';          // 🔹 Se encuentra en la misma carpeta que `guardar.php`
-include '../img/subir_imagen.php'; // 🔹 `subir_imagen.php` está fuera de `/conect` en `/subir/`
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tipoFormulario = $_POST['formulario_tipo'] ?? null;
@@ -69,26 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
      // 📌 Manejo de imagen o enlace de imagen
-     $imagen_link = $_POST['imagen_link'] ?? null;
-     $rutaImagen = null;
- 
-     if (!empty($imagen_link)) {
-         // 🔹 Si se ingresó un enlace, se guarda el link
-         $rutaImagen = $imagen_link;
-     } else {
-         // 🔹 Si no hay link, intenta subir una imagen local
-         $rutaImagen = subirImagen($_FILES['imagen'] ?? null);
-         if ($rutaImagen) {
-             $rutaImagen = str_replace("C:/xampp/htdocs/hub/", "", $rutaImagen);
-         }
-     }
+     $imagen_link = $_POST['imagen_link'] ?? null; // ✅ Solo usamos `imagen_link`
+     
 
     // 📌 Guardado según el tipo de formulario
     if ($tipoFormulario == "Imagen") {
         $link = $_POST['link'] ?? null;
 
         $sql = "INSERT INTO tablero (formu, nombre, link, imagen, tabla, ubicacion, orden, columnas, columnas_moviles, estilo, margen, fecha_inicio, fecha_final)
-                VALUES ('$formu', '$nombre', '$link', '$rutaImagen', '$tabla', '$ubicacion', '$orden', '$columnas', '$columnas_moviles', '$estilo', '$margen', '$fecha_inicio', '$fecha_final')";
+                VALUES ('$formu', '$nombre', '$link', '$imagen_link', '$tabla', '$ubicacion', '$orden', '$columnas', '$columnas_moviles', '$estilo', '$margen', '$fecha_inicio', '$fecha_final')";
     } 
     
     elseif ($tipoFormulario == "HTML") {
