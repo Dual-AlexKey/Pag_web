@@ -348,7 +348,6 @@ function eliminarImagen(nombreImagen, event, url) {
     .then(data => {
         console.log("Respuesta del servidor:", data);
         if (data.status === "success") {
-            alert("Imagen eliminada correctamente");
 
             // ✅ ELIMINAR LA IMAGEN DEL DOM SIN RECARGAR
             let listaImagenes = document.querySelector("#lista-imagenes");
@@ -375,22 +374,27 @@ function eliminarImagen(nombreImagen, event, url) {
 }
 
 // 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
-function subirImagen(url) {
-    let formSubida = document.querySelector("#form-subida");
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+function subirImagen() {
     let inputImagen = document.querySelector("#imagen");
+    let inputTexto = document.querySelector("#imagen_link"); // ✅ Donde guardamos la ruta
 
-    if (!formSubida || !inputImagen) {
-        console.error("Error: No se encontró el formulario o el input de imagen.");
+    if (!inputImagen || !inputTexto) {
+        console.error("Error: No se encontró el input de imagen o el campo de texto.");
         return;
     }
 
-    let formData = new FormData(formSubida);
-    let archivo = formData.get("imagen");
+    let archivo = inputImagen.files[0];
 
-    if (!archivo || archivo.size === 0) {
+    if (!archivo) {
         alert("Por favor, selecciona una imagen.");
         return;
     }
+
+    let formData = new FormData();
+    formData.append("imagen", archivo); // ✅ Adjuntar correctamente el archivo
 
     fetch("../websystem/img/subir_imagen.php", {
         method: "POST",
@@ -403,30 +407,22 @@ function subirImagen(url) {
         if (data.status === "success") {
             alert("Imagen subida correctamente");
 
-            let listaImagenes = document.querySelector("#lista-imagenes");
-            let botonEliminar = document.querySelector(".boton-eliminar");
-            let modoEliminarActivo = listaImagenes.classList.contains("eliminar-activo");
+            // ✅ Guardar la URL de la imagen en el campo de texto
+            inputTexto.value = data.ruta;
 
+            // ✅ Agregar la imagen al explorador sin recargar
+            let listaImagenes = document.querySelector("#lista-imagenes");
             let nuevoItem = document.createElement("div");
             nuevoItem.classList.add("item");
 
-            // ✅ Agregar imagen
             let nuevaImg = document.createElement("img");
             nuevaImg.src = data.ruta;
             nuevaImg.alt = data.nombre;
             nuevaImg.classList.add("preview");
+            nuevaImg.onclick = function () {
+                seleccionar(data.ruta);
+            };
             nuevoItem.appendChild(nuevaImg);
-
-            // ✅ Si "Eliminar" estaba activado, la imagen nueva también tiene "X"
-            if (modoEliminarActivo) {
-                let botonX = document.createElement("span");
-                botonX.classList.add("eliminar-x");
-                botonX.innerHTML = "&times;";
-                botonX.onclick = function(event) {
-                    eliminarImagen(data.nombre, event, url);
-                };
-                nuevoItem.appendChild(botonX);
-            }
 
             listaImagenes.appendChild(nuevoItem);
         } else {
@@ -438,3 +434,4 @@ function subirImagen(url) {
         alert("Ocurrió un error al subir la imagen.");
     });
 }
+

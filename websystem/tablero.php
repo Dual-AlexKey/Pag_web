@@ -66,7 +66,7 @@ while ($row = $result->fetch_array()) {
                 $id = urlencode($row["id"]); // Capturar el código
             
                 $botones = [
-                    ["pagina" => "editccion.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
+                    ["pagina" => "new_tabimg.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
                     ["pagina" => "new_img.php", "imagen" => "https://i.ibb.co/S7Gq2mpG/ws-fotos.png"],
                     ["pagina" => "conect/eliminar_elemento.php", "imagen" => "https://i.ibb.co/LdTnB39W/wp-borrar.png"]
                 ];
