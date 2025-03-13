@@ -66,18 +66,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         $tabla = implode(',', $tablaNombres);
     }
-
      // 📌 Manejo de imagen o enlace de imagen
      $imagen_link = $_POST['imagen_link'] ?? null; // ✅ Solo usamos `imagen_link`
      
+        // 📌 Convertir `cod` seleccionados a `nombre` antes de guardar en `tabla`
+        $tabla = null;
+        if (!empty($_POST['seleccionados'])) {
+            $tablaNombres = [];
+            foreach ($_POST['seleccionados'] as $cod) {
+                if (isset($datos_unicos[$cod])) {
+                    $tablaNombres[] = $datos_unicos[$cod]['nombre'];
+                }
+            }
+            $tabla = implode(',', $tablaNombres);
+        }
+        $id = isset($_POST['id']) && is_numeric($_POST['id']) ? intval($_POST['id']) : 0;
 
+        $existe = false;
+        if ($id > 0) {
+            $query_check = "SELECT COUNT(*) as total FROM tablero WHERE id = $id";
+            $resultado_check = $conn->query($query_check);
+            $fila_check = $resultado_check->fetch_assoc();
+            $existe = $fila_check['total'] > 0;
+        }
+    
     // 📌 Guardado según el tipo de formulario
     if ($tipoFormulario == "Imagen") {
         $link = $_POST['link'] ?? null;
-
-        $sql = "INSERT INTO tablero (formu, nombre, link, imagen, tabla, ubicacion, orden, columnas, columnas_moviles, estilo, margen, fecha_inicio, fecha_final)
-                VALUES ('$formu', '$nombre', '$link', '$imagen_link', '$tabla', '$ubicacion', '$orden', '$columnas', '$columnas_moviles', '$estilo', '$margen', '$fecha_inicio', '$fecha_final')";
-    } 
+        if ($existe) {
+            // 🔹 PASO 2: Si el `id` existe, actualizar el registro
+            $sql = "UPDATE tablero SET 
+                        nombre = '$nombre', link = '$link', imagen = '$imagen_link', 
+                        tabla = '$tabla', ubicacion = '$ubicacion', orden = '$orden', 
+                        columnas = '$columnas', columnas_moviles = '$columnas_moviles', 
+                        estilo = '$estilo', margen = '$margen', 
+                        fecha_inicio = '$fecha_inicio', fecha_final = '$fecha_final'
+                    WHERE id = $codigo";
+        } else {
+            // 🔹 PASO 3: Si el `id` NO existe, insertar un nuevo registro
+            $sql = "INSERT INTO tablero (formu, nombre, link, imagen, tabla, ubicacion, orden, columnas, columnas_moviles, estilo, margen, fecha_inicio, fecha_final)
+                    VALUES ('$tipoFormulario', '$nombre', '$link', '$imagen_link', '$tabla', '$ubicacion', '$orden', '$columnas', '$columnas_moviles', '$estilo', '$margen', '$fecha_inicio', '$fecha_final')";
+        }
+    }
     
     elseif ($tipoFormulario == "HTML") {
 

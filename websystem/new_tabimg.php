@@ -59,6 +59,7 @@ $datos = [
     'nombre' => '',
     'imagen_link' => '',
     'link' => '',
+    'tabla' => '',
     'ubicacion' => '',
     'Orden' => '',
     'columnas' => '',
@@ -77,11 +78,16 @@ if ($id > 0) {
     $datos = $resultado->fetch_assoc() ?? $datos;
 }
 
+$tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
+
+
 $directorio = "../img/"; // ✅ Directorio correcto basado en la estructura del proyecto
 $archivos = is_dir($directorio) ? scandir($directorio) : [];
 ?>
 
 <!-- Contenedor principal con las dos columnas -->
+<input type="hidden" name="id" value="<?= isset($datos['id']) ? htmlspecialchars($datos['id']) : '' ?>">
+
 <div class="contenido-derecha">
     <a href="tablero.php"><button class="boton-cerrar">X</button></a>
     <div class="bloque-verde"><h2>Imagen</h2></div>
@@ -123,26 +129,40 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
             <table class="tableborderfull">
                 <tr>
                     <td>
-                        <div class="contenedor-button">
-                            <div class="acciones-botones">
-                                <button type="button" class="accion-boton">+</button>
-                                <button type="button" class="accion-boton">-</button>
-                                <button type="button" class="accion-boton">::</button>
-                            </div>
-                        <div class="columna-tabla">
-                            <table class="tableborderfull">
-                                <?php
-                                // Mostrar solo el campo 'nombre' y el checkbox
-                                foreach ($registros_finales as $dato) {
-                                    echo "<tr>";
-                                    echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($dato['cod']) . "'></td>";
-                                    echo "<td>" . htmlspecialchars($dato['nombre']) . "</td>";  // Mostrar solo el campo 'nombre'
-                                    echo "</tr>";
-                                }
-                                ?>
-                            </table>
-                        </div>
-                    </td>
+    <div class="contenedor-button">
+        <div class="acciones-botones">
+            <button type="button" class="accion-boton">+</button>
+            <button type="button" class="accion-boton">-</button>
+            <button type="button" class="accion-boton">::</button>
+        </div>
+        <div class="columna-tabla">
+            <table class="tableborderfull">
+                <?php
+                // 🔹 Obtener el valor de `tabla` desde `tablero`
+                $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
+
+                // 🔹 Convertir `tabla` en un array si tiene múltiples valores
+                $tabla_valores = array_map('trim', explode(',', $tabla_valor)); // 🔥 Divide y elimina espacios extra
+
+                // 🔹 Recorrer los registros de `menu_*` y marcar los checkboxes si `nombre` está en la lista de `tabla`
+                foreach ($registros_finales as $datoM) {
+                    $cod_actual = trim($datoM['cod']);  // ✅ Guardar por `cod`
+                    $nombre_actual = trim($datoM['nombre']); // ✅ Marcar por `nombre`
+
+                    // 🔹 Comparar si `nombre_actual` está en la lista de `tabla_valores`
+                    $checked = in_array($nombre_actual, $tabla_valores) ? 'checked' : '';
+
+                    echo "<tr>";
+                    echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($cod_actual) . "' $checked></td>";
+                    echo "<td>" . htmlspecialchars($nombre_actual) . "</td>";  // Mostrar solo el campo 'nombre'
+                    echo "</tr>";
+                }
+                ?>
+            </table>
+        </div>
+    </div>
+</td>
+
                     <td>
                     <table class="tableborderfull">
                             <tr>
