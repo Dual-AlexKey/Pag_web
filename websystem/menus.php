@@ -35,16 +35,14 @@ include('estilo/tabla_menu.php');
                     </select>
                 </td>
             </tr>
-            <tr>
-                <td class="colgrishome">
-                    <button type="submit" class="boton" onclick="window.location = 'menus.php'">Crear Menu</button>                        
-                </td>
-            </tr>
         </table>
+        <div class="boton-container">
+        <button type="submit" class="botonesAyC" onclick="window.location = 'menus.php'" style="width: 30%; margin-bottom: 10px;">Crear Menu</button>
+        </div>
     </form>
 
     <!-- Mostrar los menús creados -->
-    <div class="bloque-gris">
+        <div class="bloque-gris">
         <h3>Menús creados</h3>
         <?php if (!empty($menus)): ?>
             <?php foreach ($menus as $menu): ?>
@@ -52,32 +50,44 @@ include('estilo/tabla_menu.php');
                     // Quitar "menu_" del inicio
                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
                     
-                    // Obtener todas las ubicaciones posibles desde el select
-                    $ubicaciones = ['cabecera', 'pie']; // Agrega más si es necesario
+                    // Ubicaciones a eliminar del nombre
+                    $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad'];
 
-                    // Eliminar cualquier sufijo que coincida con una ubicación
                     foreach ($ubicaciones as $ubicacion) {
                         $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);
                     }
                 ?>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h4><?php echo htmlspecialchars($menu_limpio); ?></h4>
-                    <!-- Formulario para eliminar la tabla, alineado al extremo derecho -->
+                    <!-- Formulario para eliminar la tabla con imagen -->
                     <form action="conect/eliminar_tabla.php" method="post" style="display:inline;">
                         <input type="hidden" name="menu" value="<?php echo htmlspecialchars($menu); ?>">
-                        <button type="submit" onclick="return confirm('¿Estás seguro de que deseas eliminar esta tabla?');">Eliminar Tabla</button>
+                        <button type="submit" onclick="return confirm('¿Estás seguro de que deseas eliminar esta tabla?');" style="background: none; border: none; cursor: pointer;">
+                            <img src="https://i.ibb.co/LdTnB39W/wp-borrar.png" alt="Eliminar" style="width: 24px; height: 24px;">
+                        </button>
                     </form>
                 </div>
                 
-                <ul>
+                <ul style="list-style: none; padding: 0;">
                     <?php
                     $sql_items = "SELECT nombre FROM `$menu`"; 
                     $result_items = $conn->query($sql_items);
                     
                     if ($result_items && $result_items->num_rows > 0):
+                        $contador = 0;
                         while ($item = $result_items->fetch_assoc()):
+                            $contador++;
                     ?>
-                        <li><?php echo htmlspecialchars($item['nombre']); ?></li>
+                        <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                            <span><?php echo htmlspecialchars($item['nombre']); ?></span>
+                            
+                            <div style="float: right;">
+                                <?php if ($contador > 1): ?>
+                                    <button style="background-color: #28a745; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">↑</button> <!-- Botón arriba (solo desde el segundo en adelante) -->
+                                <?php endif; ?>
+                                <button style="background-color: #28a745; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">↓</button> <!-- Botón abajo (siempre presente) -->
+                            </div>
+                        </li>
                     <?php
                         endwhile;
                     endif;

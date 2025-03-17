@@ -17,37 +17,82 @@ while ($row = mysqli_fetch_row($resultado_tablas)) {
     $tablas_menu[] = $row[0];  // Almacenar el nombre de las tablas
 }
 
-// Obtener los datos de las tablas 'menu_'
-$codigos = [];
+$codigos_guardados = [];
+$registros_cod = []; // Aquí guardamos los registros únicos por cod
+
 foreach ($tablas_menu as $tabla) {
-    $query = "SELECT * FROM $tabla";  // Seleccionar todo de la tabla
+    $query = "SELECT * FROM $tabla";
     $resultado = mysqli_query($conexion, $query);
 
     while ($row = mysqli_fetch_assoc($resultado)) {
-        $cod = $row['cod'];  // Suponiendo que 'cod' es el campo de identificación
+        $cod = $row['cod'];
 
-        if (!in_array($cod, $codigos)) {
-            // Si el código no está en el array de códigos, añadirlo
-            $codigos[] = $cod;
+        // Guardar solo el primer registro de cada 'cod'
+        if (!in_array($cod, $codigos_guardados)) {
+            $registros_cod[] = $row;
+            $codigos_guardados[] = $cod;
         }
     }
 }
 
-// Obtener los datos únicos de las tablas 'menu_'
-$datos_unicos = [];
-foreach ($codigos as $cod) {
-    foreach ($tablas_menu as $tabla) {
-        $query = "SELECT * FROM $tabla WHERE cod = '$cod'";  // Filtrar por código
-        $resultado = mysqli_query($conexion, $query);
+// **Paso 2: Filtrar registros por 'codtab' (solo si tienen valor)**
+$codtab_guardados = [];
+$registros_finales = []; // Aquí guardamos los registros finales
 
-        while ($row = mysqli_fetch_assoc($resultado)) {
-            if ($row['cod'] == $cod && !isset($datos_unicos[$cod])) {
-                $datos_unicos[$cod] = $row;  // Guardar solo el primer registro encontrado para cada código
-                break;
-            }
-        }
+foreach ($registros_cod as $row) {
+    $codtab = $row['codtab'] ?? null;
+
+    // Si 'codtab' está vacío, agregarlo sin filtrar
+    if (empty($codtab)) {
+        $registros_finales[] = $row;
+    } 
+    // Si 'codtab' tiene valor, agregarlo solo si es único
+    elseif (!in_array($codtab, $codtab_guardados)) {
+        $registros_finales[] = $row;
+        $codtab_guardados[] = $codtab;
     }
 }
+
+// **Cargar datos para edición si hay un ID en la URL**
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$datos = [
+    'id' => '',
+    'nombre' => '',
+    'imagen_link' => '',
+    'codigo' => '',
+    'tabla' => '',
+    'ubicacion' => '',
+    'orden' => '', 
+    'columnas' => '',
+    'columnas_moviles' => '',
+    'estilo' => '',
+    'margen' => [],
+    'fecha_inicio' => date('Y-m-d'),
+    'fecha_final' => '',
+];
+
+if ($id > 0) {
+    $stmt = $conexion->prepare("SELECT * FROM tablero WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
+    if ($resultado->num_rows > 0) {
+        $datos_bd = $resultado->fetch_assoc(); // 🔹 Obtener datos de la BD
+
+        // 🔹 Mezclar `$datos_bd` con `$datos` para asegurar que todas las claves existan
+        $datos = array_merge($datos, $datos_bd);
+
+        // 🔹 Convertir `margen` a array si tiene valores guardados (separados por ",")
+        $datos['margen'] = !empty($datos['margen']) ? explode(',', $datos['margen']) : [];
+    }
+
+    $stmt->close();
+}
+
+
+
+$tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
 
 $directorio = "../img/"; // ✅ Directorio correcto basado en la estructura del proyecto
 $archivos = is_dir($directorio) ? scandir($directorio) : [];
@@ -60,27 +105,31 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
     
     <div id="capaformulario">
         <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="formulario_tipo" value="Ventana">            
+        <input type="hidden" name="formulario_tipo" value="Ventana"> 
+        <input type="hidden" name="id" value="<?= isset($datos['id']) ? htmlspecialchars($datos['id']) : '' ?>">
             <!-- Campos Título, Imagen y URL en la parte superior -->
             <div class="columna-formulario">
                 <table class="tableborderfull">
                     <tr>
                         <td class="colgrishome">Título:</td>
                         <td class="colblancocen">
-                            <input type="text" id="nombre" name="nombre" style="width: 50%;">
+                            <input type="text" id="nombre" name="nombre" style="width: 50%;" 
+                            value="<?= isset($datos['nombre']) ? htmlspecialchars($datos['nombre']) : '' ?>">
                         </td>
                     </tr>
                     <tr>
                         <td class="colgrishome">Imagen:</td>
                         <td class="colblancocen">
-                            <input type="text" id="imagen_link" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;">
+                            <input type="text" id="imagen_link" name="imagen_link" 
+                                placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;"
+                                value="<?= isset($datos['imagen']) ? htmlspecialchars($datos['imagen']) : '' ?>">
                             <button type="button" class="boton-explorador" onclick="mostrarExplorador()">📂</button>
                         </td>
                     </tr>
                     <tr>
                         <td class="colgrishome">Codigo:</td>
                         <td class="colblancocen">
-                        <textarea id="codigo" name="codigo" rows="10" cols="65"></textarea>
+                            <textarea id="codigo" name="codigo" rows="10" cols="65"><?= isset($datos['codigo']) ? htmlspecialchars(trim($datos['codigo'])) : '' ?></textarea>
                         </td>
                     </tr>
                 </table>
@@ -96,98 +145,135 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
                                 <button type="button" class="accion-boton">-</button>
                                 <button type="button" class="accion-boton">::</button>
                             </div>
-                        <div class="columna-tabla">
-                            <table class="tableborderfull">
-                                <?php
-                                // Mostrar solo el campo 'nombre' y el checkbox
-                                foreach ($datos_unicos as $dato) {
-                                    echo "<tr>";
-                                    echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($dato['cod']) . "'></td>";
-                                    echo "<td>" . htmlspecialchars($dato['nombre']) . "</td>";  // Mostrar solo el campo 'nombre'
-                                    echo "</tr>";
-                                }
-                                ?>
-                            </table>
+                            <div class="columna-tabla">
+                                <table class="tableborderfull">
+                                    <?php
+                                    // 🔹 Obtener el valor de `tabla` desde `tablero`
+                                    $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
+
+                                    // 🔹 Convertir `tabla` en un array si tiene múltiples valores
+                                    $tabla_valores = array_map('trim', explode(',', $tabla_valor)); // 🔥 Divide y elimina espacios extra
+
+                                    // 🔹 Recorrer los registros de `menu_*` y marcar los checkboxes si `nombre` está en la lista de `tabla`
+                                    foreach ($registros_finales as $datoM) {
+                                        $cod_actual = trim($datoM['cod']);  // ✅ Guardar por `cod`
+                                        $nombre_actual = trim($datoM['nombre']); // ✅ Marcar por `nombre`
+
+                                        // 🔹 Comparar si `nombre_actual` está en la lista de `tabla_valores`
+                                        $checked = in_array($nombre_actual, $tabla_valores) ? 'checked' : '';
+
+                                        echo "<tr>";
+                                        echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($cod_actual) . "' $checked></td>";
+                                        echo "<td>" . htmlspecialchars($nombre_actual) . "</td>";  // Mostrar solo el campo 'nombre'
+                                        echo "</tr>";
+                                    }
+                                    ?>
+                                </table>
+                            </div>
                         </div>
                     </td>
+
                     <td>
                     <table class="tableborderfull">
-                            <tr>
-                                <td class="colgrishome">Ubicación:</td>
-                                <td class="colblancocen">
-                                    <select id="ubicacion" name="ubicacion" required>
-                                        <option value="Cuerpo top 1">Cuerpo top 1</option>
-                                        <option value="Cuerpo top 2">Cuerpo top 2</option>
-                                        <option value="Cuerpo top 3">Cuerpo top 3</option>
-                                        <option value="Columna Izquierda">Columna Izquierda</option>
-                                        <option value="Columna Central">Columna Central</option>
-                                        <option value="Columna Derecha">Columna Derecha</option>
-                                        <option value="Cuerpo Bottom 1">Cuerpo Bottom 1</option>
-                                        <option value="Cuerpo Bottom 2">Cuerpo Bottom 2</option>
-                                        <option value="Cuerpo Bottom 3">Cuerpo Bottom 3</option>
-                                        <option value="Pie de Pagina">Pie de Pagina</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="colgrishome">Orden:</td>
-                                <td class="colblancocen">
-                                    <input type="text" id="Orden" name="Orden">
-                                </td>
-                            </tr>                            
-                            <!-- Otras secciones con columnas, márgenes, fechas, etc. -->
-                            <tr>
-                                <td class="colgrishome">Columnas:</td>
-                                <td class="colblancocen">
-                                    <select id="columnas" name="columnas" required>
-                                        <?php for ($i = 1; $i <= 12; $i++) { ?>
-                                            <option value="<?= $i ?>">Columna <?= $i ?></option>
-                                        <?php } ?>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="colgrishome">Columnas Móviles:</td>
-                                <td class="colblancocen">
-                                    <select id="columnas_moviles" name="columnas_moviles" required>
-                                        <option value=""></option>
-                                        <?php for ($i = 1; $i <= 12; $i++) { ?>
-                                            <option value="<?= $i ?>">Columna <?= $i ?></option>
-                                        <?php } ?>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="colgrishome">Estilo:</td>
-                                <td class="colblancocen">
-                                    <select id="estilo" name="estilo" required>
-                                        <?php for ($i = 1; $i <= 12; $i++) { ?>
-                                            <option value="<?= $i ?>">Estilo <?= $i ?></option>
-                                        <?php } ?>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="colgrishome">Margenes:</td>
-                                <td class="colblancocen">
-                                    <label><input type="checkbox" name="margen[]" value="IZQ"> IZQ</label>
-                                    <label><input type="checkbox" name="margen[]" value="DER"> DER</label>
-                                    <label><input type="checkbox" name="margen[]" value="SUP"> SUP</label>
-                                    <label><input type="checkbox" name="margen[]" value="INF"> INF</label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="colgrishome">Fecha Inicio:</td>
-                                <td class="colblancocen">
-                                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?= date('Y-m-d') ?>" required>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="colgrishome">Fecha Final:</td>
-                                <td class="colblancocen">
-                                    <input type="date" id="fecha_final" name="fecha_final" placeholder="dd/mm/aaaa">
-                                </td>
-                            </tr>
+                        <!-- 📌 Campo `ubicacion` -->
+                        <tr>
+                            <td class="colgrishome">Ubicación:</td>
+                            <td class="colblancocen">
+                                <select id="ubicacion" name="ubicacion" required>
+                                    <?php
+                                    $ubicaciones = [
+                                        "Cuerpo top 1", "Cuerpo top 2", "Cuerpo top 3", 
+                                        "Columna Izquierda", "Columna Central", "Columna Derecha", 
+                                        "Cuerpo Bottom 1", "Cuerpo Bottom 2", "Cuerpo Bottom 3", 
+                                        "Pie de Pagina"
+                                    ];
+                                    foreach ($ubicaciones as $ubic) {
+                                        $selected = ($datos['ubicacion'] == $ubic) ? 'selected' : '';
+                                        echo "<option value='$ubic' $selected>$ubic</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- 📌 Campo `orden` -->
+                        <tr>
+                            <td class="colgrishome">Orden:</td>
+                            <td class="colblancocen">
+                                <input type="text" id="orden" name="orden" value="<?= htmlspecialchars($datos['orden'] ?? '') ?>"
+
+                            </td>
+                        </tr>
+
+                        <!-- 📌 Campo `columnas` -->
+                        <tr>
+                            <td class="colgrishome">Columnas:</td>
+                            <td class="colblancocen">
+                                <select id="columnas" name="columnas" required>
+                                    <?php for ($i = 1; $i <= 12; $i++) {
+                                        $selected = ($datos['columnas'] == $i) ? 'selected' : '';
+                                        echo "<option value='$i' $selected>Columna $i</option>";
+                                    } ?>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- 📌 Campo `columnas_moviles` -->
+                        <tr>
+                            <td class="colgrishome">Columnas Móviles:</td>
+                            <td class="colblancocen">
+                                <select id="columnas_moviles" name="columnas_moviles" required>
+                                    <option value=""> </option>
+                                    <?php for ($i = 1; $i <= 12; $i++) {
+                                        $selected = ($datos['columnas_moviles'] == $i) ? 'selected' : '';
+                                        echo "<option value='$i' $selected>Columna $i</option>";
+                                    } ?>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- 📌 Campo `estilo` -->
+                        <tr>
+                            <td class="colgrishome">Estilo:</td>
+                            <td class="colblancocen">
+                                <select id="estilo" name="estilo" required>
+                                    <?php for ($i = 1; $i <= 12; $i++) {
+                                        $selected = ($datos['estilo'] == $i) ? 'selected' : '';
+                                        echo "<option value='$i' $selected>Estilo $i</option>";
+                                    } ?>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- 📌 Campo `margen` (checkboxes) -->
+                        <tr>
+                            <td class="colgrishome">Márgenes:</td>
+                            <td class="colblancocen">
+                                <?php
+                                $margenes = ["IZQ", "DER", "SUP", "INF"];
+                                foreach ($margenes as $margen) {
+                                    $checked = in_array($margen, $datos['margen']) ? 'checked' : '';
+                                    echo "<label><input type='checkbox' name='margen[]' value='$margen' $checked> $margen</label> ";
+                                }
+                                ?>
+                            </td>
+                        </tr>
+
+                        <!-- 📌 Campo `fecha_inicio` -->
+                        <tr>
+                            <td class="colgrishome">Fecha Inicio:</td>
+                            <td class="colblancocen">
+                                <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?= htmlspecialchars($datos['fecha_inicio']) ?>" required>
+                            </td>
+                        </tr>
+
+                        <!-- 📌 Campo `fecha_final` -->
+                        <tr>
+                            <td class="colgrishome">Fecha Final:</td>
+                            <td class="colblancocen">
+                                <input type="date" id="fecha_final" name="fecha_final" value="<?= htmlspecialchars($datos['fecha_final']) ?>">
+                            </td>
+                        </tr>
                     </table>
                     </td>
                 </tr>

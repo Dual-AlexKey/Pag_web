@@ -64,11 +64,13 @@ while ($row = $result->fetch_array()) {
                 $cod = urlencode($row["cod"]); 
                 $codtab = urlencode($row["codtab"]);
                 $nombre = urlencode($row["nombre"]); 
+                $nv = urlencode($row["Num_nivel"]); 
+                $sc = urlencode($row["secciones"]); 
 
 
                 $botones = [
                     ["pagina" => "editccion.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
-                    ["pagina" => "panel.php", "imagen" => "https://i.ibb.co/hPQ0zQ5/ws-menu.png"],
+                    ["pagina" => "subseccion.php", "imagen" => "https://i.ibb.co/hPQ0zQ5/ws-menu.png"],
                     ["pagina" => "ajustes.php", "imagen" => "https://i.ibb.co/VYrngfWv/wp-page.png"],
                     ["pagina" => "config.php", "imagen" => "https://i.ibb.co/Fq6n7h1M/wp-tools.png"],
                     ["pagina" => "conect/eliminar_elemento.php", "imagen" => "https://i.ibb.co/LdTnB39W/wp-borrar.png"]
@@ -76,7 +78,7 @@ while ($row = $result->fetch_array()) {
 
                 foreach ($botones as $boton) {
                     $width = "25px";
-                    $height = ($boton['pagina'] === "panel.php") ? "15px" : "25px";
+                    $height = ($boton['pagina'] === "subseccion.php") ? "15px" : "25px";
 
                     // Construir URL con los parámetros adecuados
                     $url = "{$boton['pagina']}?cod=$cod";
@@ -86,6 +88,8 @@ while ($row = $result->fetch_array()) {
                     }
                     elseif (!empty($nombre)) {
                         $url .= "&nombre=$nombre";
+                        $url .= "&nv=$nv";
+                        $url .= "&sc=$sc";
                     }
 
                     echo "<a href='$url' class='btn_st'>

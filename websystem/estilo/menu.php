@@ -8,11 +8,7 @@
             <a href="tablero.php"><button class="boton">Tablero</button></a>
             <button class="boton">Redes Sociales</button>
         </div>
-        <button class="boton">Contenidos</button>
-        <button class="boton">Productos</button>
-        <button class="boton submenu" id="btn2">Administración <span class="icono">+</span></button>
-        <div class="menu">
-            <button class="boton">Sub-botón 1</button>
-            <button class="boton">Sub-botón 2</button>
-        </div>
+        <!--<button class="boton">Productos</button>-->
+        <button class="boton">Administracion</button>
+        
     </div>

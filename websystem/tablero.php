@@ -62,23 +62,45 @@ while ($row = $result->fetch_array()) {
                 echo "<td>";
                 
                 // Obtener valores
-                $nombre = urlencode($row["nombre"]);
-                $id = urlencode($row["id"]); // Capturar el código
-            
-                $botones = [
-                    ["pagina" => "new_tabimg.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
-                    ["pagina" => "new_img.php", "imagen" => "https://i.ibb.co/S7Gq2mpG/ws-fotos.png"],
-                    ["pagina" => "conect/eliminar_elemento.php", "imagen" => "https://i.ibb.co/LdTnB39W/wp-borrar.png"]
+                $id = urlencode($row["id"]); // Capturar el ID
+                $tp = urlencode($row["formu"]); // Capturar el tipo de formulario
+                
+                // 📌 Definir mapeo de `formu` a archivos específicos
+                $paginas = [
+                    "Imagen" => "new_tabimg.php",
+                    "HTML" => "new_tabhtml.php",
+                    "Apps" => "new_tabapps.php",
+                    "Banner" => "new_tabbanner.php",
+                    "Ventana" => "new_tabventana.php",
+                    "Contenidos" => "new_tabconte.php"
                 ];
-    
-                foreach ($botones as $index => $boton) {
-                    echo "<a href='{$boton['pagina']}?id=$id' class='btn_st'>
-                            <img src='{$boton['imagen']}' alt='Botón' style='width: 25px; height: 25px; vertical-align: middle;'>
+                
+                // 📌 Si `$tp` tiene un valor en `$paginas`, usarlo. Si no, redirigir a `new_default.php`
+                $pagina_destino = isset($paginas[$tp]) ? $paginas[$tp] : "new_default.php";
+                
+                // 📌 Botón "Editar" (Siempre visible)
+                echo "<a href='{$pagina_destino}?id=$id' class='btn_st'>
+                        <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Editar' style='width: 25px; height: 25px; vertical-align: middle;'>
+                      </a> ";
+                
+                // 📌 Botón "Fotos" (Solo aparece si `$tp` es "Banner" o "Contenidos", de lo contrario, muestra "-")
+                if ($tp === "Banner" || $tp === "Contenidos") {
+                    echo "<a href='new_img.php?id=$id' class='btn_st'>
+                            <img src='https://i.ibb.co/S7Gq2mpG/ws-fotos.png' alt='Fotos' style='width: 25px; height: 25px; vertical-align: middle;'>
                           </a> ";
+                } else {
+                    echo " ----- "; // 🔹 Muestra un guion si no es "Banner" o "Contenidos"
                 }
-            
+                
+                // 📌 Botón "Eliminar" (Siempre visible)
+                echo "<a href='conect/eliminar_elemento.php?id=$id' class='btn_st'>
+                        <img src='https://i.ibb.co/LdTnB39W/wp-borrar.png' alt='Eliminar' style='width: 25px; height: 25px; vertical-align: middle;'>
+                      </a> ";
+                
                 echo "</td>";
                 echo "</tr>";
+                
+
             }
             
         }
