@@ -22,19 +22,19 @@ include('estilo/tabla_menu.php');
                 <tr>
                     <td class="colgrishome">Nombre:</td>
                     <td class="colblancocen">
-                        <input type="text" id="nombre" name="nombre" required oninput="actualizarURL()">
+                        <input type="text" id="nombre" name="nombre" style="width: 50%;" required oninput="actualizarURL()">
                     </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">URL:</td>
                     <td class="colblancocen">
-                        <input type="text" id="link" name="link" required readonly>
+                        <input type="text" id="link" name="link" style="width: 50%;" required readonly>
                     </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">Módulo:</td>
                     <td class="colblancocen">
-                        <select id="modulo" name="modulo" required onchange="cambiarEstilos()">
+                        <select id="modulo" name="modulo" style="width: 20%;" required onchange="cambiarEstilos()">
                             <option value="Contenidos">Contenidos</option>
                             <option value="Catalogo">Catálogo</option>
                             <option value="Usuarios">Usuarios</option>
@@ -58,7 +58,7 @@ include('estilo/tabla_menu.php');
                                 <?php foreach ($menus as $index => $menu): ?>
                                     <?php
                                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
-                                    $ubicaciones = ['cabecera', 'pie', 'lateral', 'footer'];
+                                    $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad'];
 
                                     foreach ($ubicaciones as $ubicacion) {
                                         $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);

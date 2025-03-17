@@ -2,38 +2,32 @@
 include 'conect/conexion.php';
 // Inclusión de información
 include('estilo/data.php');
+// Incluir el header.php
 include('estilo/header.php');
+// Incluir el menu.php
 include('estilo/menu.php');
-
-$sql = "SHOW TABLES LIKE 'menu_%'";
-$result = $conn->query($sql);
-
-$menu_tables = [];
-while ($row = $result->fetch_array()) {
-    $menu_tables[] = $row[0]; // Guardar nombres de tablas
-}
-
 ?>
-
 <div class="contenido-derecha">
     <a href="panel.php"><button class="boton-cerrar">X</button></a>
-    <div class="bloque-verde"><h2>Secciones</h2></div>
-    <a href="newseccion.php"><button class="boton-nvpag">Nueva sección</button></a>
+    <div class="bloque-verde"><h2>Imagenes</h2></div>
+    <a href="new_itemimg.php"><button class="boton-nvpag">Nueva sección</button></a>
     <div class="bloque-gris"><h3>Insertar</h3></div>
 
     <table class="tableborderfull">
         <tr>
             <td>||</td>
-            <td>Sección</td>
-            <td>Módulo</td>
+            <td>Item:/</td>
             <td>Orden</td>
-            <td>Nro de items</td>
-            <td>Vistas</td>
+            <td>Tipo</td>
+            <td>Pos. hor</td>
+            <td>Pos. Ver</td>
+            <td>Ingreso desde</td>
+            <td>Duracion</td>
             <td>Opciones</td>
         </tr>
 
         <?php
-        $nombres_unicos = []; // Para almacenar los nombres ya mostrados
+       /* $nombres_unicos = []; // Para almacenar los nombres ya mostrados
 
         foreach ($menu_tables as $table) {
             // Consultar datos de cada tabla encontrada
@@ -64,13 +58,11 @@ while ($row = $result->fetch_array()) {
                 $cod = urlencode($row["cod"]); 
                 $codtab = urlencode($row["codtab"]);
                 $nombre = urlencode($row["nombre"]); 
-                $nv = urlencode($row["Num_nivel"]); 
-                $sc = urlencode($row["secciones"]); 
 
 
                 $botones = [
                     ["pagina" => "editccion.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
-                    ["pagina" => "subseccion.php", "imagen" => "https://i.ibb.co/hPQ0zQ5/ws-menu.png"],
+                    ["pagina" => "panel.php", "imagen" => "https://i.ibb.co/hPQ0zQ5/ws-menu.png"],
                     ["pagina" => "ajustes.php", "imagen" => "https://i.ibb.co/VYrngfWv/wp-page.png"],
                     ["pagina" => "config.php", "imagen" => "https://i.ibb.co/Fq6n7h1M/wp-tools.png"],
                     ["pagina" => "conect/eliminar_elemento.php", "imagen" => "https://i.ibb.co/LdTnB39W/wp-borrar.png"]
@@ -78,7 +70,7 @@ while ($row = $result->fetch_array()) {
 
                 foreach ($botones as $boton) {
                     $width = "25px";
-                    $height = ($boton['pagina'] === "subseccion.php") ? "15px" : "25px";
+                    $height = ($boton['pagina'] === "panel.php") ? "15px" : "25px";
 
                     // Construir URL con los parámetros adecuados
                     $url = "{$boton['pagina']}?cod=$cod";
@@ -88,8 +80,6 @@ while ($row = $result->fetch_array()) {
                     }
                     elseif (!empty($nombre)) {
                         $url .= "&nombre=$nombre";
-                        $url .= "&nv=$nv";
-                        $url .= "&sc=$sc";
                     }
 
                     echo "<a href='$url' class='btn_st'>
@@ -100,12 +90,11 @@ while ($row = $result->fetch_array()) {
                 echo "</td>";
                 echo "</tr>";
             }
-        }
+        }*/
         ?>
 
     </table>
 </div>
-
 <?php
 // Incluir el footer.php
 include('estilo/footer.php');

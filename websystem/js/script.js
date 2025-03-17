@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const botonesConSubMenu = document.querySelectorAll(".boton.submenu");
+    console.log("JavaScript cargado correctamente.");
+
+    
 
     botonesConSubMenu.forEach(function (boton) {
         boton.addEventListener("click", function () {
@@ -103,7 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
         
-    
 
 });
 function guardarFormulario() {
@@ -222,6 +224,13 @@ function crearArchivo(event) {
         }
     });
 
+    // ✅ Validación de "Nombre"
+    let nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) {
+        alert('⚠️ Por favor, ingresa un nombre válido.');
+        return;
+    }
+
     // ✅ Mensajes de error combinados
     if (!menuSeleccionado && !estilosSeleccionados) {
         alert("⚠️ Falta seleccionar información: Estilos y 'Publicar en Menú'.");
@@ -238,11 +247,221 @@ function crearArchivo(event) {
         return;
     }
 
-    // ✅ Validación de "Nombre"
-    let nombre = document.getElementById('nombre').value.trim();
-    if (!nombre) {
-        alert('⚠️ Por favor, ingresa un nombre válido.');
+    // ✅ TODO ESTÁ VALIDADO, AHORA ENVIAMOS EL FORMULARIO
+    document.getElementById("miFormulario").submit(); // Asegúrate de que tu formulario tenga este ID
+}
+
+// 🔹 ACTUALIZAR EXPLORADOR DE IMÁGENES
+function actualizarExplorador(url) {
+    let listaImagenes = document.querySelector("#lista-imagenes");
+    let botonEliminar = document.querySelector(".boton-eliminar");
+
+    if (!listaImagenes) return;
+
+    let modoEliminarActivo = listaImagenes.classList.contains("eliminar-activo");
+
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, "text/html");
+            let nuevaLista = doc.querySelector("#lista-imagenes").innerHTML;
+            listaImagenes.innerHTML = nuevaLista;
+
+            if (modoEliminarActivo) {
+                setTimeout(() => {
+                    listaImagenes.classList.add("eliminar-activo");
+                    botonEliminar?.classList.add("activo");
+                }, 100);
+            }
+        })
+        .catch(error => console.error("Error al actualizar explorador:", error));
+}
+
+// 🔹 ABRIR Y CERRAR EL MODAL
+function mostrarExplorador() {
+    document.getElementById("modal-explorador").style.display = "block";
+}
+
+function cerrarExplorador() {
+    document.getElementById("modal-explorador").style.display = "none";
+}
+
+// 🔹 SELECCIONAR IMAGEN
+function seleccionar(ruta) {
+    document.getElementById("imagen_link").value = ruta;
+    cerrarExplorador();
+}
+
+
+// 🔹 ACTIVAR/DESACTIVAR MODO ELIMINACIÓN
+function activarEliminar() {
+    let listaImagenes = document.querySelector("#lista-imagenes");
+    let botonEliminar = document.querySelector(".boton-eliminar");
+
+    if (!listaImagenes || !botonEliminar) return;
+
+    let modoEliminarActivo = listaImagenes.classList.contains("eliminar-activo");
+
+    if (modoEliminarActivo) {
+        // 🔹 Desactivar modo eliminación y quitar todas las "X"
+        listaImagenes.classList.remove("eliminar-activo");
+        botonEliminar.classList.remove("activo");
+
+        let botonesX = document.querySelectorAll(".eliminar-x");
+        botonesX.forEach(boton => boton.remove());
+
+    } else {
+        // 🔹 Activar modo eliminación y agregar "X" a todas las imágenes
+        listaImagenes.classList.add("eliminar-activo");
+        botonEliminar.classList.add("activo");
+
+        let items = document.querySelectorAll(".item");
+        items.forEach(item => {
+            if (!item.querySelector(".eliminar-x")) {
+                let nombreImagen = item.querySelector("img").alt;
+                let botonX = document.createElement("span");
+                botonX.classList.add("eliminar-x");
+                botonX.innerHTML = "&times;";
+                botonX.onclick = function(event) {
+                    eliminarImagen(nombreImagen, event, "new_itemimg.php");
+                };
+                item.appendChild(botonX);
+            }
+        });
+    }
+}
+
+
+// 🔹 ELIMINAR UNA IMAGEN Y ACTUALIZAR SIN RECARGAR
+function eliminarImagen(nombreImagen, event, url) {
+    event.stopPropagation();
+
+    if (!confirm("¿Seguro que quieres eliminar esta imagen?")) return;
+
+    fetch("../websystem/img/eliminar_imagen.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "nombre=" + encodeURIComponent(nombreImagen)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Respuesta del servidor:", data);
+        if (data.status === "success") {
+
+            // ✅ ELIMINAR LA IMAGEN DEL DOM SIN RECARGAR
+            let listaImagenes = document.querySelector("#lista-imagenes");
+            let imagenes = listaImagenes.querySelectorAll(".item");
+
+            imagenes.forEach(img => {
+                if (img.innerHTML.includes(nombreImagen)) {
+                    img.remove(); // ✅ Remover la imagen eliminada del DOM
+                }
+            });
+
+            // ✅ Después de borrar, actualizar el explorador
+            setTimeout(() => {
+                actualizarExplorador(url);
+            }, 200);
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error al eliminar imagen:", error);
+        alert("Ocurrió un error al eliminar la imagen.");
+    });
+}
+
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
+function subirImagen() {
+    let inputImagen = document.querySelector("#imagen");
+    let inputTexto = document.querySelector("#imagen_link"); // ✅ Donde guardamos la ruta
+
+    if (!inputImagen || !inputTexto) {
+        console.error("Error: No se encontró el input de imagen o el campo de texto.");
         return;
+    }
+
+    let archivo = inputImagen.files[0];
+
+    if (!archivo) {
+        alert("Por favor, selecciona una imagen.");
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append("imagen", archivo); // ✅ Adjuntar correctamente el archivo
+
+    fetch("../websystem/img/subir_imagen.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Respuesta del servidor:", data);
+
+        if (data.status === "success") {
+            alert("Imagen subida correctamente");
+
+            // ✅ Guardar la URL de la imagen en el campo de texto
+            inputTexto.value = data.ruta;
+
+            // ✅ Agregar la imagen al explorador sin recargar
+            let listaImagenes = document.querySelector("#lista-imagenes");
+            let nuevoItem = document.createElement("div");
+            nuevoItem.classList.add("item");
+
+            let nuevaImg = document.createElement("img");
+            nuevaImg.src = data.ruta;
+            nuevaImg.alt = data.nombre;
+            nuevaImg.classList.add("preview");
+            nuevaImg.onclick = function () {
+                seleccionar(data.ruta);
+            };
+            nuevoItem.appendChild(nuevaImg);
+
+            listaImagenes.appendChild(nuevoItem);
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error al subir imagen:", error);
+        alert("Ocurrió un error al subir la imagen.");
+    });
+}
+// 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN `imagen_link`
+function seleccionar(ruta) {
+    let inputTexto = document.querySelector("#imagen_link");
+
+    if (!inputTexto) {
+        console.error("Error: No se encontró el campo de texto `imagen_link`.");
+        return;
+    }
+
+    console.log("Ruta recibida:", ruta); // ✅ Verificar qué ruta llega
+
+    // ✅ Convertimos "../img/" en "img/"
+    if (ruta.startsWith("../img/")) {
+        ruta = ruta.replace("../img/", "img/");
+        console.log("Ruta modificada:", ruta); // ✅ Verificar que la ruta se ajustó correctamente
+    }
+
+    // ✅ Guardamos la ruta ajustada en el campo de texto
+    inputTexto.value = ruta;
+
+    // ✅ Cerrar el explorador de imágenes después de seleccionar
+    cerrarExplorador();
+}
+// 🔹 FUNCIÓN PARA CERRAR EL EXPLORADOR DE IMÁGENES
+function cerrarExplorador() {
+    let modal = document.querySelector("#modal-explorador");
+    if (modal) {
+        modal.style.display = "none";
     }
 }
 

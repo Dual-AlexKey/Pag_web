@@ -112,7 +112,7 @@ foreach ($menu_tables as $menu) {
                                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
 
                                     // Lista de ubicaciones dinámicas
-                                    $ubicaciones = ['cabecera', 'pie', 'lateral', 'footer'];
+                                    $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad'];
 
                                     // Eliminar cualquier sufijo que coincida con una ubicación
                                     foreach ($ubicaciones as $ubicacion) {

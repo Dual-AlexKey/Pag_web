@@ -26,17 +26,19 @@ include('estilo/tabla_menu.php');
                 <td class="colgrishome">Nombre: <input type="text" name="nombre" required></td>
                 <td class="colgrishome">Ubicación: 
                     <select name="ubicacion" required>
-                        <option value="cabecera">Cabecera menú</option>
+                        <option value="cabeceraT">Cabecera Top</option>
+                        <option value="cabeceraL">Cabecera Logo</option>
+                        <option value="cabeceraM">Cabecera Menu</option>
+                        <option value="columnaI">Columna Izquierda</option>
+                        <option value="columnaD">Columna Derecha</option>
                         <option value="pie">Pie de página</option>
                     </select>
                 </td>
             </tr>
-            <tr>
-                <td class="colgrishome">
-                    <button type="submit" class="boton" onclick="window.location = 'menus.php'">Crear Menu</button>                        
-                </td>
-            </tr>
         </table>
+        <div class="boton-container">
+        <button type="submit" class="botonesAyC" onclick="window.location = 'menus.php'" style="width: 30%; margin-bottom: 10px;">Crear Menu</button>
+        </div>
     </form>
 
     <!-- Mostrar los menús creados -->
@@ -49,7 +51,7 @@ include('estilo/tabla_menu.php');
                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
                     
                     // Obtener todas las ubicaciones posibles desde el select
-                    $ubicaciones = ['cabecera', 'pie']; // Agrega más si es necesario
+                    $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad']; // Agrega más si es necesario
 
                     // Eliminar cualquier sufijo que coincida con una ubicación
                     foreach ($ubicaciones as $ubicacion) {
