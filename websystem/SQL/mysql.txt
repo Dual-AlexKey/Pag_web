@@ -73,6 +73,14 @@ VALUES
     fecha_final DATE DEFAULT NULL       -- Fecha de finalización
 );
 
+CREATE TABLE log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usu VARCHAR(50) UNIQUE NOT NULL,
+    con VARCHAR(255) NOT NULL
+);
+
+	select*from log;
+
  
 
 	select*from tablero;
