@@ -105,6 +105,18 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
+
+    let botones = document.querySelectorAll(".boton-mover");
+    botones.forEach(boton => {
+        boton.style.backgroundColor = "#28a745";
+        boton.style.color = "white";
+        boton.style.fontWeight = "bold";
+        boton.style.border = "none";
+        boton.style.padding = "10px 15px";
+        boton.style.borderRadius = "5px";
+        boton.style.cursor = "pointer";
+        boton.style.marginBottom = "5px";
+    });
         
 
 });
@@ -464,4 +476,50 @@ function cerrarExplorador() {
         modal.style.display = "none";
     }
 }
+
+function cambiarID(menu, id, cambio) {
+    let formData = new FormData();
+    formData.append("menu", menu);
+    formData.append("id", id);
+    formData.append("cambio", cambio);
+
+    fetch("cambiar_id.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            let elemento = document.querySelector(`#id-${menu}-${id}`).closest("li");
+            let lista = elemento.parentElement;
+
+            // Actualizar el ID en pantalla
+            let nuevoId = data.nuevo_id;
+            let idSpan = elemento.querySelector(`#id-${menu}-${id}`);
+
+            if (idSpan) {
+                idSpan.innerText = nuevoId;
+                idSpan.id = `id-${menu}-${nuevoId}`;
+            }
+
+            // Reordenar la lista automáticamente
+            let elementos = Array.from(lista.children);
+            elementos.sort((a, b) => {
+                let idA = parseInt(a.querySelector("span").innerText.match(/\d+/)[0]);
+                let idB = parseInt(b.querySelector("span").innerText.match(/\d+/)[0]);
+                return idA - idB;
+            });
+
+            // Vaciar y volver a insertar en orden correcto
+            lista.innerHTML = "";
+            elementos.forEach(el => lista.appendChild(el));
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => console.error("Error:", error));
+}
+
+
+
 

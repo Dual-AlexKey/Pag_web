@@ -42,24 +42,20 @@ include('estilo/tabla_menu.php');
     </form>
 
     <!-- Mostrar los menús creados -->
-        <div class="bloque-gris">
+    <div class="bloque-gris">
         <h3>Menús creados</h3>
         <?php if (!empty($menus)): ?>
             <?php foreach ($menus as $menu): ?>
                 <?php
-                    // Quitar "menu_" del inicio
+                    // Limpiar el nombre del menú
                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
-                    
-                    // Ubicaciones a eliminar del nombre
                     $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad'];
-
                     foreach ($ubicaciones as $ubicacion) {
                         $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);
                     }
                 ?>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h4><?php echo htmlspecialchars($menu_limpio); ?></h4>
-                    <!-- Formulario para eliminar la tabla con imagen -->
                     <form action="conect/eliminar_tabla.php" method="post" style="display:inline;">
                         <input type="hidden" name="menu" value="<?php echo htmlspecialchars($menu); ?>">
                         <button type="submit" onclick="return confirm('¿Estás seguro de que deseas eliminar esta tabla?');" style="background: none; border: none; cursor: pointer;">
@@ -70,7 +66,7 @@ include('estilo/tabla_menu.php');
                 
                 <ul style="list-style: none; padding: 0;">
                     <?php
-                    $sql_items = "SELECT nombre FROM `$menu`"; 
+                    $sql_items = "SELECT id, nombre FROM `$menu` ORDER BY id ASC"; 
                     $result_items = $conn->query($sql_items);
                     
                     if ($result_items && $result_items->num_rows > 0):
@@ -79,19 +75,17 @@ include('estilo/tabla_menu.php');
                             $contador++;
                     ?>
                         <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
-                            <span><?php echo htmlspecialchars($item['nombre']); ?></span>
-                            
-                            <div style="float: right;">
-                                <?php if ($contador > 1): ?>
-                                    <button style="background-color: #28a745; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">↑</button> <!-- Botón arriba (solo desde el segundo en adelante) -->
-                                <?php endif; ?>
-                                <button style="background-color: #28a745; color: white; font-weight: bold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">↓</button> <!-- Botón abajo (siempre presente) -->
-                            </div>
-                        </li>
-                    <?php
-                        endwhile;
-                    endif;
-                    ?>
+    <span>ID: <span id="id-<?php echo $menu . '-' . $item['id']; ?>"><?php echo $item['id']; ?></span> - <?php echo htmlspecialchars($item['nombre']); ?></span>
+    
+    <div style="float: right;">
+        <?php if ($contador > 1): ?>
+            <button class="boton-mover" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, -1)">↑</button>
+        <?php endif; ?>
+        <button class="boton-mover" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, 1)">↓</button>
+    </div>
+</li>
+
+                    <?php endwhile; endif; ?>
                 </ul>
             <?php endforeach; ?>
         <?php endif; ?>
