@@ -106,18 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    let botones = document.querySelectorAll(".boton-mover");
-    botones.forEach(boton => {
-        boton.style.backgroundColor = "#28a745";
-        boton.style.color = "white";
-        boton.style.fontWeight = "bold";
-        boton.style.border = "none";
-        boton.style.padding = "10px 15px";
-        boton.style.borderRadius = "5px";
-        boton.style.cursor = "pointer";
-        boton.style.marginBottom = "5px";
-    });
-        
 
 });
 function guardarFormulario() {
@@ -291,19 +279,23 @@ function actualizarExplorador(url) {
 }
 
 // 🔹 ABRIR Y CERRAR EL MODAL
-function mostrarExplorador() {
-    document.getElementById("modal-explorador").style.display = "block";
+// 🔹 MOSTRAR MODAL Y ASIGNAR EL INPUT CORRECTO
+function mostrarExplorador(campoDestino) {
+    let modal = document.getElementById("modal-explorador");
+    if (modal) {
+        modal.style.display = "block";
+        modal.setAttribute("data-campo", campoDestino); // ✅ Guardamos el campo correcto en el modal
+    }
 }
 
+// 🔹 CERRAR MODAL
 function cerrarExplorador() {
-    document.getElementById("modal-explorador").style.display = "none";
+    let modal = document.querySelector("#modal-explorador");
+    if (modal) {
+        modal.style.display = "none";
+    }
 }
 
-// 🔹 SELECCIONAR IMAGEN
-function seleccionar(ruta) {
-    document.getElementById("imagen_link").value = ruta;
-    cerrarExplorador();
-}
 
 
 // 🔹 ACTIVAR/DESACTIVAR MODO ELIMINACIÓN
@@ -386,12 +378,17 @@ function eliminarImagen(nombreImagen, event, url) {
 }
 
 // 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
-// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
-// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
-// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
 function subirImagen() {
+    let modal = document.getElementById("modal-explorador");
+    let campoDestino = modal.getAttribute("data-campo"); // ✅ Obtener el campo donde se guardará la imagen
+
+    if (!campoDestino) {
+        console.error("Error: No se encontró el campo destino en el modal.");
+        return;
+    }
+
     let inputImagen = document.querySelector("#imagen");
-    let inputTexto = document.querySelector("#imagen_link"); // ✅ Donde guardamos la ruta
+    let inputTexto = document.querySelector(`#${campoDestino}`);
 
     if (!inputImagen || !inputTexto) {
         console.error("Error: No se encontró el input de imagen o el campo de texto.");
@@ -406,7 +403,7 @@ function subirImagen() {
     }
 
     let formData = new FormData();
-    formData.append("imagen", archivo); // ✅ Adjuntar correctamente el archivo
+    formData.append("imagen", archivo);
 
     fetch("../websystem/img/subir_imagen.php", {
         method: "POST",
@@ -419,10 +416,10 @@ function subirImagen() {
         if (data.status === "success") {
             alert("Imagen subida correctamente");
 
-            // ✅ Guardar la URL de la imagen en el campo de texto
+            // ✅ Guardar la URL en el input correcto
             inputTexto.value = data.ruta;
 
-            // ✅ Agregar la imagen al explorador sin recargar
+            // ✅ Agregar la imagen al explorador sin cerrar el modal
             let listaImagenes = document.querySelector("#lista-imagenes");
             let nuevoItem = document.createElement("div");
             nuevoItem.classList.add("item");
@@ -437,6 +434,8 @@ function subirImagen() {
             nuevoItem.appendChild(nuevaImg);
 
             listaImagenes.appendChild(nuevoItem);
+
+            // ❌ No cerramos el modal automáticamente para que el usuario pueda seguir viendo las imágenes
         } else {
             alert("Error: " + data.message);
         }
@@ -446,35 +445,35 @@ function subirImagen() {
         alert("Ocurrió un error al subir la imagen.");
     });
 }
-// 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN `imagen_link`
-function seleccionar(ruta) {
-    let inputTexto = document.querySelector("#imagen_link");
 
-    if (!inputTexto) {
-        console.error("Error: No se encontró el campo de texto `imagen_link`.");
+
+// 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN EL INPUT CORRECTO
+function seleccionar(ruta) {
+    let modal = document.getElementById("modal-explorador");
+    let campoDestino = modal.getAttribute("data-campo"); // ✅ Obtener el campo que debe actualizarse
+
+    if (!campoDestino) {
+        console.error("Error: No se encontró el campo destino en el modal.");
         return;
     }
 
-    console.log("Ruta recibida:", ruta); // ✅ Verificar qué ruta llega
+    let inputTexto = document.querySelector(`#${campoDestino}`);
 
-    // ✅ Convertimos "../img/" en "img/"
+    if (!inputTexto) {
+        console.error(`Error: No se encontró el campo de texto ${campoDestino}.`);
+        return;
+    }
+
+    console.log("Ruta recibida:", ruta);
+
     if (ruta.startsWith("../img/")) {
         ruta = ruta.replace("../img/", "img/");
-        console.log("Ruta modificada:", ruta); // ✅ Verificar que la ruta se ajustó correctamente
+        console.log("Ruta modificada:", ruta);
     }
 
-    // ✅ Guardamos la ruta ajustada en el campo de texto
     inputTexto.value = ruta;
 
-    // ✅ Cerrar el explorador de imágenes después de seleccionar
     cerrarExplorador();
-}
-// 🔹 FUNCIÓN PARA CERRAR EL EXPLORADOR DE IMÁGENES
-function cerrarExplorador() {
-    let modal = document.querySelector("#modal-explorador");
-    if (modal) {
-        modal.style.display = "none";
-    }
 }
 
 function cambiarID(menu, id, cambio) {
@@ -490,35 +489,18 @@ function cambiarID(menu, id, cambio) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            let elemento = document.querySelector(`#id-${menu}-${id}`).closest("li");
-            let lista = elemento.parentElement;
-
-            // Actualizar el ID en pantalla
-            let nuevoId = data.nuevo_id;
-            let idSpan = elemento.querySelector(`#id-${menu}-${id}`);
-
-            if (idSpan) {
-                idSpan.innerText = nuevoId;
-                idSpan.id = `id-${menu}-${nuevoId}`;
+            let tabla = document.getElementById("tabla-" + menu);
+            if (tabla) {
+                tabla.innerHTML = data.tabla; // Reemplazar solo el contenido de la tabla
             }
-
-            // Reordenar la lista automáticamente
-            let elementos = Array.from(lista.children);
-            elementos.sort((a, b) => {
-                let idA = parseInt(a.querySelector("span").innerText.match(/\d+/)[0]);
-                let idB = parseInt(b.querySelector("span").innerText.match(/\d+/)[0]);
-                return idA - idB;
-            });
-
-            // Vaciar y volver a insertar en orden correcto
-            lista.innerHTML = "";
-            elementos.forEach(el => lista.appendChild(el));
         } else {
             alert("Error: " + data.message);
         }
     })
     .catch(error => console.error("Error:", error));
 }
+
+
 
 
 

@@ -6,45 +6,72 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id = intval($_POST['id']);
     $cambio = intval($_POST['cambio']);
 
-    // Verificar si la tabla existe
-    $check_table_sql = "SHOW TABLES LIKE '$menu'";
-    $check_table_result = $conn->query($check_table_sql);
-    if ($check_table_result->num_rows === 0) {
-        echo json_encode(["success" => false, "message" => "La tabla no existe"]);
-        exit;
-    }
+    // Obtener el número total de registros en la tabla
+    $total_registros = $conn->query("SELECT COUNT(*) as total FROM `$menu`")->fetch_assoc()['total'];
 
-    // Obtener el ID actual
-    $sql = "SELECT id FROM `$menu` WHERE id = $id";
-    $result = $conn->query($sql);
+    $nuevo_id = $id + $cambio;
 
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $nuevo_id = $row['id'] + $cambio;
+    // Verificar si el nuevo ID ya existe
+    $check_sql = "SELECT id FROM `$menu` WHERE id = $nuevo_id";
+    $check_result = $conn->query($check_sql);
 
-        if ($nuevo_id < 1) {
-            echo json_encode(["success" => false, "message" => "El ID no puede ser menor que 1"]);
-            exit;
-        }
-
-        // Verificar si el nuevo ID ya existe
-        $check_id_sql = "SELECT id FROM `$menu` WHERE id = $nuevo_id";
-        $check_id_result = $conn->query($check_id_sql);
-
-        if ($check_id_result->num_rows > 0) {
-            // Intercambiar IDs si ya existe
-            $conn->query("UPDATE `$menu` SET id = 0 WHERE id = $id"); // Temporal
-            $conn->query("UPDATE `$menu` SET id = $id WHERE id = $nuevo_id");
-            $conn->query("UPDATE `$menu` SET id = $nuevo_id WHERE id = 0"); // Restaurar
-        } else {
-            // Si no existe, actualizar normalmente
-            $conn->query("UPDATE `$menu` SET id = $nuevo_id WHERE id = $id");
-        }
-
-        echo json_encode(["success" => true, "nuevo_id" => $nuevo_id, "menu" => $menu]);
+    if ($check_result->num_rows > 0) {
+        // Intercambiar IDs correctamente
+        $conn->query("UPDATE `$menu` SET id = 0 WHERE id = $id");
+        $conn->query("UPDATE `$menu` SET id = $id WHERE id = $nuevo_id");
+        $conn->query("UPDATE `$menu` SET id = $nuevo_id WHERE id = 0");
     } else {
-        echo json_encode(["success" => false, "message" => "Elemento no encontrado"]);
+        // Si el ID no existe, actualizar directamente
+        $conn->query("UPDATE `$menu` SET id = $nuevo_id WHERE id = $id");
     }
+
+    // Obtener la tabla actualizada después del cambio
+    $sql_items = "SELECT id, nombre FROM `$menu` ORDER BY id ASC"; 
+    $result_items = $conn->query($sql_items);
+    
+    ob_start();
+    $primero = true;
+    $contador = 0;
+
+    if ($result_items->num_rows > 0):
+        while ($item = $result_items->fetch_assoc()):
+            $contador++;
+?>
+            <tr class="fila" id="fila-<?php echo $menu . '-' . $item['id']; ?>">
+                <td class="nombre">
+                    <?php echo $item['id'] . " - " . htmlspecialchars($item['nombre']); ?>
+                </td>
+                <td class="acciones">
+                    <?php if ($total_registros == 1): ?>
+                        <!-- Si solo hay un registro, no mostrar botones -->
+                    
+                    <?php elseif ($primero): ?> 
+                        <!-- Si es el primer registro, solo mostrar flecha abajo -->
+                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, 1)">↓</button>
+                    
+                    <?php elseif ($contador == $total_registros): ?>
+                        <!-- Si es el último registro, solo mostrar flecha arriba -->
+                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>',<?php echo $item['id']; ?>, -1)">↑</button>
+                    
+                    <?php else: ?>
+                        <!-- Si es cualquier otro, mostrar ambos botones -->
+                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, -1)">↑</button>
+                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, 1)">↓</button>
+                    <?php endif; ?>
+                </td>
+            </tr>
+<?php
+        $primero = false;
+        endwhile;
+    endif;
+    $tabla_actualizada = ob_get_clean();
+
+    echo json_encode([
+        "success" => true,
+        "menu" => $menu,
+        "tabla" => $tabla_actualizada
+    ]);
 }
 
+$conn->close();
 ?>

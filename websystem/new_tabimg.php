@@ -127,8 +127,8 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
                             <input type="text" id="imagen_link" name="imagen_link" 
                                 placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;"
                                 value="<?= isset($datos['imagen']) ? htmlspecialchars($datos['imagen']) : '' ?>">
-                            <button type="button" class="boton-explorador" onclick="mostrarExplorador()">📂</button>
-                        </td>
+                                <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link')">📂</button>
+                                </td>
                     </tr>
                     <tr>
                         <td class="colgrishome">URL:</td>

@@ -529,3 +529,76 @@ table input[type="checkbox"] {
     border-radius: 5px;
     object-fit: cover;
 }
+
+
+/* Contenedor principal */
+.bloque-gris {
+    width: 100%;
+    padding: 10px;
+}
+
+/* Cabecera del menú */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Formulario de eliminación */
+.form-eliminar {
+    display: inline;
+}
+
+/* Botón de eliminación con imagen */
+.btn-eliminar {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-eliminar img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Tabla sin bordes */
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Filas */
+.fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 5px 0;
+}
+
+/* Nombre de los elementos */
+.nombre {
+    flex-grow: 1;
+    padding-left: 10px;
+}
+
+/* Contenedor de botones */
+.acciones {
+    display: flex;
+    gap: 5px;
+}
+
+/* Botones de cambio de posición */
+.botonM {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+

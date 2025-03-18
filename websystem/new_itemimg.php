@@ -25,8 +25,8 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
                     <td class="colgrishome">Imagen:</td>
                     <td class="colblancocen">
                         <input type="text" id="imagen_link" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg" style="width: 50%;" readonly>
-                        <button type="button" class="boton-explorador" onclick="mostrarExplorador()">📂</button>
-                    </td>
+                        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link')">📂</button>
+                        </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">Transicion:</td>
