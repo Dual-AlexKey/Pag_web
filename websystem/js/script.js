@@ -2,7 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const botonesConSubMenu = document.querySelectorAll(".boton.submenu");
     console.log("JavaScript cargado correctamente.");
 
-    
+
+    console.log("TinyMCE inicializado correctamente.");
 
     botonesConSubMenu.forEach(function (boton) {
         boton.addEventListener("click", function () {
@@ -32,6 +33,26 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    tinymce.init({
+        selector: '#editor',
+        height: 400,
+        menubar: 'edit format table', // 🔥 Eliminamos "insert" y "view"
+        branding: false,
+        statusbar: false,
+    
+        plugins: [
+            'advlist autolink lists link charmap print preview anchor',
+            'searchreplace fullscreen',
+            'insertdatetime media paste code help wordcount',
+            'emoticons autosave image',
+            'table',
+            'code','emoticons','media' // 🔥 Aseguramos que "table" y "code" están cargados
+        ],
+    
+        toolbar: 'undo redo | formatselect | bold italic forecolor backcolor | alignleft aligncenter ' +
+                 'alignright alignjustify bullist numlist outdent indent | hr link image media emoticons table code' 
+    });
+   
     const departamentos = {
         peru: [
             "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica",
@@ -450,7 +471,7 @@ function subirImagen() {
 // 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN EL INPUT CORRECTO
 function seleccionar(ruta) {
     let modal = document.getElementById("modal-explorador");
-    let campoDestino = modal.getAttribute("data-campo"); // ✅ Obtener el campo que debe actualizarse
+    let campoDestino = modal.getAttribute("data-campo"); // Obtener el input de destino
 
     if (!campoDestino) {
         console.error("Error: No se encontró el campo destino en el modal.");
@@ -471,8 +492,15 @@ function seleccionar(ruta) {
         console.log("Ruta modificada:", ruta);
     }
 
+    // ✅ Guardar la URL en el input correcto
     inputTexto.value = ruta;
 
+    // ✅ Solo insertar en TinyMCE si el campo es "imagen_link"
+    if (campoDestino === "imagen_linkED") {
+        tinymce.activeEditor.execCommand('mceInsertContent', false, `<img src="../${ruta}" alt="Imagen">`);
+    }
+
+    // ✅ Cerrar el explorador
     cerrarExplorador();
 }
 
@@ -499,8 +527,6 @@ function cambiarID(menu, id, cambio) {
     })
     .catch(error => console.error("Error:", error));
 }
-
-
 
 
 

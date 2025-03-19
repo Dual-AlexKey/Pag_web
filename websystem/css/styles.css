@@ -600,5 +600,8 @@ table input[type="checkbox"] {
     cursor: pointer;
 }
 
-
+#editor {
+    min-height: 150px; /* Altura mínima del editor */
+    max-height: 250px; /* Altura máxima */
+}
 
