@@ -205,8 +205,7 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
                         <tr>
                             <td class="colgrishome">Orden:</td>
                             <td class="colblancocen">
-                                <input type="text" id="orden" name="orden" value="<?= htmlspecialchars($datos['orden'] ?? '') ?>"
-
+                                <input type="text" id="orden" name="orden" value="<?= htmlspecialchars($datos['orden'] ?? '') ?>">
                             </td>
                         </tr>
 

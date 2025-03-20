@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
         toolbar: 'undo redo | formatselect | bold italic forecolor backcolor | alignleft aligncenter ' +
                  'alignright alignjustify bullist numlist outdent indent | hr link image media emoticons table code' 
     });
-   
+    
     const departamentos = {
         peru: [
             "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica",

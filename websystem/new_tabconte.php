@@ -198,7 +198,7 @@ $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
                     <tr>
                         <td class="colgrishome">Estilos:</td>
                         <td>
-                            <ul style="display: flex; gap: 20px; align-items: center;" id="estilocheck" name="estilocheck">
+                            <ul style="display: flex; gap: 20px; align-items: flex-start;" id="estilocheck" name="estilocheck">
                                 <?php
                                 $estilos = [
                                     "Resumen" => "https://i.ibb.co/qLdNSmzM/estiloresumen.gif",
@@ -214,7 +214,7 @@ $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
                                     $checked = (isset($datos['estilocheck']) && $datos['estilocheck'] == $key) ? 'checked' : '';
                                     echo "<div style='width: 90px;'>
                                             <img src='$img' alt='$key' style='width: 80px; height: auto;'><br>
-                                            <input type='radio' name='estilocheck' value='$key' $checked> <span style='font-size: 14px;'>$key</span>
+                                            <input type='radio' name='estilocheck' value='$key' $checked> <span>$key</span>
                                         </div>";
                                 }
                                 ?>
@@ -317,8 +317,7 @@ $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
                         <tr>
                             <td class="colgrishome">Orden:</td>
                             <td class="colblancocen">
-                                <input type="text" id="orden" name="orden" value="<?= htmlspecialchars($datos['orden'] ?? '') ?>"
-
+                                <input type="text" id="orden" name="orden" value="<?= htmlspecialchars($datos['orden'] ?? '') ?>">
                             </td>
                         </tr>
 

@@ -7,88 +7,120 @@ include('estilo/header.php');
 // Incluir el menu.php
 include('estilo/menu.php');
 
+// 🔹 Obtener "cod" desde la URL
+$cod = $_GET['cod'] ?? '';
+
+$datos = [
+    'cod' => $cod,
+    'titulo' => '',
+    'contenido' => '',
+    'tituloS' => '',
+    'descripcion' => '',
+    'metatags' => '',
+    'imagen_referencia' => '',
+    'imagen_social' => ''
+];
+
+// 🔹 Si hay un "cod", buscar los datos en la base de datos
+if (!empty($cod)) {
+    $sql = "SELECT cod, titulo, contenido, tituloS, descripcion, metatags, imagen_referencia, imagen_social 
+            FROM paginas WHERE cod = ?";
+    
+    if ($stmt = $conn->prepare($sql)) {
+        $stmt->bind_param("s", $cod); // "s" porque cod es texto
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($row = $result->fetch_assoc()) {
+            $datos = $row; // 🔹 Cargar los datos si existen
+        }
+
+        $stmt->close();
+    }
+}
 ?>
 <div class="contenido-derecha">
-    <a href="tablero.php"><button class="boton-cerrar">X</button></a>
+    <a href="secciones.php"><button class="boton-cerrar">X</button></a>
     <div class="bloque-verde"><h2>Contenido</h2></div>
     
     <div id="capaformulario">
-        <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="formulario_tipo" value="SeccionPag"> 
+    <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="formulario_tipo" value="SeccionPag"> 
+        <input type="hidden" name="cod" value="<?= htmlspecialchars($datos['cod']) ?>">
 
-            <div class="columna-formulario">
-                <table class="tableborderfull">
-                    <tr>
-                        <td class="colgrishome">Título:</td>
-                        <td class="colblancocen">
-                            <input type="text" id="nombre" name="nombre" required 
-                                style="width: 50%;"
-                                >
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="colgrishome">Contenido:</td>
-                        <td class="colblancocen">
-                            <textarea id="editor" name="contenido"></textarea>
-                            <br>
-                            <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_linkED')">📂 Insertar Imagen</button>
-                            <input type="hidden" id="imagen_linkED"> <!-- Campo oculto para almacenar la URL -->
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            </div>
-            <div class="bloque-verde"><h2>SEO (Posicionamiento Web)</h2></div>
-            <div class="columna-formulario">
+        <div class="columna-formulario">
             <table class="tableborderfull">
                 <tr>
                     <td class="colgrishome">Título:</td>
                     <td class="colblancocen">
-                        <input type="text" id="nombre" name="nombre" required 
-                            oninput="actualizarURL()" style="width: 50%;"
-                            value="<?= isset($datos['nombre']) ? htmlspecialchars($datos['nombre']) : '' ?>">
+                        <input type="text" id="nombreT" name="nombreT" required 
+                            style="width: 50%;" 
+                            value="<?= htmlspecialchars($datos['titulo']) ?>">
                     </td>
                 </tr>
                 <tr>
-                    <td class="colgrishome">Descripcion:</td>
+                    <td class="colgrishome">Contenido:</td>
                     <td class="colblancocen">
-                        <textarea id="codigo" name="codigo" rows="10" cols="65"><?= isset($datos['codigo']) ? htmlspecialchars(trim($datos['codigo'])) : '' ?></textarea>
+                        <textarea id="editor" name="contenido"><?= htmlspecialchars($datos['contenido']) ?></textarea>
+                        <br>
+                        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_linkED')">📂 Insertar Imagen</button>
+                        <input type="hidden" id="imagen_linkED"> 
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="bloque-verde"><h2>SEO (Posicionamiento Web)</h2></div>
+        <div class="columna-formulario">
+            <table class="tableborderfull">
+                <tr>
+                    <td class="colgrishome">Título Secundario:</td>
+                    <td class="colblancocen">
+                        <input type="text" id="nombreS" name="nombreS" required 
+                            style="width: 50%;" 
+                            value="<?= htmlspecialchars($datos['tituloS']) ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="colgrishome">Descripción:</td>
+                    <td class="colblancocen">
+                        <textarea id="descrip" name="descrip" rows="10" cols="65"><?= htmlspecialchars($datos['descripcion']) ?></textarea>
                     </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">Metatags:</td>
                     <td class="colblancocen">
-                        <textarea id="codigo" name="codigo" rows="10" cols="65"><?= isset($datos['codigo']) ? htmlspecialchars(trim($datos['codigo'])) : '' ?></textarea>
+                        <textarea id="meta" name="meta" rows="10" cols="65"><?= htmlspecialchars($datos['metatags']) ?></textarea>
                     </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">Imagen Referencia:</td>
                     <td class="colblancocen">
-                        <input type="text" id="imagen_link2" name="imagen_link" 
-                            placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;"
-                            >
-                            <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link2')">📂</button>
-                            </td>
+                        <input type="text" id="imagen_link2" name="imagen_link2" 
+                            style="width: 30%;"
+                            value="<?= htmlspecialchars($datos['imagen_referencia']) ?>">
+                        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link2')">📂</button>
+                    </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">Imagen Social:</td>
                     <td class="colblancocen">
-                        <input type="text" id="imagen_link3" name="imagen_link" 
-                            placeholder="https://ejemplo.com/imagen.jpg" style="width: 30%;"
-                            >
-                            <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link3')">📂</button>
-                            </td>
+                        <input type="text" id="imagen_link3" name="imagen_link3" 
+                            style="width: 30%;"
+                            value="<?= htmlspecialchars($datos['imagen_social']) ?>">
+                        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link3')">📂</button>
+                    </td>
                 </tr>
             </table>
-            </div>
+        </div>
 
-            <div class="boton-container">
-                <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
-                <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'tablero.php'">Cancelar</button>
-            </div>
-        </form>
-    </div>
+        <div class="boton-container">
+            <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
+            <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'tablero.php'">Cancelar</button>
+        </div>
+    </form>
+</div>
+
 </div>
 
 <div id="modal-explorador" class="modal">

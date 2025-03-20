@@ -9,92 +9,66 @@ include('estilo/menu.php');
 ?>
 <div class="contenido-derecha">
     <a href="panel.php"><button class="boton-cerrar">X</button></a>
-    <div class="bloque-verde"><h2>Imagenes</h2></div>
+    <div class="bloque-verde"><h2>Imágenes</h2></div>
     <a href="new_itemimg.php"><button class="boton-nvpag">Nueva sección</button></a>
     <div class="bloque-gris"><h3>Insertar</h3></div>
 
     <table class="tableborderfull">
         <tr>
             <td>||</td>
-            <td>Item:/</td>
+            <td>Item: /</td>
             <td>Orden</td>
             <td>Tipo</td>
-            <td>Pos. hor</td>
+            <td>Pos. Hor</td>
             <td>Pos. Ver</td>
             <td>Ingreso desde</td>
-            <td>Duracion</td>
+            <td>Duración</td>
             <td>Opciones</td>
         </tr>
 
         <?php
-       /* $nombres_unicos = []; // Para almacenar los nombres ya mostrados
 
-        foreach ($menu_tables as $table) {
-            // Consultar datos de cada tabla encontrada
-            $sql = "SELECT * FROM `$table`";
-            $result = $conn->query($sql);
+        $sql = "SELECT * FROM Imagenes ORDER BY orden ASC"; // 🔹 Obtener imágenes ordenadas
+        $result = $conn->query($sql);
 
+        if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $nombre = $row["nombre"];
-
-                // Si el nombre ya fue mostrado, saltarlo
-                if (isset($nombres_unicos[$nombre])) {
-                    continue;
-                }
-                
-                // Marcar el nombre como mostrado
-                $nombres_unicos[$nombre] = true;
+                $nombre = !empty($row["nombre"]) ? htmlspecialchars($row["nombre"]) : "--";
+                $orden = !empty($row["orden"]) ? htmlspecialchars($row["orden"]) : "--";
+                $duracion = !empty($row["altura"]) ? htmlspecialchars($row["altura"]) . " ms" : "--";
 
                 echo "<tr>";
                 echo "<td>||</td>";
-                echo "<td>" . htmlspecialchars($nombre) . "</td>";
-                echo "<td>" . htmlspecialchars($row["modulo"]) . "</td>";
-                echo "<td>" . htmlspecialchars($row["orden"]) . "</td>";
-                echo "<td>" . htmlspecialchars($row["nro_item"]) . "</td>";
-                echo "<td>" . htmlspecialchars($row["visitas"]) . "</td>";
-                echo "<td>";
-
-                // Obtener valores para los botones
-                $cod = urlencode($row["cod"]); 
-                $codtab = urlencode($row["codtab"]);
-                $nombre = urlencode($row["nombre"]); 
-
-
-                $botones = [
-                    ["pagina" => "editccion.php", "imagen" => "https://i.ibb.co/nNQjXb7b/wp-editar.png"],
-                    ["pagina" => "panel.php", "imagen" => "https://i.ibb.co/hPQ0zQ5/ws-menu.png"],
-                    ["pagina" => "ajustes.php", "imagen" => "https://i.ibb.co/VYrngfWv/wp-page.png"],
-                    ["pagina" => "config.php", "imagen" => "https://i.ibb.co/Fq6n7h1M/wp-tools.png"],
-                    ["pagina" => "conect/eliminar_elemento.php", "imagen" => "https://i.ibb.co/LdTnB39W/wp-borrar.png"]
-                ];
-
-                foreach ($botones as $boton) {
-                    $width = "25px";
-                    $height = ($boton['pagina'] === "panel.php") ? "15px" : "25px";
-
-                    // Construir URL con los parámetros adecuados
-                    $url = "{$boton['pagina']}?cod=$cod";
-                    if (!empty($codtab)) {
-                        $url .= "&codtab=$codtab";
-                        $url .= "&nombre=$nombre";
-                    }
-                    elseif (!empty($nombre)) {
-                        $url .= "&nombre=$nombre";
-                    }
-
-                    echo "<a href='$url' class='btn_st'>
-                            <img src='{$boton['imagen']}' alt='Botón' style='width: $width; height: $height; vertical-align: middle;'>
-                          </a> ";
-                }
-
-                echo "</td>";
+                echo "<td>$nombre</td>";
+                echo "<td>$orden</td>";
+                echo "<td>--</td>"; // Tipo (vacío)
+                echo "<td>--</td>"; // Pos. Hor (vacío)
+                echo "<td>--</td>"; // Pos. Ver (vacío)
+                echo "<td>--</td>"; // Ingreso desde (vacío)
+                echo "<td>$duracion</td>";
+                echo "<td style='display: flex; align-items: center; gap: 5px;'>
+                        <a href='edit_itemimg.php?id=" . $row["id"] . "'>
+                            <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Editar' style='width: 20px; height: 20px;'>
+                        </a>
+                        <a href='conect/eliminar_imagen.php?id=" . $row["id"] . "' onclick=\"return confirm('¿Eliminar esta imagen?');\">
+                            <img src='https://i.ibb.co/LdTnB39W/wp-borrar.png' alt='Borrar' style='width: 20px; height: 20px;'>
+                        </a>
+                        <a href='ver_imagenes.php?id=" . $row["id"] . "'>
+                            <img src='https://i.ibb.co/Fq6n7h1M/wp-tools.png' alt='Imágenes' style='width: 20px; height: 20px;'>
+                        </a>
+                        </td>";
                 echo "</tr>";
             }
-        }*/
+        } else {
+            echo "<tr><td colspan='9'>No hay imágenes registradas.</td></tr>";
+        }
+
+        $conn->close();
         ?>
 
     </table>
 </div>
+
 <?php
 // Incluir el footer.php
 include('estilo/footer.php');

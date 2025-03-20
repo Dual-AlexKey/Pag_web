@@ -175,9 +175,9 @@
 }
 /* WebConfig.html */
 .bloque-verde, .bloque-gris {
-    width: 100%;
     padding: 0.5px; /* Reducido para evitar margen excesivo */
     font-size: 14px; /* Reduce el tamaño de la letra */
+    width: 100%;
 }
 
 .bloque-verde {
@@ -528,13 +528,6 @@ table input[type="checkbox"] {
     height: 80px;
     border-radius: 5px;
     object-fit: cover;
-}
-
-
-/* Contenedor principal */
-.bloque-gris {
-    width: 100%;
-    padding: 10px;
 }
 
 /* Cabecera del menú */

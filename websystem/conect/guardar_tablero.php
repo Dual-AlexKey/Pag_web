@@ -648,6 +648,142 @@ if (!is_dir($directorioActual)) {
             echo "Error al crear el archivo.";
         }
     }
+    elseif ($tipoFormulario == "SeccionPag") {
+        $titulo = $_POST['nombreT'] ?? '';
+        $contenido = $_POST['contenido'] ?? '';
+        $tituloS = $_POST['nombreS'] ?? '';
+        $descripcion = $_POST['descrip'] ?? '';
+        $cod = $_POST['cod'] ?? '';
+        $metatags = $_POST['meta'] ?? '';
+        $imagen_referencia = $_POST['imagen_link2'] ?? '';
+        $imagen_social = $_POST['imagen_link3'] ?? '';
+        $sef_seccion = true;
+
+    
+        // 🔹 Verificar si `cod` ya existe en la base de datos
+        $sql_check = "SELECT cod FROM paginas WHERE cod = ?";
+        if ($stmt_check = $conn->prepare($sql_check)) {
+            $stmt_check->bind_param("s", $cod);
+            $stmt_check->execute();
+            $result = $stmt_check->get_result();
+            $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
+            $stmt_check->close();
+        }
+    
+        if ($exists) {
+            // 🔹 Si `cod` ya existe, actualizar los datos
+            $sql_update = "UPDATE paginas SET titulo=?, contenido=?, tituloS=?, descripcion=?, metatags=?, imagen_referencia=?, imagen_social=? 
+                           WHERE cod=?";
+            
+            if ($stmt_update = $conn->prepare($sql_update)) {
+                $stmt_update->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $metatags, $imagen_referencia, $imagen_social, $cod);
+                if ($stmt_update->execute()) {
+                    echo "✅ Página actualizada correctamente.";
+                } else {
+                    echo "❌ Error al actualizar: " . $stmt_update->error;
+                }
+                $stmt_update->close();
+            }
+        } else {
+            // 🔹 Si `cod` no existe, insertar un nuevo registro
+            $sql_insert = "INSERT INTO paginas (titulo, contenido, tituloS, descripcion, cod, metatags, imagen_referencia, imagen_social) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    
+            if ($stmt_insert = $conn->prepare($sql_insert)) {
+                $stmt_insert->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $cod, $metatags, $imagen_referencia, $imagen_social);
+                if ($stmt_insert->execute()) {
+                    echo "✅ Nueva página guardada correctamente.";
+                } else {
+                    echo "❌ Error al guardar: " . $stmt_insert->error;
+                }
+                $stmt_insert->close();
+            }
+        }
+    }
+    elseif ($tipoFormulario == "SeccionPar") {
+        $cod = $_POST['cod'] ?? '';
+        $estructsecc = $_POST['estructsecc'] ?? '';
+        $estructcont = $_POST['estructcont'] ?? '';
+        $mostrar = isset($_POST['mostrar']) ? implode(',', $_POST['mostrar']) : null;
+        $estilosubsec = $_POST['estilosubsec'] ?? '';
+        $fondsecc = $_POST['fondsecc'] ?? '';
+        $galeria = $_POST['galeria'] ?? '';
+        $barrasubmenu = $_POST['barrasubmenu'] ?? '';
+        $barramenu = $_POST['barramenu'] ?? '';
+        $ordensecc = $_POST['ordensecc'] ?? '';
+        $orden = $_POST['orden'] ?? '';
+        $ordencont = $_POST['ordencont'] ?? '';
+        $sef_seccion = true;
+
+
+    
+        // 🔹 Verificar si `cod` ya existe en la base de datos
+        $sql_check = "SELECT cod FROM detalles WHERE cod = ?";
+        if ($stmt_check = $conn->prepare($sql_check)) {
+            $stmt_check->bind_param("s", $cod);
+            $stmt_check->execute();
+            $result = $stmt_check->get_result();
+            $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
+            $stmt_check->close();
+        }
+    
+        if ($exists) {
+            // 🔹 Si `cod` ya existe, actualizar los datos
+            $sql_update = "UPDATE detalles SET estructsecc=?, estructcont=?, mostrar=?, estilosubsec=?, fondsecc=?, galeria=?, barrasubmenu=?, barramenu=?, ordensecc=?, orden=?, ordencont=? 
+                           WHERE cod=?";
+            
+            if ($stmt_update = $conn->prepare($sql_update)) {
+                $stmt_update->bind_param("ssssssssssss", $estructsecc, $estructcont, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $barramenu, $ordensecc, $orden, $ordencont, $cod);
+                if ($stmt_update->execute()) {
+                    echo "✅ Página actualizada correctamente.";
+                } else {
+                    echo "❌ Error al actualizar: " . $stmt_update->error;
+                }
+                $stmt_update->close();
+            }
+        } else {
+            // 🔹 Si `cod` no existe, insertar un nuevo registro
+            $sql_insert = "INSERT INTO detalles (cod, estructsecc, estructcont, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, barramenu, ordensecc, orden, ordencont) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+            if ($stmt_insert = $conn->prepare($sql_insert)) {
+                $stmt_insert->bind_param("ssssssssssss", $cod, $estructsecc, $estructcont, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $barramenu, $ordensecc, $orden, $ordencont);
+                if ($stmt_insert->execute()) {
+                    echo "✅ Nueva página guardada correctamente.";
+                } else {
+                    echo "❌ Error al guardar: " . $stmt_insert->error;
+                }
+                $stmt_insert->close();
+            }
+        }
+    }
+    elseif ($tipoFormulario == "Imagenes_Tablero") {
+        $nombre = $_POST['nombre'] ?? '';
+        $imagen_link = $_POST['imagen_link'] ?? '';
+        $transicion = $_POST['modulo'] ?? '';
+        $altura = $_POST['altura'] ?? 0;
+        $orden = $_POST['Orden'] ?? 0;
+
+        // Convertir a enteros (seguridad)
+        $altura = is_numeric($altura) ? intval($altura) : 0;
+        $orden = is_numeric($orden) ? intval($orden) : 0;
+
+        // Consulta SQL
+        $sql_img = "INSERT INTO Imagenes (nombre, imagen_link, transicion, altura, orden) VALUES (?, ?, ?, ?, ?)";
+
+        if ($stmt = $conn->prepare($sql_img)) {
+            $stmt->bind_param("sssii", $nombre, $imagen_link, $transicion, $altura, $orden);
+            if ($stmt->execute()) {
+                echo "✅ Imagen guardada correctamente.";
+            } else {
+                echo "❌ Error al guardar: " . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            echo "❌ Error en la consulta: " . $conn->error;
+        }
+    }
+    
    
     // 📌 Ejecutar la consulta
     if ($sql != "") {
