@@ -38,7 +38,7 @@ $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="websystem">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

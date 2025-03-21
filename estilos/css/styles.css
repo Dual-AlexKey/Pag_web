@@ -182,7 +182,7 @@ body {
 
 
 /*login estilo*/
-html {
+html.websystem {
     background-color: green; /* Fondo verde */
     height: 100%;
 }

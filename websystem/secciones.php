@@ -69,9 +69,9 @@ while ($row = $result->fetch_array()) {
                 $botones = [
                     "editccion.php" => ["cod", "codtab", "nombre"],
                     "subseccion.php" => ["cod", "codtab", "nombre", "nv"],
-                    "seccionpagina.php" => ["cod"],
-                    "secciondetalle.php" => ["cod"],
-                    "conect/eliminar_elemento.php" => ["cod", "codtab"]
+                    "seccionpagina.php" => ["cod", "nombre"],
+                    "secciondetalle.php" => ["cod", "nombre"],
+                    "conect/eliminar_elemento.php" => ["cod", "codtab", "nombre"]
                 ];
             
                 $imagenes = [

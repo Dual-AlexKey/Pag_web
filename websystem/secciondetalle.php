@@ -9,17 +9,17 @@ include('estilo/menu.php');
 
 // 🔹 Obtener "cod" desde la URL
 $cod = $_GET['cod'] ?? '';
+$nombre = $_GET['nombre'] ?? '';
 
 $datos = [
     'cod' => $cod,
+    'nombre' => $nombre,
     'estructsecc' => '',
-    'estructcont' => '',
     'mostrar' => '',
     'estilosubsec' => '',
     'fondsecc' => '',
     'galeria' => '',
     'barrasubmenu' => '',
-    'barramenu' => '',
     'ordensecc' => '',
     'orden' => '',
     'ordencont' => ''
@@ -27,7 +27,7 @@ $datos = [
 
 // 🔹 Si hay un "cod", buscar los datos en la base de datos
 if (!empty($cod)) {
-    $sql = "SELECT cod, estructsecc, estructcont, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, barramenu, ordensecc, orden, ordencont 
+    $sql = "SELECT cod, nombre, estructsecc, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, ordensecc, orden, ordencont 
             FROM detalles WHERE cod = ?";
     
     if ($stmt = $conn->prepare($sql)) {
@@ -52,6 +52,7 @@ if (!empty($cod)) {
     <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
         <input type="hidden" name="formulario_tipo" value="SeccionPar"> 
         <input type="hidden" name="cod" value="<?= htmlspecialchars($datos['cod']) ?>">
+        <input type="hidden" name="nombre" value="<?= htmlspecialchars($datos['nombre']) ?>">
 
         <div class="columna-formulario">
             <table class="tableborderfull">
@@ -64,7 +65,7 @@ if (!empty($cod)) {
                                 "Estilo Izquierda" => "https://i.ibb.co/7J5ry10N/estiloweb01.gif",
                                 "Estilo Derecha" => "https://i.ibb.co/5WnwPvGR/estiloweb02.gif",
                                 "Estilo 3Columnas" => "https://i.ibb.co/N4rtv5J/estiloweb03.gif",
-                                "Estilo  Full" => "https://i.ibb.co/G4BKp12v/estiloweb04.gif",
+                                "Estilo Full" => "https://i.ibb.co/G4BKp12v/estiloweb04.gif",
                             ];
                             foreach ($estilos as $key => $img) {
                                 $checked = (isset($datos['estructsecc']) && $datos['estructsecc'] == $key) ? 'checked' : '';
@@ -77,28 +78,7 @@ if (!empty($cod)) {
                         </ul>
                     </td>
                 </tr>
-                <tr>
-                    <td class="colgrishome">Estructura para Contenido:</td>
-                    <td>
-                        <ul style="display: flex; gap: 20px; align-items: flex-start;" id="estructcont" name="estructcont">
-                            <?php
-                            $estilos = [
-                                "Estilo Izquierda" => "https://i.ibb.co/7J5ry10N/estiloweb01.gif",
-                                "Estilo Derecha" => "https://i.ibb.co/5WnwPvGR/estiloweb02.gif",
-                                "Estilo 3Columnas" => "https://i.ibb.co/N4rtv5J/estiloweb03.gif",
-                                "Estilo Full" => "https://i.ibb.co/G4BKp12v/estiloweb04.gif",
-                            ];
-                            foreach ($estilos as $key => $img) {
-                                $checked = (isset($datos['estructcont']) && $datos['estructcont'] == $key) ? 'checked' : '';
-                                echo "<div style='width: 90px;'>
-                                        <img src='$img' alt='$key' style='width: 80px; height: auto; margin-top: 3px;'><br>
-                                        <input type='radio' name='estructcont' value='$key' $checked> <span>$key</span>
-                                    </div>";
-                            }
-                            ?>
-                        </ul>
-                    </td>
-                </tr>
+                
                 <tr>
                     <td class="colgrishome">Datos a Mostrar:</td>
                     <td class="colblancocen">
@@ -208,25 +188,6 @@ if (!empty($cod)) {
                     </td>
                 </tr>
                 <tr>
-                    <td class="colgrishome">Barra lateral: Estilo Menus</td>
-                    <td class="colblancocen">
-                        <select id="barramenu" name="barramenu" style="width: 30%;">
-                            <?php
-                            $ordenes = [
-                                "menu00" => "No mostrar",
-                                "menu01" => "Menu lateral principal",
-                                "menu02" => "Solo sus submenus",
-                                "menu03" => "Todo sus submenus",
-                            ];
-                            foreach ($ordenes as $key => $label) {
-                                $selected = (isset($datos['barramenu']) && $datos['barramenu'] == $key) ? 'selected' : '';
-                                echo "<option value='$key' $selected>$label</option>";
-                            }
-                            ?>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
                     <td class="colgrishome">Orden seccion:</td>
                     <td class="colblancocen">
                         <input type="text" id="ordensecc" name="ordensecc" style="width: 12%" value="<?= htmlspecialchars($datos['ordensecc'] ?? '') ?>">
@@ -263,7 +224,7 @@ if (!empty($cod)) {
         </div>
         <div class="boton-container">
             <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
-            <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'tablero.php'">Cancelar</button>
+            <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
         </div>
     </form>
 </div>

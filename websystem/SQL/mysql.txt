@@ -1,6 +1,6 @@
 CREATE DATABASE EmpresaDB;
 USE EmpresaDB;
-drop table tablero
+drop table paginas
 CREATE TABLE Empresa (
     id_empresa INT PRIMARY KEY AUTO_INCREMENT,
     url_pagina VARCHAR(255),
@@ -59,7 +59,7 @@ VALUES
     items_visibles INT DEFAULT NULL,    -- Para `new_tabconte`
     ordennum VARCHAR(50) DEFAULT NULL,  -- Para `new_tabconte`
     estilocheck VARCHAR(50) DEFAULT NULL,
-    mostrar VARCHAR(50) DEFAULT NULL,
+    mostrar VARCHAR(255) DEFAULT NULL,
     altura INT DEFAULT NULL,            -- Para `new_tabbanner`
     apps VARCHAR(100) DEFAULT NULL,     -- Para `new_tabapps`
     tabla TEXT DEFAULT NULL,            -- Guarda los nombres de las tablas seleccionadas
@@ -72,21 +72,62 @@ VALUES
     fecha_inicio DATE DEFAULT NULL,     -- Fecha de inicio
     fecha_final DATE DEFAULT NULL       -- Fecha de finalización
 );
-
 CREATE TABLE log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usu VARCHAR(50) UNIQUE NOT NULL,
     con VARCHAR(255) NOT NULL
 );
+drop table detalles
+	select*from paginas;
+CREATE TABLE paginas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    contenido TEXT NOT NULL,
+    tituloS VARCHAR(255),
+    descripcion TEXT,
+    cod varchar(255),
+    metatags TEXT,
+    imagen_referencia VARCHAR(255),
+    imagen_social VARCHAR(255),
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE detalles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cod varchar(255),
+    nombre varchar(255),
+    estructsecc VARCHAR(50) DEFAULT NULL,
+    mostrar VARCHAR(255) DEFAULT NULL,
+    estilosubsec VARCHAR(50) DEFAULT NULL,
+    fondsecc VARCHAR(50) DEFAULT NULL,
+    galeria VARCHAR(50) DEFAULT NULL,
+    barrasubmenu VARCHAR(50) DEFAULT NULL,
+    ordensecc INT DEFAULT NULL,
+    orden INT DEFAULT NULL,
+    ordencont VARCHAR(50) DEFAULT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-	select*from log;
+CREATE TABLE Imagenes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    imagen_link VARCHAR(255) NOT NULL,
+    transicion VARCHAR(255),
+    altura INT,
+    orden INT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+select * from Imagenes
+
+
 
  
-
-	select*from tablero;
-		select*from menu_cabecera_cabecera;
+SELECT id FROM tablero WHERE id =28
+	select*from DETALLES;
+			select*from menu_cabecera_cabecerat;
         select*from menu_pie_pie;
         select*from menu_input_cabecera;
-        select*from menu_prub4_pie
+			select*from empresa
     SHOW TABLES LIKE 'menu_%';
 
+SELECT id, tabla FROM tablero WHERE id = 21;
+SELECT id, nombre, tabla FROM tablero WHERE tabla = 'tablero';

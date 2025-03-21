@@ -322,38 +322,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Sanitizar el nombre del archivo y la carpeta (permitir solo letras, números, guiones y guiones bajos)
-    $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
+$nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
 
-    // Definir la carpeta y la ruta completa del archivo
-    $directorioBase = __DIR__ . '/../../';  
-    $directorio = $directorioBase . $nombreLimpio; // Carpeta con el nombre limpio
-    $rutaArchivo = $directorio . '/' . $nombreLimpio . '.php'; // Archivo dentro de la carpeta
+// Definir la carpeta y la ruta completa del archivo
+$directorioBase = __DIR__ . '/../../';  
+$directorio = $directorioBase . $nombreLimpio; // Carpeta con el nombre limpio
+$rutaArchivo = $directorioBase . $nombreLimpio . '.php'; // Archivo al mismo nivel que la carpeta
 
-    // Crear la carpeta si no existe
-    if (!is_dir($directorio)) {
-        mkdir($directorio, 0777, true);
-    }
+// Crear la carpeta si no existe
+if (!is_dir($directorio)) {
+    mkdir($directorio, 0777, true);
+}
 
-    // Contenido del archivo
-    $contenido = "<!DOCTYPE html>
-<html lang='es'>
+$contenido = <<<PHP
+<?php
+include('estilos/header.php');
+include __DIR__ . '/estilos/generar_design.php';
+
+// Obtener el nombre del archivo actual
+\$nombreArchivo = basename(__FILE__, '.php');
+
+// Llamar a la función para generar el diseño dinámico
+?>
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>$nombreLimpio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diseño Dinámico - <?php echo \$nombreArchivo; ?></title>
+    <link rel="stylesheet" href="estilos/css/styles.css">
 </head>
 <body>
-    <h1>Bienvenido a la página de $nombreLimpio</h1>
-    <p>Esta es una página creada automáticamente.</p>
+    <div class="layout">
+        <?php generarDiseno(\$nombreArchivo); ?>
+    </div>
 </body>
-</html>";
+</html>
+PHP;
 
-    // Crear el archivo dentro de la carpeta
-    if (file_put_contents($rutaArchivo, $contenido) !== false) {
-        echo "Página creada exitosamente en <a href='../$nombreLimpio/$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
-    } else {
-        echo "Error al crear el archivo.";
-    }
+// Crear el archivo al mismo nivel que la carpeta
+if (file_put_contents($rutaArchivo, $contenido) !== false) {
+    echo "Página creada exitosamente en <a href='../$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
+} else {
+    echo "Error al crear el archivo.";
+}
+
 }
 elseif ($tipoFormulario == "Editseccion") {
     
@@ -446,51 +459,44 @@ elseif ($tipoFormulario == "Editseccion") {
         }
     }
 
-    // 🔹 1️⃣ Renombrar carpeta y archivo
+// 🔹 1️⃣ Configuración de Rutas
 $directorioBase = __DIR__ . '/../../';  
-$nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '', $nameold); // Sanitiza el nombre viejo
-$nombreNuevoLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '', $nombre); // Sanitiza el nombre nuevo
+$nameOldLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '', $nameold); // Sanitiza el nombre viejo
+$nameNuevoLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '', $nombre); // Sanitiza el nombre nuevo
 
-$directorioActual = $directorioBase . $nombreLimpio;
-$directorioNuevo = $directorioBase . $nombreNuevoLimpio;
+$directorioActual = $directorioBase . $nameOldLimpio; // Carpeta vieja
+$directorioNuevo = $directorioBase . $nameNuevoLimpio; // Carpeta nueva
 
-$archivoNombreViejo = $nombreLimpio . '.php';
-$archivoNombreNuevo = $nombreNuevoLimpio . '.php';
-
-$archivoActual = $directorioActual . '/' . $archivoNombreViejo;
-$archivoNuevo = $directorioNuevo . '/' . $archivoNombreNuevo;
+$archivoViejo = $directorioBase . $nameOldLimpio . '.php'; // Archivo viejo
+$archivoNuevo = $directorioBase . $nameNuevoLimpio . '.php'; // Archivo nuevo
 
 // 📌 Debugging - Verificar si las rutas son correctas
 echo "Directorio Actual: $directorioActual <br>";
 echo "Directorio Nuevo: $directorioNuevo <br>";
-echo "Archivo Actual: $archivoActual <br>";
+echo "Archivo Viejo: $archivoViejo <br>";
 echo "Archivo Nuevo: $archivoNuevo <br>";
 
+    // 🔍 Validar existencia de la carpeta y archivo
 if (!is_dir($directorioActual)) {
-    echo "⚠️ Error: La carpeta no existe. Verifica la ruta.";
-} elseif (!file_exists($archivoActual)) {
-    echo "⚠️ Error: El archivo no existe dentro de la carpeta.";
-} else {
-    // 🚀 Primero, renombramos la carpeta
-    if (rename($directorioActual, $directorioNuevo)) {
-        echo "✅ Carpeta renombrada con éxito.<br>";
+        echo "⚠️ Error: La carpeta no existe. Verifica la ruta.<br>";
+    } elseif (!file_exists($archivoViejo)) {
+        echo "⚠️ Error: El archivo no existe. Verifica la ruta.<br>";
+    } else {
+        // 🚀 Renombrar Carpeta
+        if (rename($directorioActual, $directorioNuevo)) {
+            echo "✅ Carpeta renombrada con éxito.<br>";
 
-        // 🔄 ACTUALIZAMOS la ruta del archivo después de renombrar la carpeta
-        $archivoActual = $directorioNuevo . '/' . $archivoNombreViejo;
-
-        if (file_exists($archivoActual)) {
-            if (rename($archivoActual, $archivoNuevo)) {
+            // 🚀 Renombrar Archivo
+            if (rename($archivoViejo, $archivoNuevo)) {
                 echo "✅ Archivo renombrado con éxito.<br>";
             } else {
-                echo "❌ Error al renombrar el archivo. Verifica permisos.";
+                echo "❌ Error al renombrar el archivo. Verifica permisos.<br>";
             }
         } else {
-            echo "⚠️ Error: El archivo no se encontró después de renombrar la carpeta.";
+            echo "❌ Error al renombrar la carpeta. Verifica permisos.<br>";
         }
-    } else {
-        echo "❌ Error al renombrar la carpeta. Verifica permisos.";
     }
-}
+
     }
     elseif ($tipoFormulario == "Subseccion") {
         $cod = $_POST["cod"] ?? null; // Puede venir vacío
@@ -617,36 +623,37 @@ if (!is_dir($directorioActual)) {
         // Sanitizar el nombre del archivo y la carpeta (permitir solo letras, números, guiones y guiones bajos)
         $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
 
-        // Definir la carpeta y la ruta completa del archivo
-        $directorioBase = __DIR__ . '/../../';  
-        $directorio = $directorioBase . $nombreLimpio; // Carpeta con el nombre limpio
-        $rutaArchivo = $directorio . '/' . $nombreLimpio . '.php'; // Archivo dentro de la carpeta
+// Definir la carpeta y la ruta completa del archivo
+$directorioBase = __DIR__ . '/../../';  
+$directorio = $directorioBase . $nombreLimpio; // Carpeta con el nombre limpio
+$rutaArchivo = $directorioBase . $nombreLimpio . '.php'; // Archivo al mismo nivel que la carpeta
 
-        // Crear la carpeta si no existe
-        if (!is_dir($directorio)) {
-            mkdir($directorio, 0777, true);
-        }
+// Crear la carpeta si no existe
+if (!is_dir($directorio)) {
+    mkdir($directorio, 0777, true);
+}
 
-        // Contenido del archivo
-        $contenido = "<!DOCTYPE html>
-    <html lang='es'>
-    <head>
-        <meta charset='UTF-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <title>$nombreLimpio</title>
-    </head>
-    <body>
-        <h1>Bienvenido a la página de $nombreLimpio</h1>
-        <p>Esta es una página creada automáticamente.</p>
-    </body>
-    </html>";
+// Contenido del archivo
+$contenido = "<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>$nombreLimpio</title>
+</head>
+<body>
+    <h1>Bienvenido a la página de $nombreLimpio</h1>
+    <p>Esta es una página creada automáticamente.</p>
+</body>
+</html>";
 
-        // Crear el archivo dentro de la carpeta
-        if (file_put_contents($rutaArchivo, $contenido) !== false) {
-            echo "Página creada exitosamente en <a href='../$nombreLimpio/$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
-        } else {
-            echo "Error al crear el archivo.";
-        }
+// Crear el archivo al mismo nivel que la carpeta
+if (file_put_contents($rutaArchivo, $contenido) !== false) {
+    echo "Página creada exitosamente en <a href='../$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
+} else {
+    echo "Error al crear el archivo.";
+}
+
     }
     elseif ($tipoFormulario == "SeccionPag") {
         $titulo = $_POST['nombreT'] ?? '';
@@ -702,14 +709,13 @@ if (!is_dir($directorioActual)) {
     }
     elseif ($tipoFormulario == "SeccionPar") {
         $cod = $_POST['cod'] ?? '';
+        $nombre = $_POST['nombre'] ?? '';
         $estructsecc = $_POST['estructsecc'] ?? '';
-        $estructcont = $_POST['estructcont'] ?? '';
         $mostrar = isset($_POST['mostrar']) ? implode(',', $_POST['mostrar']) : null;
         $estilosubsec = $_POST['estilosubsec'] ?? '';
         $fondsecc = $_POST['fondsecc'] ?? '';
         $galeria = $_POST['galeria'] ?? '';
         $barrasubmenu = $_POST['barrasubmenu'] ?? '';
-        $barramenu = $_POST['barramenu'] ?? '';
         $ordensecc = $_POST['ordensecc'] ?? '';
         $orden = $_POST['orden'] ?? '';
         $ordencont = $_POST['ordencont'] ?? '';
@@ -729,11 +735,11 @@ if (!is_dir($directorioActual)) {
     
         if ($exists) {
             // 🔹 Si `cod` ya existe, actualizar los datos
-            $sql_update = "UPDATE detalles SET estructsecc=?, estructcont=?, mostrar=?, estilosubsec=?, fondsecc=?, galeria=?, barrasubmenu=?, barramenu=?, ordensecc=?, orden=?, ordencont=? 
+            $sql_update = "UPDATE detalles SET estructsecc=?, nombre=?, mostrar=?, estilosubsec=?, fondsecc=?, galeria=?, barrasubmenu=?, ordensecc=?, orden=?, ordencont=? 
                            WHERE cod=?";
             
             if ($stmt_update = $conn->prepare($sql_update)) {
-                $stmt_update->bind_param("ssssssssssss", $estructsecc, $estructcont, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $barramenu, $ordensecc, $orden, $ordencont, $cod);
+                $stmt_update->bind_param("sssssssssss", $estructsecc, $nombre, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont, $cod);
                 if ($stmt_update->execute()) {
                     echo "✅ Página actualizada correctamente.";
                 } else {
@@ -743,11 +749,11 @@ if (!is_dir($directorioActual)) {
             }
         } else {
             // 🔹 Si `cod` no existe, insertar un nuevo registro
-            $sql_insert = "INSERT INTO detalles (cod, estructsecc, estructcont, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, barramenu, ordensecc, orden, ordencont) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql_insert = "INSERT INTO detalles (cod, nombre, estructsecc, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, ordensecc, orden, ordencont) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
             if ($stmt_insert = $conn->prepare($sql_insert)) {
-                $stmt_insert->bind_param("ssssssssssss", $cod, $estructsecc, $estructcont, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $barramenu, $ordensecc, $orden, $ordencont);
+                $stmt_insert->bind_param("sssssssssss", $cod, $nombre, $estructsecc, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont);
                 if ($stmt_insert->execute()) {
                     echo "✅ Nueva página guardada correctamente.";
                 } else {

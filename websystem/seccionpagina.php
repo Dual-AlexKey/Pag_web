@@ -116,7 +116,7 @@ if (!empty($cod)) {
 
         <div class="boton-container">
             <button name="aceptar" class="botonesAyC" type="submit">Aceptar</button>
-            <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'tablero.php'">Cancelar</button>
+            <button name="Cancelar" class="botonesAyC" type="button" onclick="window.location = 'secciones.php'">Cancelar</button>
         </div>
     </form>
 </div>

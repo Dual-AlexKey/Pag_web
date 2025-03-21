@@ -1,15 +1,17 @@
 <?php
 include __DIR__ . '/../websystem/conect/conexion.php'; // ✅ Conexión a la base de datos
 
+
+
 $menu_items = []; // Array para almacenar los datos de la tabla
 
 // ✅ Obtener todas las tablas que terminan en "_cabecera"
-$sql = "SHOW TABLES LIKE '%_cabecera'";
+$sql = "SHOW TABLES LIKE '%_cabecerat'";
 $result = $conn->query($sql);
 
 while ($row = $result->fetch_array()) {
     $table_name = $row[0]; // Nombre de la tabla
-    $base_name = str_replace('_cabecera', '', $table_name); // Quitamos "_cabecera"
+    $base_name = str_replace('_cabecerat', '', $table_name); // Quitamos "_cabecera"
     
     // ✅ Consulta para obtener el contenido de cada tabla
     $sql_data = "SELECT * FROM `$table_name`";
@@ -20,7 +22,7 @@ while ($row = $result->fetch_array()) {
         $nombre_item = $data['nombre'] ?? ''; // 🔥 AJUSTA si la columna tiene otro nombre
         if (!empty($nombre_item)) {
             // ✅ Generar href usando el mismo nombre que se muestra en el botón
-            $menu_items[$nombre_item] = "$nombre_item/" . urlencode(strtolower($nombre_item)) . ".php";
+            $menu_items[$nombre_item] = urlencode(strtolower($nombre_item)) . ".php";
         }
     }
 }
