@@ -38,24 +38,28 @@ $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="websystem">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Websystem</title>
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="estilos/css/styles.css?<?php echo time(); ?>" />
 </head>
 <body>
-    <h2>Iniciar sesión</h2>
-    
-    <form method="post">
-        <label>Usuario:</label>
-        <input type="text" name="usuario" required><br>
+<div class="wrapper">
+    <div class="container">
+        <h2 class="title">Iniciar sesión</h2>
+        <form class="form-box" method="post">
+            <label class="label">Usuario:</label>
+            <input class="input-field" type="text" name="usuario" required><br>
 
-        <label>Contraseña:</label>
-        <input type="password" name="password" required><br>
+            <label class="label">Contraseña:</label>
+            <input class="input-field" type="password" name="password" required><br>
 
-        <button type="submit">Ingresar</button>
-    </form>
+            <button class="submit-btn" type="submit">Ingresar</button>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>

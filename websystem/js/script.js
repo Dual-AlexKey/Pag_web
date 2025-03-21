@@ -2,7 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const botonesConSubMenu = document.querySelectorAll(".boton.submenu");
     console.log("JavaScript cargado correctamente.");
 
-    
+
+    console.log("TinyMCE inicializado correctamente.");
 
     botonesConSubMenu.forEach(function (boton) {
         boton.addEventListener("click", function () {
@@ -32,6 +33,26 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    tinymce.init({
+        selector: '#editor',
+        height: 400,
+        menubar: 'edit format table', // 🔥 Eliminamos "insert" y "view"
+        branding: false,
+        statusbar: false,
+    
+        plugins: [
+            'advlist autolink lists link charmap print preview anchor',
+            'searchreplace fullscreen',
+            'insertdatetime media paste code help wordcount',
+            'emoticons autosave image',
+            'table',
+            'code','emoticons','media' // 🔥 Aseguramos que "table" y "code" están cargados
+        ],
+    
+        toolbar: 'undo redo | formatselect | bold italic forecolor backcolor | alignleft aligncenter ' +
+                 'alignright alignjustify bullist numlist outdent indent | hr link image media emoticons table code' 
+    });
+    
     const departamentos = {
         peru: [
             "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica",
@@ -105,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
-        
+
 
 });
 function guardarFormulario() {
@@ -279,19 +300,23 @@ function actualizarExplorador(url) {
 }
 
 // 🔹 ABRIR Y CERRAR EL MODAL
-function mostrarExplorador() {
-    document.getElementById("modal-explorador").style.display = "block";
+// 🔹 MOSTRAR MODAL Y ASIGNAR EL INPUT CORRECTO
+function mostrarExplorador(campoDestino) {
+    let modal = document.getElementById("modal-explorador");
+    if (modal) {
+        modal.style.display = "block";
+        modal.setAttribute("data-campo", campoDestino); // ✅ Guardamos el campo correcto en el modal
+    }
 }
 
+// 🔹 CERRAR MODAL
 function cerrarExplorador() {
-    document.getElementById("modal-explorador").style.display = "none";
+    let modal = document.querySelector("#modal-explorador");
+    if (modal) {
+        modal.style.display = "none";
+    }
 }
 
-// 🔹 SELECCIONAR IMAGEN
-function seleccionar(ruta) {
-    document.getElementById("imagen_link").value = ruta;
-    cerrarExplorador();
-}
 
 
 // 🔹 ACTIVAR/DESACTIVAR MODO ELIMINACIÓN
@@ -374,12 +399,17 @@ function eliminarImagen(nombreImagen, event, url) {
 }
 
 // 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
-// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
-// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
-// 🔹 SUBIR UNA IMAGEN Y AGREGARLA AL EXPLORADOR SIN RECARGAR
 function subirImagen() {
+    let modal = document.getElementById("modal-explorador");
+    let campoDestino = modal.getAttribute("data-campo"); // ✅ Obtener el campo donde se guardará la imagen
+
+    if (!campoDestino) {
+        console.error("Error: No se encontró el campo destino en el modal.");
+        return;
+    }
+
     let inputImagen = document.querySelector("#imagen");
-    let inputTexto = document.querySelector("#imagen_link"); // ✅ Donde guardamos la ruta
+    let inputTexto = document.querySelector(`#${campoDestino}`);
 
     if (!inputImagen || !inputTexto) {
         console.error("Error: No se encontró el input de imagen o el campo de texto.");
@@ -394,7 +424,7 @@ function subirImagen() {
     }
 
     let formData = new FormData();
-    formData.append("imagen", archivo); // ✅ Adjuntar correctamente el archivo
+    formData.append("imagen", archivo);
 
     fetch("../websystem/img/subir_imagen.php", {
         method: "POST",
@@ -407,10 +437,10 @@ function subirImagen() {
         if (data.status === "success") {
             alert("Imagen subida correctamente");
 
-            // ✅ Guardar la URL de la imagen en el campo de texto
+            // ✅ Guardar la URL en el input correcto
             inputTexto.value = data.ruta;
 
-            // ✅ Agregar la imagen al explorador sin recargar
+            // ✅ Agregar la imagen al explorador sin cerrar el modal
             let listaImagenes = document.querySelector("#lista-imagenes");
             let nuevoItem = document.createElement("div");
             nuevoItem.classList.add("item");
@@ -425,6 +455,8 @@ function subirImagen() {
             nuevoItem.appendChild(nuevaImg);
 
             listaImagenes.appendChild(nuevoItem);
+
+            // ❌ No cerramos el modal automáticamente para que el usuario pueda seguir viendo las imágenes
         } else {
             alert("Error: " + data.message);
         }
@@ -434,34 +466,68 @@ function subirImagen() {
         alert("Ocurrió un error al subir la imagen.");
     });
 }
-// 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN `imagen_link`
-function seleccionar(ruta) {
-    let inputTexto = document.querySelector("#imagen_link");
 
-    if (!inputTexto) {
-        console.error("Error: No se encontró el campo de texto `imagen_link`.");
+
+// 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN EL INPUT CORRECTO
+function seleccionar(ruta) {
+    let modal = document.getElementById("modal-explorador");
+    let campoDestino = modal.getAttribute("data-campo"); // Obtener el input de destino
+
+    if (!campoDestino) {
+        console.error("Error: No se encontró el campo destino en el modal.");
         return;
     }
 
-    console.log("Ruta recibida:", ruta); // ✅ Verificar qué ruta llega
+    let inputTexto = document.querySelector(`#${campoDestino}`);
 
-    // ✅ Convertimos "../img/" en "img/"
+    if (!inputTexto) {
+        console.error(`Error: No se encontró el campo de texto ${campoDestino}.`);
+        return;
+    }
+
+    console.log("Ruta recibida:", ruta);
+
     if (ruta.startsWith("../img/")) {
         ruta = ruta.replace("../img/", "img/");
-        console.log("Ruta modificada:", ruta); // ✅ Verificar que la ruta se ajustó correctamente
+        console.log("Ruta modificada:", ruta);
     }
 
-    // ✅ Guardamos la ruta ajustada en el campo de texto
+    // ✅ Guardar la URL en el input correcto
     inputTexto.value = ruta;
 
-    // ✅ Cerrar el explorador de imágenes después de seleccionar
+    // ✅ Solo insertar en TinyMCE si el campo es "imagen_link"
+    if (campoDestino === "imagen_linkED") {
+        tinymce.activeEditor.execCommand('mceInsertContent', false, `<img src="../${ruta}" alt="Imagen">`);
+    }
+
+    // ✅ Cerrar el explorador
     cerrarExplorador();
 }
-// 🔹 FUNCIÓN PARA CERRAR EL EXPLORADOR DE IMÁGENES
-function cerrarExplorador() {
-    let modal = document.querySelector("#modal-explorador");
-    if (modal) {
-        modal.style.display = "none";
-    }
+
+function cambiarID(menu, id, cambio) {
+    let formData = new FormData();
+    formData.append("menu", menu);
+    formData.append("id", id);
+    formData.append("cambio", cambio);
+
+    fetch("cambiar_id.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            let tabla = document.getElementById("tabla-" + menu);
+            if (tabla) {
+                tabla.innerHTML = data.tabla; // Reemplazar solo el contenido de la tabla
+            }
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => console.error("Error:", error));
 }
+
+
+
 

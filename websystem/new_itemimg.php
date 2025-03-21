@@ -13,7 +13,7 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
     <div class="bloque-verde"><h2>Nuevo Item</h2></div>
     <div id="capaformulario">
         <form id="miFormulario" action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="formulario_tipo" value="Seccion">
+            <input type="hidden" name="formulario_tipo" value="Imagenes_Tablero">
             <table class="tableborderfull">
                 <tr>
                     <td class="colgrishome">Nombre:</td>
@@ -25,8 +25,8 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
                     <td class="colgrishome">Imagen:</td>
                     <td class="colblancocen">
                         <input type="text" id="imagen_link" name="imagen_link" placeholder="https://ejemplo.com/imagen.jpg" style="width: 50%;" readonly>
-                        <button type="button" class="boton-explorador" onclick="mostrarExplorador()">📂</button>
-                    </td>
+                        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link')">📂</button>
+                        </td>
                 </tr>
                 <tr>
                     <td class="colgrishome">Transicion:</td>

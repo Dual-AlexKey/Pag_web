@@ -45,7 +45,7 @@ include('estilo/tabla_menu.php');
                 <tr>
                     <td class="colgrishome">Estilos:</td>
                     <td class="colgrishome">
-                        <div style="display: flex; gap: 20px; align-items: right;" id="estilos">
+                        <div style="display: flex; gap: 20px; align-items: flex-start;" id="estilos">
                             <!-- Los estilos se cargarán aquí dinámicamente -->
                         </div>
                     </td>

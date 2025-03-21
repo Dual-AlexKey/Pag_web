@@ -24,18 +24,16 @@ include('estilos/header.php');
     </tr>
     <tr>
     <div class="Columna-Container">
-        <div class="Columna_Izquierda">Columna Izquierda</div>
         <div class="Columna_Central">
         <div class="Cuerpo-buttom-1">Cuerpo top 3</div>
         <div class="Cuerpo-buttom-1">Cuerpo top 3</div>
         <div class="Cuerpo-buttom-1">Cuerpo top 3</div>
         </div>
-        <div class="Columna_Derecha">Columna Derecha</div>
     </div>
     </tr>
     <tr class="Buttom-Container">
     <div class="Buttom-Group">
-        <div class="Cuerpo-buttom-1">Cuerpo top 1</div>
+        <div class="Cuerpo-buttom-1">Cuerpo top 1</div> 
         <div class="Cuerpo-buttom-1">Cuerpo top 1</div>
         <div class="Cuerpo-buttom-1">Cuerpo top 1</div>
     </div>

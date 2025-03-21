@@ -46,7 +46,8 @@ $resultado = $conexion->query($sql);
 if ($resultado && $resultado->num_rows > 0) {
     $empresa = $resultado->fetch_assoc();
 }
-
+$directorio = "../img/"; // ✅ Directorio correcto basado en la estructura del proyecto
+$archivos = is_dir($directorio) ? scandir($directorio) : [];
 ?>
 
 <div class="contenido-derecha">
@@ -85,13 +86,20 @@ if ($resultado && $resultado->num_rows > 0) {
                     </td>
                 </tr>
                 <tr>
-                    <td class="colgrishome">Logo</td>
-                    <td class="colblancocen"><input type="text" name="logo" value="<?= htmlspecialchars($empresa['logo']) ?>"></td>
-                </tr>
-                <tr>
-                    <td class="colgrishome">Favicon</td>
-                    <td class="colblancocen"><input type="text" name="favicon" value="<?= htmlspecialchars($empresa['favicon']) ?>"></td>
-                </tr>
+    <td class="colgrishome">Logo</td>
+    <td class="colblancocen">
+        <input type="text" id="imagen_link" name="logo" value="<?= htmlspecialchars($empresa['logo']) ?>">
+        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link')">📂</button>
+    </td>
+</tr>
+<tr>
+    <td class="colgrishome">Favicon</td>
+    <td class="colblancocen">
+        <input type="text" id="imagen_link2" name="favicon" value="<?= htmlspecialchars($empresa['favicon']) ?>">
+        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_link2')">📂</button>
+    </td>
+</tr>
+
                 <tr>
                     <td class="colgrishome">SEO Título</td>
                     <td class="colblancocen"><input name="seo_titulo" type="text" value="<?= htmlspecialchars($empresa['seo_titulo']) ?>"></td>
@@ -238,6 +246,40 @@ if ($resultado && $resultado->num_rows > 0) {
         </form>
     </div>
 </div>
+
+<div id="modal-explorador" class="modal">
+    <div class="modal-contenido">
+        <span class="cerrar" onclick="cerrarExplorador()">&times;</span>
+        <h3>Explorador de Imágenes</h3>
+
+        <!-- 🔹 FORMULARIO DE SUBIDA DE IMÁGENES -->
+        <form id="form-subida" enctype="multipart/form-data">
+            <input type="file" id="imagen" name="imagen" accept="image/*">
+            <button type="button" class="boton-subir" onclick="subirImagen()">Subir Imagen</button>
+            <button type="button" class="boton-eliminar" onclick="activarEliminar()">Eliminar</button>
+        </form>
+        <!-- 🔹 LISTADO DE IMÁGENES QUE SE ACTUALIZARÁ AUTOMÁTICAMENTE -->
+        <div class="explorador" id="lista-imagenes">
+            <?php
+            $directorio = "../img/";
+            $archivos = is_dir($directorio) ? scandir($directorio) : [];
+            if (!empty($archivos)) {
+                foreach ($archivos as $archivo) {
+                    if ($archivo != "." && $archivo != "..") {
+                        $ruta = $directorio . $archivo;
+                        echo "<div class='item' onclick='seleccionar(\"$ruta\")'>";
+                        echo "<span class='eliminar-x' onclick='eliminarImagen(\"$archivo\", event)'>&times;</span>"; // ✅ Agregar botón de eliminar
+                        echo "<img src='$ruta' alt='$archivo' class='preview'>";
+                        echo "</div>";
+                    }
+                }
+            } else {
+                echo "<p>No se encontraron imágenes.</p>";
+            }
+            ?>
+        </div>
+    </div>
+</div> 
     
 <?php
 // Incluir el footer.php

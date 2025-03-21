@@ -95,7 +95,7 @@ foreach ($menu_tables as $menu) {
                 <tr>
                     <td class="colgrishome">Estilos:</td>
                     <td class="colblancocen">
-                        <div style="display: flex; gap: 20px; align-items: right;" id="estilos" 
+                        <div style="display: flex; gap: 20px; align-items: flex-start;" id="estilos" 
                             data-seleccionado="<?= htmlspecialchars($estiloSeleccionado) ?>">
                             <!-- Aquí se cargarán dinámicamente los estilos -->
                         </div>

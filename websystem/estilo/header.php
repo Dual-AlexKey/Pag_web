@@ -8,8 +8,8 @@ if (isset($_GET["logout"])) {
     exit();
 }
 
-// Definir tiempo máximo de inactividad (2 minutos = 120 segundos)
-$tiempo_inactividad = 30;
+// Definir tiempo máximo de inactividad (15 minutos = 900 segundos)
+$tiempo_inactividad = 900;
 
 // 📌 Aplicar timeout solo si el usuario está dentro de "websystem/"
 if (strpos($_SERVER["REQUEST_URI"], '/websystem/') !== false) {

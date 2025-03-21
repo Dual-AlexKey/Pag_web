@@ -14,40 +14,46 @@ ini_set('display_errors', 1);
 // ✅ Obtener la raíz del proyecto dinámicamente
 $raiz_proyecto = dirname(__DIR__, 2); // 📌 Subimos dos niveles desde "websystem/conect/"
 
-// ✅ 🔥 Eliminar archivo solo si se proporciona un nombre
+// ✅ Validar que el nombre del archivo a borrar no esté vacío
 if (!empty($archivo_a_borrar)) {
-    // ✅ Sanitizar el nombre del archivo
+    // ✅ Sanitizar el nombre del archivo (permitir solo letras, números, guiones y guiones bajos)
     $nombre_sanitizado = preg_replace('/[^a-zA-Z0-9_-]/', '_', $archivo_a_borrar);
 
-    // ✅ Construir ruta del archivo y de la carpeta que lo contiene
-    $directorio = $raiz_proyecto . '/' . $nombre_sanitizado;
-    $ruta_archivo = $directorio . '/' . $nombre_sanitizado . '.php';
+    // ✅ Rutas: carpeta y archivo
+    $raiz_proyecto = __DIR__ . '/../../'; // Cambia esto a la ruta base de tu proyecto
+    $directorio = $raiz_proyecto . $nombre_sanitizado; // Carpeta correspondiente
+    $ruta_archivo = $raiz_proyecto . $nombre_sanitizado . '.php'; // Archivo al mismo nivel que la carpeta
 
-    // ✅ Evitar eliminar archivos críticos
+    // ✅ Archivos protegidos que no deben eliminarse
     $archivos_protegidos = ['eliminar_elemento_php.php'];
     if (in_array($nombre_sanitizado . '.php', $archivos_protegidos)) {
-        die("Error: No puedes eliminar este archivo.");
+        die("❌ Error: No puedes eliminar este archivo.");
     }
 
-    // ✅ Verificar si el archivo existe antes de borrarlo
+    // ✅ Verificar si el archivo existe
     if (file_exists($ruta_archivo)) {
+        // 🔥 Eliminar el archivo
         if (unlink($ruta_archivo)) {
             echo "✅ Archivo eliminado correctamente: $nombre_sanitizado.php<br>";
 
-            // ✅ Verificar si la carpeta está vacía y eliminarla
-            if (is_dir($directorio) && count(scandir($directorio)) == 2) {
+            // 🧹 Verificar si la carpeta está vacía y eliminarla
+            if (is_dir($directorio) && count(scandir($directorio)) == 2) { // Solo "." y ".."
                 if (rmdir($directorio)) {
                     echo "✅ Carpeta eliminada correctamente: $nombre_sanitizado<br>";
                 } else {
-                    echo "⚠️ No se pudo eliminar la carpeta.";
+                    echo "⚠️ No se pudo eliminar la carpeta: $directorio<br>";
                 }
+            } else {
+                echo "⚠️ La carpeta no está vacía o no existe: $directorio<br>";
             }
         } else {
-            echo "❌ Error al eliminar el archivo.";
+            echo "❌ Error al eliminar el archivo: $ruta_archivo<br>";
         }
     } else {
-        echo "⚠️ El archivo no existe en: $ruta_archivo";
+        echo "⚠️ El archivo no existe: $ruta_archivo<br>";
     }
+} else {
+    echo "❌ Error: Nombre del archivo a borrar no especificado.<br>";
 }
 
 // ✅ 🔥 Continúa con la eliminación en la base de datos si hay `cod` o `codtab`
@@ -84,6 +90,25 @@ if (!empty($cod_parametro) || !empty($codtab_parametro)) {
             }
         }
     }
+}
+
+if (!empty($cod_parametro)){
+    $sql_delete = "DELETE FROM detalles WHERE cod = ?";
+    $stmt_delete = $conn->prepare($sql_delete);
+    $stmt_delete->bind_param("s", $cod_parametro);
+    if ($stmt_delete->execute()) {
+        $se_borro_cod_o_codtab = true;
+    }
+    $stmt_delete->close();
+}
+if (!empty($cod_parametro)){
+    $sql_delete = "DELETE FROM paginas WHERE cod = ?";
+    $stmt_delete = $conn->prepare($sql_delete);
+    $stmt_delete->bind_param("s", $cod_parametro);
+    if ($stmt_delete->execute()) {
+        $se_borro_cod_o_codtab = true;
+    }
+    $stmt_delete->close();
 }
 
 // ✅ 🔥 Si se proporcionó `id`, eliminar en la tabla `tablero`
