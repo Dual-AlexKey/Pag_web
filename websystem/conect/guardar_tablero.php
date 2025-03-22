@@ -338,9 +338,12 @@ $contenido = <<<PHP
 <?php
 include('estilos/header.php');
 include __DIR__ . '/estilos/generar_design.php';
+include ('contador_visitas.php');
 
 // Obtener el nombre del archivo actual
 \$nombreArchivo = basename(__FILE__, '.php');
+\$contador = manejar_contador_por_pagina(\$nombreArchivo);
+
 
 // Llamar a la función para generar el diseño dinámico
 ?>
@@ -634,18 +637,34 @@ if (!is_dir($directorio)) {
 }
 
 // Contenido del archivo
-$contenido = "<!DOCTYPE html>
-<html lang='es'>
+$contenido = <<<PHP
+<?php
+include('estilos/header.php');
+include __DIR__ . '/estilos/generar_design.php';
+include ('contador_visitas.php');
+
+// Obtener el nombre del archivo actual
+\$nombreArchivo = basename(__FILE__, '.php');
+\$contador = manejar_contador_por_pagina(\$nombreArchivo);
+
+
+// Llamar a la función para generar el diseño dinámico
+?>
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>$nombreLimpio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diseño Dinámico - <?php echo \$nombreArchivo; ?></title>
+    <link rel="stylesheet" href="estilos/css/styles.css">
 </head>
 <body>
-    <h1>Bienvenido a la página de $nombreLimpio</h1>
-    <p>Esta es una página creada automáticamente.</p>
+    <div class="layout">
+        <?php generarDiseno(\$nombreArchivo); ?>
+    </div>
 </body>
-</html>";
+</html>
+PHP;
 
 // Crear el archivo al mismo nivel que la carpeta
 if (file_put_contents($rutaArchivo, $contenido) !== false) {

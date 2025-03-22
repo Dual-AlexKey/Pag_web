@@ -4,28 +4,25 @@ include __DIR__ . '/../websystem/conect/conexion.php'; // Incluye la conexión (
 function generarDiseno($nombreArchivo) {
     global $conn; // Usar la conexión global con mysqli
 
-    // Buscar en la base de datos el diseño basado en el nombre del archivo
-    $sql = "SELECT * FROM detalles WHERE nombre = ?";
-    $stmt = $conn->prepare($sql);
+    // 🔍 Buscar el diseño en la tabla "detalles"
+    $sqlDetalles = "SELECT * FROM detalles WHERE nombre = ?";
+    $stmtDetalles = $conn->prepare($sqlDetalles);
 
-    if (!$stmt) {
+    if (!$stmtDetalles) {
         die("❌ Error en la preparación de la consulta: " . $conn->error);
     }
 
-    // Bind del parámetro
-    $stmt->bind_param("s", $nombreArchivo);
+    // Bind del parámetro para la tabla "detalles"
+    $stmtDetalles->bind_param("s", $nombreArchivo);
+    $stmtDetalles->execute();
+    $resultadoDetalles = $stmtDetalles->get_result();
 
-    // Ejecutar la consulta
-    $stmt->execute();
-
-    // Obtener el resultado
-    $resultado = $stmt->get_result();
-
-    if ($resultado && $row = $resultado->fetch_assoc()) {
-        // Extraer directrices
-        $estructsecc = $row['estructsecc'];  // Diseño de la sección
-        $fondsecc = $row['fondsecc'];        // Fondo de la sección
-        $mostrar = $row['mostrar'];          // Información adicional
+    if ($resultadoDetalles && $rowDetalles = $resultadoDetalles->fetch_assoc()) {
+        // Extraer directrices de la tabla "detalles"
+        $estructsecc = $rowDetalles['estructsecc'];  // Diseño de la sección
+        $fondsecc = $rowDetalles['fondsecc'];        // Fondo de la sección
+        $mostrar = $rowDetalles['mostrar'];          // Información adicional
+        $cod = $rowDetalles['cod'];                 // Relación con "paginas"
 
         // Inicializar columnas en el orden correcto: izquierda, centro, derecha
         $columnas = [
@@ -54,6 +51,28 @@ function generarDiseno($nombreArchivo) {
                 break;
         }
 
+        // 🔍 Buscar datos en la tabla "paginas" usando "cod" como referencia
+        $sqlPaginas = "SELECT titulo, contenido FROM paginas WHERE cod = ?";
+        $stmtPaginas = $conn->prepare($sqlPaginas);
+
+        if (!$stmtPaginas) {
+            die("❌ Error en la preparación de la consulta: " . $conn->error);
+        }
+
+        $stmtPaginas->bind_param("s", $cod);
+        $stmtPaginas->execute();
+        $resultadoPaginas = $stmtPaginas->get_result();
+        $contenidoCentral = $resultadoPaginas->fetch_assoc() ?: ['titulo' => null, 'contenido' => null];
+
+        // Modificar el contenido para eliminar "../img/"
+        if (!empty($contenidoCentral['contenido'])) {
+            $contenidoOriginal = $contenidoCentral['contenido'];
+            $contenidoModificado = eliminarPrefijoImg($contenidoOriginal);
+
+            // Actualizar el contenido central con el texto modificado
+            $contenidoCentral['contenido'] = $contenidoModificado;
+        }
+
         // Generar el contenedor de columnas con el fondo dinámico
         echo "<div class='Columna-Container' style='background-color: $fondsecc;'>\n";
 
@@ -61,9 +80,21 @@ function generarDiseno($nombreArchivo) {
         foreach ($columnas as $clase => $activo) {
             if ($activo) {
                 echo "    <div class='$clase'>\n";
-                echo "        Contenido dinámico para $clase\n";
 
-                if (!empty($mostrar)) {
+                // Columna Central: Mostrar título y contenido
+                if ($clase === 'Columna_Central') {
+                    if (!empty($contenidoCentral['titulo'])) {
+                        echo "        <h1>{$contenidoCentral['titulo']}</h1>\n";
+                    }
+                    if (!empty($contenidoCentral['contenido'])) {
+                        echo "        <p>{$contenidoCentral['contenido']}</p>\n";
+                    }
+                } else {
+                    echo "        Contenido dinámico para $clase\n";
+                }
+
+                // Información adicional (mostrar)
+                if (!empty($mostrar) && $clase !== 'Columna_Central') {
                     echo "        <div class='info'>$mostrar</div>\n";
                 }
 
@@ -77,7 +108,13 @@ function generarDiseno($nombreArchivo) {
         echo "❌ No se encontró información para el archivo $nombreArchivo.";
     }
 
-    // Cerrar el statement
-    $stmt->close();
+    // Cerrar los statements
+    $stmtDetalles->close();
+    if (isset($stmtPaginas)) $stmtPaginas->close();
+}
+
+// Función para eliminar el prefijo "../" en todas las ocurrencias de "../img/"
+function eliminarPrefijoImg($contenido) {
+    return str_replace("../img/", "img/", $contenido);
 }
 ?>

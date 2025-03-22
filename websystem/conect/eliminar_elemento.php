@@ -101,6 +101,15 @@ if (!empty($cod_parametro)){
     }
     $stmt_delete->close();
 }
+if (!empty($cod_parametro)){
+    $sql_delete = "DELETE FROM paginas WHERE cod = ?";
+    $stmt_delete = $conn->prepare($sql_delete);
+    $stmt_delete->bind_param("s", $cod_parametro);
+    if ($stmt_delete->execute()) {
+        $se_borro_cod_o_codtab = true;
+    }
+    $stmt_delete->close();
+}
 
 // ✅ 🔥 Si se proporcionó `id`, eliminar en la tabla `tablero`
 $se_borro_id = false;

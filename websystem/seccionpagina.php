@@ -76,7 +76,7 @@ if (!empty($cod)) {
                 <tr>
                     <td class="colgrishome">Título Secundario:</td>
                     <td class="colblancocen">
-                        <input type="text" id="nombreS" name="nombreS" required 
+                        <input type="text" id="nombreS" name="nombreS"  
                             style="width: 50%;" 
                             value="<?= htmlspecialchars($datos['tituloS']) ?>">
                     </td>
