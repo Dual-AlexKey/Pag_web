@@ -7,7 +7,7 @@ include '../contador_visitas.php';
 include('estilo/header.php');
 include('estilo/menu.php');
 
-// Buscar tablas que comiencen con "menu_"
+// 🔄 Buscar tablas que comiencen con "menu_"
 $sql = "SHOW TABLES LIKE 'menu_%'";
 $result = $conn->query($sql);
 
@@ -16,7 +16,48 @@ while ($row = $result->fetch_array()) {
     $menu_tables[] = $row[0]; // Guardar nombres de tablas
 }
 
-// Ruta del log del servidor (ajusta esta ruta según tu configuración)
+// ✅ Crear una lista de registros para todas las tablas
+$registros = [];
+foreach ($menu_tables as $table) {
+    // Consultar datos de cada tabla encontrada
+    $sql = "SELECT * FROM `$table`";
+    $result = $conn->query($sql);
+
+    while ($row = $result->fetch_assoc()) {
+        $registros[] = $row; // Agregar cada registro a la lista
+    }
+}
+
+// ✅ Crear un árbol jerárquico basado en `secciones`
+function construirArbol($registros) {
+    $tree = [];
+    $index = [];
+
+    // Crear índice por nombre para fácil acceso
+    foreach ($registros as $registro) {
+        $nombre = $registro['nombre'];
+        $index[$nombre] = $registro;
+        $index[$nombre]['hijos'] = []; // Agregar un espacio para los hijos
+    }
+
+    // Construir jerarquía
+    foreach ($index as &$registro) {
+        $secciones = trim($registro['secciones'] ?? '', '/'); // Limpiar los "/"
+        if (empty($secciones)) {
+            // Si `secciones` está vacío, es raíz
+            $tree[] = &$registro;
+        } else {
+            $padre_nombre = basename($secciones); // Obtener el nombre del padre
+            if (isset($index[$padre_nombre])) {
+                $index[$padre_nombre]['hijos'][] = &$registro;
+            }
+        }
+    }
+
+    return $tree;
+}
+
+$tree = construirArbol($registros);
 ?>
 <div class="contenido-derecha">
     <a href="panel.php"><button class="boton-cerrar">X</button></a>
@@ -35,78 +76,45 @@ while ($row = $result->fetch_array()) {
         </tr>
 
         <?php
-        $nombres_unicos = []; // Para almacenar los nombres ya mostrados
+        // ✅ Renderizar el árbol jerárquico en la tabla
+        function renderizarArbol($nodos, $nivel = 0) {
+            global $conn;
 
-        foreach ($menu_tables as $table) {
-            // Consultar datos de cada tabla encontrada
-            $sql = "SELECT * FROM `$table`";
-            $result = $conn->query($sql);
-
-            while ($row = $result->fetch_assoc()) {
-                $nombre = $row["nombre"];
-
-                // Si el nombre ya fue mostrado, saltarlo
-                if (isset($nombres_unicos[$nombre])) {
-                    continue;
-                }
-
-                // Marcar el nombre como mostrado
-                $nombres_unicos[$nombre] = true;
-
-                // Verificar si secciones es NULL o tiene un valor
-                $seccion_clase = '';
-                if (empty($row['secciones'])) {
-                    $seccion_clase = 'style="font-weight: bold;"'; // Negrita si es NULL
-                }
-
-                // Calcular espacios o tabulaciones basados en el número de '/'
-                $num_tabs = substr_count($row['secciones'] ?? '', '/');
-                $espacios = str_repeat('&nbsp;&nbsp;', $num_tabs);
-
-                // Consultar valores de `orden` y `nro_item` en la tabla `detalles`
-                $orden = $row['orden'] ?? 0;
-                $nro_item = $row['nro_item'] ?? 0;
-                $detalle_sql = "SELECT orden, ordensecc FROM detalles WHERE cod = ?";
-                $stmt_detalle = $conn->prepare($detalle_sql);
-                if ($stmt_detalle) {
-                    $stmt_detalle->bind_param("s", $row['cod']);
-                    $stmt_detalle->execute();
-                    $stmt_detalle->bind_result($orden_detalle, $ordensecc_detalle);
-                    if ($stmt_detalle->fetch()) {
-                        $orden = $orden_detalle;
-                        $nro_item = $ordensecc_detalle;
-                    }
-                    $stmt_detalle->close();
-                }
-
-               
-                // Definir el destino para el nombre como enlace
-                $cod = urlencode($row["cod"]);
-                $codtab = urlencode($row["codtab"] ?? '');
-                $nombre_url = urlencode($row["nombre"]);
-                $seccion_destino = "editccion.php"; // Valor por defecto si es NULL o vacío
-                $accion_param = ""; // Por defecto vacío
-                if (!empty($row["secciones"])) {
-                    $seccion_destino = "subseccion.php"; // Cambiar destino si secciones tiene un valor
-                    $accion_param = "&accion=subseccion"; // Agregar identificador
-                }
+            foreach ($nodos as $nodo) {
+                $nombre = htmlspecialchars($nodo['nombre']);
+                $modulo = htmlspecialchars($nodo['modulo'] ?? '');
+                $orden = htmlspecialchars($nodo['orden'] ?? 0);
+                $nro_item = htmlspecialchars($nodo['nro_item'] ?? 0);
                 $vistas = obtener_contador_por_pagina($nombre);
 
-                // Imprimir la fila con los ajustes solicitados
+                // Aplicar estilos en negrita si es raíz (nivel 0)
+                $seccion_clase = $nivel == 0 ? 'style="font-weight: bold;"' : '';
+
+                // Calcular espacios o tabulaciones basados en el nivel
+                $espacios = str_repeat('&nbsp;&nbsp;', $nivel);
+
+                // Construir enlace de acción
+                $cod = urlencode($nodo['cod'] ?? '');
+                $codtab = urlencode($nodo['codtab'] ?? '');
+                $nombre_url = urlencode($nodo['nombre']);
+                $seccion_destino = empty($nodo['secciones']) ? "editccion.php" : "subseccion.php";
+                $accion_param = empty($nodo['secciones']) ? "" : "&accion=subseccion";
+
+                // Imprimir la fila
                 echo "<tr>";
                 echo "<td>||</td>";
-                echo "<td $seccion_clase>{$espacios}<a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param' style='color: black; text-decoration: none;'>" . htmlspecialchars($nombre) . "</a></td>";
-                echo "<td>" . htmlspecialchars($row["modulo"]) . "</td>";
-                echo "<td>" . htmlspecialchars($orden) . "</td>";
-                echo "<td>" . htmlspecialchars($nro_item) . "</td>";
-                echo "<td>" . htmlspecialchars($vistas) . "</td>";
+                echo "<td $seccion_clase>{$espacios}<a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param' style='color: black; text-decoration: none;'>$nombre</a></td>";
+                echo "<td>$modulo</td>";
+                echo "<td>$orden</td>";
+                echo "<td>$nro_item</td>";
+                echo "<td>$vistas</td>";
 
                 // Botón de edición dinámica (dependiendo de "secciones")
                 echo "<td><a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param' class='btn_st'>
                         <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Botón Editar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                       </a> </td>";
 
-                if ($num_tabs == 2) {
+                if ($nivel == 2) {
                     // Agregar 5 espacios como proporción
                     echo "<td><a></a></td>";;
                 } else {
@@ -126,11 +134,21 @@ while ($row = $result->fetch_array()) {
                         <img src='https://i.ibb.co/LdTnB39W/wp-borrar.png' alt='Botón Eliminar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                       </a></td>";
                 echo "</tr>";
+            
+
+                // Renderizar los hijos del nodo actual
+                if (!empty($nodo['hijos'])) {
+                    renderizarArbol($nodo['hijos'], $nivel + 1);
+                }
             }
         }
+
+        renderizarArbol($tree); // Renderizar el árbol jerárquico
         ?>
     </table>
 </div>
+
+
 
 <?php
 // Incluir el footer.php

@@ -1,11 +1,16 @@
 <?php
 include 'conexion.php';
+include '../../contador_visitas.php';
+
 
 // ✅ Obtener valores desde la URL
 $id_parametro = isset($_GET['id']) ? trim($_GET['id']) : '';
 $cod_parametro = isset($_GET['cod']) ? trim($_GET['cod']) : '';
 $codtab_parametro = isset($_GET['codtab']) ? trim($_GET['codtab']) : '';
 $archivo_a_borrar = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
+
+
+eliminar_archivo_y_contador($archivo_a_borrar . '.php');
 
 // ✅ Mostrar errores (para depuración)
 error_reporting(E_ALL);
