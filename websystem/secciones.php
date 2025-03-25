@@ -23,15 +23,15 @@ while ($row = $result->fetch_array()) {
     <div class="bloque-verde"><h2>Secciones</h2></div>
     <a href="newseccion.php"><button class="boton-nvpag">Nueva sección</button></a>
     <div class="bloque-gris"><h3>Insertar</h3></div>
-    <table class="tableborderfull">
+    <table class="tableborderfull" style="width: 100%; border-collapse: collapse;">
         <tr>
-            <td>||</td>
-            <td>Sección</td>
-            <td>Módulo</td>
-            <td>Orden</td>
-            <td>Nro de items</td>
-            <td>Vistas</td>
-            <td>Opciones</td>
+            <th style="width: 2%; text-align: left; padding-left: 10px;">||</th>
+            <th style="width: 60%; text-align: left; padding-left: 10px;">Sección</th>
+            <th style="width: 10%; text-align: left; padding-left: 10px;">Módulo</th>
+            <th style="width: 10%; text-align: left; padding-left: 10px;">Orden</th>
+            <th style="width: 10%; text-align: left; padding-left: 10px;">Nro de ítems</th>
+            <th style="width: 10%; text-align: left; padding-left: 10px;">Vistas</th>
+            <th style="width: 5%; text-align: center;" colspan="5">Opciones</th>
         </tr>
 
         <?php
@@ -92,7 +92,6 @@ while ($row = $result->fetch_array()) {
                 }
                 $vistas = obtener_contador_por_pagina($nombre);
 
-
                 // Imprimir la fila con los ajustes solicitados
                 echo "<tr>";
                 echo "<td>||</td>";
@@ -101,29 +100,31 @@ while ($row = $result->fetch_array()) {
                 echo "<td>" . htmlspecialchars($orden) . "</td>";
                 echo "<td>" . htmlspecialchars($nro_item) . "</td>";
                 echo "<td>" . htmlspecialchars($vistas) . "</td>";
-                echo "<td>";
 
                 // Botón de edición dinámica (dependiendo de "secciones")
-                echo "<a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param' class='btn_st'>
-                        <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Botón Editar' style='width: 25px; height: 25px; vertical-align: middle;'>
-                      </a>";
+                echo "<td><a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param' class='btn_st'>
+                        <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Botón Editar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
+                      </a> </td>";
 
-                // Botón de creación de subsección (siempre presente)
-                echo "<a href='subseccion.php?cod=$cod&nombre=$nombre_url&codtab=$codtab' class='btn_st'>
-                        <img src='https://i.ibb.co/hPQ0zQ5/ws-menu.png' alt='Botón Crear Subsección' style='width: 25px; height: 15px; vertical-align: middle;'>
-                      </a>";
+                if ($num_tabs == 2) {
+                    // Agregar 5 espacios como proporción
+                    echo "<td><a></a></td>";;
+                } else {
+                    echo "<td><a href='subseccion.php?cod=$cod&nombre=$nombre_url&codtab=$codtab' class='btn_st'>
+                            <img src='https://i.ibb.co/hPQ0zQ5/ws-menu.png' alt='Botón Crear Subsección' style='width: 25px; height: 15px; vertical-align: middle; padding-right: 5px;'>
+                            </a></td>";
+                }
 
                 // Otros botones
-                echo "<a href='seccionpagina.php?cod=$cod&nombre=$nombre_url' class='btn_st'>
-                        <img src='https://i.ibb.co/VYrngfWv/wp-page.png' alt='Botón Página' style='width: 25px; height: 25px; vertical-align: middle;'>
-                      </a>";
-                echo "<a href='secciondetalle.php?cod=$cod&nombre=$nombre_url' class='btn_st'>
-                        <img src='https://i.ibb.co/Fq6n7h1M/wp-tools.png' alt='Botón Detalle' style='width: 25px; height: 25px; vertical-align: middle;'>
-                      </a>";
-                echo "<a href='conect/eliminar_elemento.php?cod=$cod&codtab=$codtab&nombre=$nombre_url' class='btn_st'>
-                        <img src='https://i.ibb.co/LdTnB39W/wp-borrar.png' alt='Botón Eliminar' style='width: 25px; height: 25px; vertical-align: middle;'>
-                      </a>";
-                echo "</td>";
+                echo "<td><a href='seccionpagina.php?cod=$cod&nombre=$nombre_url' class='btn_st'>
+                        <img src='https://i.ibb.co/VYrngfWv/wp-page.png' alt='Botón Página' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
+                      </a></td>";
+                echo "<td><a href='secciondetalle.php?cod=$cod&nombre=$nombre_url' class='btn_st'>
+                        <img src='https://i.ibb.co/Fq6n7h1M/wp-tools.png' alt='Botón Detalle' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
+                      </a></td>";
+                echo "<td><a href='conect/eliminar_elemento.php?cod=$cod&codtab=$codtab&nombre=$nombre_url' class='btn_st'>
+                        <img src='https://i.ibb.co/LdTnB39W/wp-borrar.png' alt='Botón Eliminar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
+                      </a></td>";
                 echo "</tr>";
             }
         }

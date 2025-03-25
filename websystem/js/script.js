@@ -53,6 +53,12 @@ document.addEventListener("DOMContentLoaded", function () {
                  'alignright alignjustify bullist numlist outdent indent | hr link image media emoticons table code' 
     });
     
+    
+
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    
     const departamentos = {
         peru: [
             "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica",
@@ -127,8 +133,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-
 });
+
 function guardarFormulario() {
     var nombre = document.getElementById('nombre').value; // Obtener el nombre del formulario
     if (nombre != "") {
@@ -169,11 +175,9 @@ function cambiarEstilos() {
         estilos = [
             { src: 'https://i.ibb.co/1frpx8B2/estiloblog.gif', alt: 'Blog', name: 'Blog' },
             { src: 'https://i.ibb.co/qLdNSmzM/estiloresumen.gif', alt: 'Resumen', name: 'Resumen' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Galería' },
+            /*{ src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Galería' },
             { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Portafolio', name: 'Portafolio' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Acordion', name: 'Acordion' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Album', name: 'Album' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Videos', name: 'Videos' }
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Album', name: 'Album' },*/
         ];
     } else if (modulo === 'Catalogo') {
         estilos = [
@@ -185,14 +189,13 @@ function cambiarEstilos() {
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Registro', name: 'Registro' },
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Recuperar', name: 'Recuperar' },
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Login', name: 'Login' },
-            { src: 'https://i.ibb.co/mr84FKDj/estilolistado.gif', alt: 'Panel', name: 'Panel' }
         ];
     } else if (modulo === 'Formularios') {
         estilos = [
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Contactos', name: 'Contactos' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Pedidos', name: 'Pedidos' },
+            /*{ src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Pedidos', name: 'Pedidos' },
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Reserva', name: 'Reserva' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Facturacion', name: 'Facturacion' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Facturacion', name: 'Facturacion' },*/
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Suscribe', name: 'Suscribe' }
         ];
     }

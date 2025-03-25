@@ -339,13 +339,10 @@ $contenido = <<<PHP
 include('estilos/header.php');
 include __DIR__ . '/estilos/generar_design.php';
 include ('contador_visitas.php');
-
 // Obtener el nombre del archivo actual
 \$nombreArchivo = basename(__FILE__, '.php');
 \$contador = manejar_contador_por_pagina(\$nombreArchivo);
 
-
-// Llamar a la función para generar el diseño dinámico
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -642,13 +639,10 @@ $contenido = <<<PHP
 include('estilos/header.php');
 include __DIR__ . '/estilos/generar_design.php';
 include ('contador_visitas.php');
-
 // Obtener el nombre del archivo actual
 \$nombreArchivo = basename(__FILE__, '.php');
 \$contador = manejar_contador_por_pagina(\$nombreArchivo);
 
-
-// Llamar a la función para generar el diseño dinámico
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -807,7 +801,80 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
         } else {
             echo "❌ Error en la consulta: " . $conn->error;
         }
-    }
+    } 
+    elseif ($tipoFormulario == "Webconfig") {
+        // Recibir datos del formulario
+        $url_pagina = $_POST['url_pagina'];
+        $nombre = $_POST['nombre'];
+        $idioma = $_POST['idioma'];
+        $logo = $_POST['logo'];
+        $favicon = $_POST['favicon'];
+        $seo_titulo = $_POST['seo_titulo'];
+        $seo_descripcion = $_POST['seo_descripcion'];
+        $seo_metatags = $_POST['seo_metatags'];
+        $pie_pagina = $_POST['pie_pagina'];
+        $imgcabe = $_POST['imgcabe'];   
+        $cabfondo = $_POST['cabfondo'];   
+        $piefondo = $_POST['piefondo'];   
+        $empresa = $_POST['empresa'];
+        $ruc = $_POST['ruc'];
+        $descripcion = $_POST['descripcion'];
+        $pais = $_POST['pais'];
+        $dpto = $_POST['dpto'];
+        $city = $_POST['city'];
+        $direccion_principal = $_POST['direccion_principal'];
+        $email_contactos = $_POST['email_contactos'];
+        $email_ventas = $_POST['email_ventas'];
+        $telefono_fijo = $_POST['telefono_fijo'];
+        $telefono_movil = $_POST['telefono_movil'];
+        $moneda = $_POST['moneda']; 
+        $precios = $_POST['precios'];
+        $carrito_compras = $_POST['carrito_compras'];
+        $zona_usuarios = $_POST['zona_usuarios'];
+        $terminos_condiciones = $_POST['terminos_condiciones'];
+        $panel_post = true;
+
+        // Verificar si ya existe una empresa en la base de datos
+        $sql_check = "SELECT COUNT(*) AS total FROM Empresa";
+        $result = $conn->query($sql_check);
+        $row = $result->fetch_assoc();
+
+        if ($row['total'] > 0) {
+            // Si ya existe una empresa, actualizar sus datos
+            $sql_update = "UPDATE Empresa SET 
+                url_pagina='$url_pagina', nombre='$nombre', idioma='$idioma', logo='$logo', favicon='$favicon', 
+                seo_titulo='$seo_titulo', seo_descripcion='$seo_descripcion', seo_metatags='$seo_metatags', 
+                empresa='$empresa', pie_pagina='$pie_pagina', imgcabe='$imgcabe', cabfondo='$cabfondo', piefondo='$piefondo', 
+                ruc='$ruc', descripcion='$descripcion', pais='$pais', dpto='$dpto', city='$city', 
+                direccion_principal='$direccion_principal', email_contactos='$email_contactos', 
+                email_ventas='$email_ventas', telefono_fijo='$telefono_fijo', telefono_movil='$telefono_movil', 
+                moneda='$moneda', precios='$precios', carrito_compras='$carrito_compras', 
+                zona_usuarios='$zona_usuarios', terminos_condiciones='$terminos_condiciones'";
+
+            if ($conn->query($sql_update) === TRUE) {
+                echo "Configuración actualizada con éxito.";
+            } else {
+                echo "Error al actualizar: " . $conn->error;
+            }
+        } else {
+            // Si no hay ninguna empresa, insertar una nueva
+            $sql_insert = "INSERT INTO Empresa (url_pagina, nombre, idioma, logo, favicon, seo_titulo, 
+                seo_descripcion, seo_metatags, empresa, pie_pagina, imgcabe, cabfondo, piefondo, ruc, descripcion, pais, dpto, 
+                city, direccion_principal, email_contactos, email_ventas, telefono_fijo, 
+                telefono_movil, moneda, precios, carrito_compras, zona_usuarios, terminos_condiciones) 
+                VALUES ('$url_pagina', '$nombre', '$idioma', '$logo', '$favicon', '$seo_titulo', 
+                '$seo_descripcion', '$seo_metatags', '$empresa','$pie_pagina', '$imgcabe', '$cabfondo', '$piefondo', '$ruc', '$descripcion', '$pais', 
+                '$dpto', '$city', '$direccion_principal', '$email_contactos', 
+                '$email_ventas', '$telefono_fijo', '$telefono_movil', '$moneda', '$precios', 
+                '$carrito_compras', '$zona_usuarios', '$terminos_condiciones')";
+
+            if ($conn->query($sql_insert) === TRUE) {
+                echo "Configuración guardada con éxito.";
+            } else {
+                echo "Error al insertar: " . $conn->error;
+            }
+        }
+    } 
     
    
     // 📌 Ejecutar la consulta
@@ -828,7 +895,11 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
 }
 if ($sef_seccion) {
     header("Location: ../secciones.php");
-} else {
+} 
+elseif($panel_post) {
+    header("Location: ../panel.php");
+}
+else {
     header("Location: ../tablero.php");
 }
 exit();

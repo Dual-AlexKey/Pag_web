@@ -84,9 +84,9 @@ foreach ($menu_tables as $menu) {
                 <tr>
                     <td class="colgrishome">Módulo:</td>
                     <td class="colblancocen">
-                        <select id="modulo" name="modulo" required onchange="cambiarEstilos()">
+                        <select id="modulo" name="modulo" style="width: 30%;" required onchange="cambiarEstilos()">
                             <option value="Contenidos" <?= $moduloSeleccionado == 'Contenidos' ? 'selected' : '' ?>>Contenidos</option>
-                            <option value="Catalogo" <?= $moduloSeleccionado == 'Catalogo' ? 'selected' : '' ?>>Catálogo</option>
+                            <!--<option value="Catalogo" <?= $moduloSeleccionado == 'Catalogo' ? 'selected' : '' ?>>Catálogo</option>-->
                             <option value="Usuarios" <?= $moduloSeleccionado == 'Usuarios' ? 'selected' : '' ?>>Usuarios</option>
                             <option value="Formularios" <?= $moduloSeleccionado == 'Formularios' ? 'selected' : '' ?>>Formularios</option>
                         </select>
