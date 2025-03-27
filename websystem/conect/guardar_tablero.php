@@ -778,20 +778,21 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
     }
     elseif ($tipoFormulario == "Imagenes_Tablero") {
         $nombre = $_POST['nombre'] ?? '';
-        $imagen_link = $_POST['imagen_link'] ?? '';
-        $transicion = $_POST['modulo'] ?? '';
+        $imagen_1 = $_POST['imagen_1'] ?? '';
+        $transicion = $_POST['transicion'] ?? '';
         $altura = $_POST['altura'] ?? 0;
-        $orden = $_POST['Orden'] ?? 0;
+        $orden = $_POST['orden'] ?? 0;
+        $img = true;
 
         // Convertir a enteros (seguridad)
         $altura = is_numeric($altura) ? intval($altura) : 0;
         $orden = is_numeric($orden) ? intval($orden) : 0;
 
         // Consulta SQL
-        $sql_img = "INSERT INTO Imagenes (nombre, imagen_link, transicion, altura, orden) VALUES (?, ?, ?, ?, ?)";
+        $sql_img = "INSERT INTO Imagenes (nombre, imagen_1, transicion, altura, orden) VALUES (?, ?, ?, ?, ?)";
 
         if ($stmt = $conn->prepare($sql_img)) {
-            $stmt->bind_param("sssii", $nombre, $imagen_link, $transicion, $altura, $orden);
+            $stmt->bind_param("sssii", $nombre, $imagen_1, $transicion, $altura, $orden);
             if ($stmt->execute()) {
                 echo "✅ Imagen guardada correctamente.";
             } else {
@@ -802,6 +803,56 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
             echo "❌ Error en la consulta: " . $conn->error;
         }
     } 
+    elseif ($tipoFormulario == "ElementoImg") {
+     // Recibir los datos del formulario
+        $padre = $_POST['nombre'] ?? NULL;
+        $titulo = $_POST['titulo'] ?? '';
+        $tipo = $_POST['tipo'] ?? '';
+        $imagen_2 = $_POST['imagen_link2'] ?? '';
+        $link = $_POST['link'] ?? '';
+        $PosX = (float) ($_POST['PosX'] ?? 0);
+        $PosY = (float) ($_POST['PosY'] ?? 0);
+        $estilo = $_POST['estilo'] ?? '';
+        $orden_2 = (int) ($_POST['orden_2'] ?? 0);
+
+        // Verificar si el registro ya existe (por ejemplo, usando el campo `titulo`)
+        $sql_check = "SELECT id_img FROM Imagenes2 WHERE titulo = ?";
+        if ($stmt_check = $conn->prepare($sql_check)) {
+            $stmt_check->bind_param("s", $titulo);
+            $stmt_check->execute();
+            $result = $stmt_check->get_result();
+            $exists = $result->num_rows > 0; // Si hay resultados, el título ya existe
+            $stmt_check->close();
+        }
+
+        // Si el registro existe, actualizar
+        if ($exists) {
+            $sql_update = "UPDATE Imagenes2 SET tipo=?, imagen_2=?, link=?, PosX=?, PosY=?, estilo=?, orden_2=? WHERE titulo=?";
+            
+            if ($stmt_update = $conn->prepare($sql_update)) {
+                $stmt_update->bind_param("ssssddis", $tipo, $imagen_2, $link, $PosX, $PosY, $estilo, $orden_2, $titulo);
+                if ($stmt_update->execute()) {
+                    echo "✅ Registro actualizado correctamente.";
+                } else {
+                    echo "❌ Error al actualizar: " . $stmt_update->error;
+                }
+                $stmt_update->close();
+            }
+        } else {
+            // Si no existe, insertar un nuevo registro
+            $sql_insert = "INSERT INTO Imagenes2 (padre, titulo, tipo, imagen_2, link, PosX, PosY, estilo, orden_2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            if ($stmt_insert = $conn->prepare($sql_insert)) {
+                $stmt_insert->bind_param("sssssddsi", $padre, $titulo, $tipo, $imagen_2, $link, $PosX, $PosY, $estilo, $orden_2);
+                if ($stmt_insert->execute()) {
+                    echo "✅ Nuevo registro guardado correctamente.";
+                } else {
+                    echo "❌ Error al guardar: " . $stmt_insert->error;
+                }
+                $stmt_insert->close();
+            }
+        }
+    }
     elseif ($tipoFormulario == "Webconfig") {
         // Recibir datos del formulario
         $url_pagina = $_POST['url_pagina'];
@@ -898,6 +949,9 @@ if ($sef_seccion) {
 } 
 elseif($panel_post) {
     header("Location: ../panel.php");
+}
+elseif($img) {
+    header("Location: ../new_img.php");
 }
 else {
     header("Location: ../tablero.php");

@@ -222,6 +222,30 @@
     width: 250px; /* Puedes ajustar el ancho si es necesario */
 }
 
+.tableborderfull2 {
+    width: 100%;
+    border-collapse: collapse;
+    color: #555;
+    text-align: right;
+    font-weight: bold;
+
+  }
+  .tableborderfull2 th, .tableborderfull2 td {
+    padding: 8px;
+  }
+  .tableborderfull2 th {
+    background-color: #f2f2f2;
+    width: 50%;
+    color: #000000;
+    
+  }
+  .tableborderfull2 a {
+    font-weight: normal;
+    color: #000000;
+  }
+  
+  
+
 /* Celdas de entrada de datos */
 .Tab-menu {
     background-color: #f9f9f9;

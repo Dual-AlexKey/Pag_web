@@ -5,6 +5,7 @@ include '../../contador_visitas.php';
 
 // ✅ Obtener valores desde la URL
 $id_parametro = isset($_GET['id']) ? trim($_GET['id']) : '';
+$id_tablero = isset($_GET['id_img']) ? trim($_GET['id_img']) : '';
 $cod_parametro = isset($_GET['cod']) ? trim($_GET['cod']) : '';
 $codtab_parametro = isset($_GET['codtab']) ? trim($_GET['codtab']) : '';
 $archivo_a_borrar = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
@@ -118,6 +119,7 @@ if (!empty($cod_parametro)){
 
 // ✅ 🔥 Si se proporcionó `id`, eliminar en la tabla `tablero`
 $se_borro_id = false;
+$se_borro_id_tablero = false;
 
 if (!empty($id_parametro)) {
     $sql_check_id = "SELECT id FROM tablero WHERE id = ?";
@@ -138,15 +140,40 @@ if (!empty($id_parametro)) {
 
     $stmt_check_id->close();
 }
+else if (!empty($id_tablero)) {
+    $sql_check_id = "SELECT id_img FROM Imagenes WHERE id_img = ?";
+    $stmt_check_id = $conn->prepare($sql_check_id);
+    $stmt_check_id->bind_param("s", $id_tablero);
+    $stmt_check_id->execute();
+    $result_check_id = $stmt_check_id->get_result();
+
+    if ($result_check_id->num_rows > 0) {
+        $sql_delete_id = "DELETE FROM Imagenes WHERE id_img = ?";
+        $stmt_delete_id = $conn->prepare($sql_delete_id);
+        $stmt_delete_id->bind_param("s", $id_tablero);
+        if ($stmt_delete_id->execute()) {
+            $se_borro_id_tab = true;
+        }
+        $stmt_delete_id->close();
+    }
+
+    $stmt_check_id->close();
+}
 
 // ✅ 🔥 Redireccionar según el tipo de eliminación
 if ($se_borro_id) {
     header("Location: ../tablero.php");
     exit();
-} elseif ($se_borro_cod_o_codtab) {
+} 
+elseif ($se_borro_id_tab) {
+    header("Location: ../new_img.php");
+    exit();
+}
+elseif ($se_borro_cod_o_codtab) {
     header("Location: ../secciones.php");
     exit();
-} else {
+} 
+else {
     die("Error: No se encontraron registros para eliminar.");
 }
 ?>

@@ -118,7 +118,7 @@ $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
                     <tr>
                         <td class="colgrishome">Apps:</td>
                         <td class="colblancocen">
-                            <select id="apps" name="apps" style="width: 30%;">
+                            <select id="apps" name="apps" style="width: 60%;">
                                 <option value="RS" <?= (isset($datos['apps']) && $datos['apps'] == 'RS') ? 'selected' : '' ?>>Redes Sociales</option>
                                 <option value="S" <?= (isset($datos['apps']) && $datos['apps'] == 'S') ? 'selected' : '' ?>>Subscribase</option>
                                 <option value="MP" <?= (isset($datos['apps']) && $datos['apps'] == 'MP') ? 'selected' : '' ?>>Menu Pie</option>
