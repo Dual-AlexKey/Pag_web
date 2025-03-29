@@ -12,6 +12,9 @@ CREATE TABLE Empresa (
     seo_descripcion VARCHAR(255) NOT NULL,
     seo_metatags VARCHAR(255) NOT NULL,
     pie_pagina VARCHAR(255) NOT NULL,
+    imgcabe VARCHAR(255) NOT NULL,
+    cabfondo VARCHAR(255),
+    piefondo VARCHAR(255),
     empresa varchar(255),
     ruc VARCHAR(20) NOT NULL UNIQUE,
     descripcion TEXT,
@@ -29,7 +32,6 @@ CREATE TABLE Empresa (
     zona_usuarios VARCHAR(3),
     terminos_condiciones VARCHAR(255)
 );
-
 insert 	
 INSERT INTO menu_cabecera_cabecera 
 (nombre, modulo, orden, nro_item, visitas, link, Num_nivel, estilos, cod) 
