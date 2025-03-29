@@ -46,6 +46,46 @@
     max-height: 80px; /* Ajusta el tamaño máximo */
 }
 
+.custom-container {
+    max-width: 100%; /* Cambia el ancho máximo aquí (por ejemplo, 95% o un tamaño fijo como 1400px) */
+    margin: auto; /* Para centrar el contenido */
+}
+
+
+header {
+    height: 150px; /* Ajusta el alto de la cabecera */
+    display: flex;
+    align-items: center; /* Centra el contenido verticalmente */
+}
+
+header .container {
+    height: 100%;
+}
+
+header img {
+    max-height: 80px; /* Limita la altura de las imágenes dentro del encabezado */
+    object-fit: contain; /* Asegura que las imágenes mantengan su proporción */
+}
+
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.7); /* Enlaces opacos */
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: rgba(255, 255, 255, 1); /* Brilla cuando pasas el mouse */
+}
+
+.nav-link.active {
+    color: #ffffff; /* Color blanco puro para el enlace activo */
+    font-weight: bold; /* Resalta el texto */
+    background-color: rgba(0, 123, 255, 0.5); /* Fondo azul translúcido */
+    border-radius: 0.25rem; /* Bordes redondeados */
+    padding: 0.5rem 1rem; /* Espaciado adicional */
+}
+
+
 /* Agregar un margen superior al contenido para evitar que el header lo cubra */
 body {
     margin: 0;

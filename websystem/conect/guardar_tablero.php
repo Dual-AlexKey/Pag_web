@@ -358,6 +358,9 @@ include ('contador_visitas.php');
     </div>
 </body>
 </html>
+<?php
+include('estilos/footer.php'); // Footer
+?>
 PHP;
 
 // Crear el archivo al mismo nivel que la carpeta
@@ -658,6 +661,9 @@ include ('contador_visitas.php');
     </div>
 </body>
 </html>
+<?php
+include('estilos/footer.php'); // Footer
+?>
 PHP;
 
 // Crear el archivo al mismo nivel que la carpeta
