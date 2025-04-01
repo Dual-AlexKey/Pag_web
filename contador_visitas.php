@@ -55,9 +55,7 @@ function eliminar_archivo_y_contador($nombre_archivo) {
     if (file_exists($nombre_archivo)) {
         unlink($nombre_archivo); // Eliminar el archivo físico
         echo "✅ Archivo eliminado: $nombre_archivo<br>";
-    } else {
-        echo "⚠️ El archivo no existe: $nombre_archivo<br>";
-    }
+    } 
 
     // Leer y actualizar los datos en el archivo de contadores
     if (file_exists($archivo_contador_global)) {

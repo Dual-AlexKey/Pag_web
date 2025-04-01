@@ -155,36 +155,36 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
                     <td class="colblancocen"><textarea name="descripcion"><?= htmlspecialchars($empresa['descripcion']) ?></textarea></td>
                 </tr>
                 <tr>
-    <td class="colgrishome">País</td>
-    <td class="colblancocen">
-        <select name="pais" id="pais" style="width: 30%;">
-            <option value="">Seleccione un país</option>
-            <option value="peru" <?= ($empresa['pais'] == 'peru') ? 'selected' : '' ?>>Perú</option>
-        </select>
-    </td>
-</tr>
-<tr>
-    <td class="colgrishome">Región / Departamento</td>
-    <td class="colblancocen">
-        <select name="dpto" id="dpto" style="width: 30%;">
-            <option value="">Seleccione un departamento</option>
-            <?php if (!empty($empresa['dpto'])): ?>
-                <option value="<?= htmlspecialchars($empresa['dpto']) ?>" selected><?= htmlspecialchars($empresa['dpto']) ?></option>
-            <?php endif; ?>
-        </select>
-    </td>
-</tr>
-<tr>
-    <td class="colgrishome">Ciudad / Provincia</td>
-    <td class="colblancocen">
-        <select name="city" id="city" style="width: 30%;">
-            <option value="">Seleccione una provincia</option>
-            <?php if (!empty($empresa['city'])): ?>
-                <option value="<?= htmlspecialchars($empresa['city']) ?>" selected><?= htmlspecialchars($empresa['city']) ?></option>
-            <?php endif; ?>
-        </select>
-    </td>
-</tr>
+                    <td class="colgrishome">País</td>
+                    <td class="colblancocen">
+                        <select name="pais" id="pais" style="width: 30%;">
+                            <option value="">Seleccione un país</option>
+                            <option value="peru" <?= ($empresa['pais'] == 'peru') ? 'selected' : '' ?>>Perú</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="colgrishome">Región / Departamento</td>
+                    <td class="colblancocen">
+                        <select name="dpto" id="dpto" style="width: 30%;">
+                             <option value="">Seleccione un departamento</option>
+                            <?php if (!empty($empresa['dpto'])): ?>
+                               <option value="<?= htmlspecialchars($empresa['dpto']) ?>" selected><?= htmlspecialchars($empresa['dpto']) ?></option>
+                            <?php endif; ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="colgrishome">Ciudad / Provincia</td>
+                    <td class="colblancocen">
+                        <select name="city" id="city" style="width: 30%;">
+                            <option value="">Seleccione una provincia</option>
+                            <?php if (!empty($empresa['city'])): ?>
+                                <option value="<?= htmlspecialchars($empresa['city']) ?>" selected><?= htmlspecialchars($empresa['city']) ?></option>
+                            <?php endif; ?>
+                        </select>
+                    </td>
+                </tr>
 
                 <tr>
                     <td class="colgrishome">Dirección Principal:</td>

@@ -1,4 +1,3 @@
 {
-    "prueba1": 42,
-    "PRUEBA22": 2
+    "prueba1": 42
 }

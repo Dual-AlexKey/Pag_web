@@ -9,6 +9,6 @@
             <button class="boton">Redes Sociales</button>
         </div>
         <!--<button class="boton">Productos</button>-->
-        <button class="boton">Administracion</button>
+        <a href="administracion.php"><button class="boton">Administracion</button>
         
     </div>
