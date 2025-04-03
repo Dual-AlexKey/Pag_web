@@ -32,6 +32,7 @@ CREATE TABLE Empresa (
     zona_usuarios VARCHAR(3),
     terminos_condiciones VARCHAR(255)
 );
+
 insert 	
 INSERT INTO menu_cabecera_cabecera 
 (nombre, modulo, orden, nro_item, visitas, link, Num_nivel, estilos, cod) 

@@ -2,8 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const botonesConSubMenu = document.querySelectorAll(".boton.submenu");
     console.log("JavaScript cargado correctamente.");
 
-
-    console.log("TinyMCE inicializado correctamente.");
+    console.log('DOM fully loaded and parsed'); // Verifica que el DOM se cargó correctamente
 
     botonesConSubMenu.forEach(function (boton) {
         boton.addEventListener("click", function () {
@@ -33,30 +32,43 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    tinymce.init({
-        selector: '#editor',
-        height: 400,
-        menubar: 'edit format table', // 🔥 Eliminamos "insert" y "view"
-        branding: false,
-        statusbar: false,
+    // Función para insertar un bloque de código
     
-        plugins: [
-            'advlist autolink lists link charmap print preview anchor',
-            'searchreplace fullscreen',
-            'insertdatetime media paste code help wordcount',
-            'emoticons autosave image',
-            'table',
-            'code','emoticons','media' // 🔥 Aseguramos que "table" y "code" están cargados
-        ],
-    
-        toolbar: 'undo redo | formatselect | bold italic forecolor backcolor | alignleft aligncenter ' +
-                 'alignright alignjustify bullist numlist outdent indent | hr link image media emoticons table code' 
-    });
-    
-    
-
 });
+// Función para abrir el modal para código
+function openCodeModal() {
+    document.getElementById('codeModal').style.display = 'block';
+}
 
+// Función para cerrar el modal
+function closeCodeModal() {
+    document.getElementById('codeModal').style.display = 'none';
+}
+
+// Función para insertar el bloque de código
+function insertCode() {
+    var code = document.getElementById('code-input').value;
+    document.execCommand('insertHTML', false, '<pre style="background-color: #f4f4f4; padding: 10px; border-radius: 4px; font-family: monospace;">' + code + '</pre>');
+    closeCodeModal();
+}
+
+// Función para insertar un enlace
+function insertLink() {
+    var url = prompt('Ingresa la URL del enlace:');
+    var text = prompt('Ingresa el texto del enlace:');
+    if (url && text) {
+        document.execCommand('insertHTML', false, '<a href="' + url + '" target="_blank">' + text + '</a>');
+    }
+}
+
+// Función para insertar un video (a través de un iframe)
+function insertVideo() {
+    var videoUrl = prompt('Ingresa la URL del video de YouTube o Vimeo:');
+    if (videoUrl) {
+        var iframe = '<iframe width="560" height="315" src="' + videoUrl + '" frameborder="0" allowfullscreen></iframe>';
+        document.execCommand('insertHTML', false, iframe);
+    }
+}
 document.addEventListener("DOMContentLoaded", function () {
     
     const departamentos = {
