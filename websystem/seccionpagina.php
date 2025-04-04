@@ -60,45 +60,14 @@ if (!empty($cod)) {
                     </td>
                 </tr>
                 <tr>
-    <td class="colgrishome">Contenido:</td>
-    <td class="colblancocen">
-        <!-- Contenedor del editor -->
-        <div id="editor-container">
-            <!-- Barra de herramientas con opciones -->
-            <div id="toolbar">
-                <button type="button" onclick="document.execCommand('bold', false, '')"><b>B</b></button>
-                <button type="button" onclick="document.execCommand('italic', false, '')"><i>I</i></button>
-                <button type="button" onclick="document.execCommand('underline', false, '')"><u>U</u></button>
-                <button type="button" onclick="document.execCommand('justifyLeft', false, '')">Izq</button>
-                <button type="button" onclick="document.execCommand('justifyCenter', false, '')">Centro</button>
-                <button type="button" onclick="document.execCommand('justifyRight', false, '')">Der</button>
-                <select onchange="document.execCommand('fontSize', false, this.value)" style="font-size: 12px;">
-                    <option value="3">Normal</option>
-                    <option value="4">Grande</option>
-                    <option value="5">Muy Grande</option>
-                </select>
-                <select onchange="document.execCommand('fontName', false, this.value)" style="font-size: 12px;">
-                    <option value="Arial">Arial</option>
-                    <option value="Courier New">Courier</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Times New Roman">Times</option>
-                </select>
-                <input type="color" id="color-text" title="Color de texto" onchange="document.execCommand('foreColor', false, this.value)">
-                <input type="color" id="color-bg" title="Color de fondo" onchange="document.execCommand('backColor', false, this.value)">
-                <button type="button" onclick="openCodeModal()">Bloque de Código</button>
-                <button type="button" onclick="insertLink()">Enlace</button>
-                <button type="button" onclick="insertVideo()">Video</button>
-            </div>
-            <!-- Área de edición -->
-            <div id="editor" contenteditable="true" style="border: 1px solid #ccc; padding: 10px; min-height: 150px; margin-top: 5px;">
-                <?= htmlspecialchars($datos['contenido']) ?>
-            </div>
-        </div>
-        <br>
-        <button type="button" class="boton-explorador" onclick="mostrarExplorador('imagen_linkED')">📂 Insertar Imagen</button>
-        <input type="hidden" id="imagen_linkED">
-    </td>
-</tr>
+                    <td class="colgrishome">Contenido:</td>
+                    <td class="colblancocen">
+    <!-- Incluimos el iframe que carga el editor -->
+    <iframe src="editor.php" style="width:100%; height:600px; border:none;"></iframe>
+</td>
+
+                </tr>
+
             </table>
         </div>
 
@@ -156,15 +125,17 @@ if (!empty($cod)) {
 </div>
 
 <!-- Modal para bloque de código -->
-<div id="codeModal" style="display: none;">
-    <div style="padding: 20px; background: #f4f4f4; border-radius: 5px;">
+<div id="codeModal" class="modal">
+    <div class="modal-contenido">
+        <span class="cerrar" onclick="closeCodeModal()">&times;</span>
         <h3>Insertar Bloque de Código</h3>
         <textarea id="code-input" rows="5" style="width: 100%;"></textarea>
         <br><br>
-        <button type="button" onclick="insertCode()">Insertar</button>
-        <button type="button" onclick="closeCodeModal()">Cancelar</button>
+        <button type="button" onclick="insertCodeBlock()">Insertar</button>
+        <button type="button" onclick="closeCodeModal()">Cerrar</button>
     </div>
 </div>
+
 
 <div id="modal-explorador" class="modal">
     <div class="modal-contenido">
@@ -199,7 +170,6 @@ if (!empty($cod)) {
         </div>
     </div>
 </div>
-<script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
 
 <?php
 // Incluir el footer.php

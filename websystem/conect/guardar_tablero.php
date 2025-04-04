@@ -676,7 +676,7 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
     }
     elseif ($tipoFormulario == "SeccionPag") {
         $titulo = $_POST['nombreT'] ?? '';
-        $contenido = $_POST['contenido'] ?? '';
+        $contenido = $_POST['editor'] ?? '';
         $tituloS = $_POST['nombreS'] ?? '';
         $descripcion = $_POST['descrip'] ?? '';
         $cod = $_POST['cod'] ?? '';

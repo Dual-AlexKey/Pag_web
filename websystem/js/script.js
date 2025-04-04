@@ -35,40 +35,36 @@ document.addEventListener("DOMContentLoaded", function () {
     // Función para insertar un bloque de código
     
 });
-// Función para abrir el modal para código
-function openCodeModal() {
-    document.getElementById('codeModal').style.display = 'block';
-}
 
-// Función para cerrar el modal
-function closeCodeModal() {
-    document.getElementById('codeModal').style.display = 'none';
-}
 
-// Función para insertar el bloque de código
-function insertCode() {
-    var code = document.getElementById('code-input').value;
-    document.execCommand('insertHTML', false, '<pre style="background-color: #f4f4f4; padding: 10px; border-radius: 4px; font-family: monospace;">' + code + '</pre>');
-    closeCodeModal();
-}
+$(document).ready(function() {
+    $('#editor').summernote({
+        toolbar: [
+            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['fontname', ['fontname']],
+            ['color', ['forecolor', 'backcolor']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['myPicture', 'link', 'video', 'table']], // Botón personalizado
+        ],
+        buttons: {
+            myPicture: function(context) {
+                var ui = $.summernote.ui;
+                return ui.button({
+                    contents: '<i class="note-icon-picture"/>', // Ícono del botón
+                    tooltip: 'Insertar imagen desde el explorador',
+                    click: function() {
+                        // Llama a tu función para abrir el modal
+                        mostrarExplorador('imagen_linkED'); // Cambiar 'imagen_linkED' si necesitas otro campo
+                    }
+                }).render();
+            }
+        }
+    });
+});
 
-// Función para insertar un enlace
-function insertLink() {
-    var url = prompt('Ingresa la URL del enlace:');
-    var text = prompt('Ingresa el texto del enlace:');
-    if (url && text) {
-        document.execCommand('insertHTML', false, '<a href="' + url + '" target="_blank">' + text + '</a>');
-    }
-}
+  
 
-// Función para insertar un video (a través de un iframe)
-function insertVideo() {
-    var videoUrl = prompt('Ingresa la URL del video de YouTube o Vimeo:');
-    if (videoUrl) {
-        var iframe = '<iframe width="560" height="315" src="' + videoUrl + '" frameborder="0" allowfullscreen></iframe>';
-        document.execCommand('insertHTML', false, iframe);
-    }
-}
 document.addEventListener("DOMContentLoaded", function () {
     
     const departamentos = {
@@ -483,8 +479,12 @@ function subirImagen() {
 }
 
 
+
 // 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN EL INPUT CORRECTO
 function seleccionar(ruta) {
+    $('#editor').summernote('insertImage', ruta, function ($image) {
+        $image.addClass('img-responsive');
+      });
     let modal = document.getElementById("modal-explorador");
     let campoDestino = modal.getAttribute("data-campo"); // Obtener el input de destino
 
@@ -510,11 +510,7 @@ function seleccionar(ruta) {
     // ✅ Guardar la URL en el input correcto
     inputTexto.value = ruta;
 
-    // ✅ Solo insertar en TinyMCE si el campo es "imagen_link"
-    if (campoDestino === "imagen_linkED") {
-        tinymce.activeEditor.execCommand('mceInsertContent', false, `<img src="../${ruta}" alt="Imagen">`);
-    }
-
+    
     // ✅ Cerrar el explorador
     cerrarExplorador();
 }

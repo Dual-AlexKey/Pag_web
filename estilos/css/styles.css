@@ -89,6 +89,8 @@ header img {
 /* Agregar un margen superior al contenido para evitar que el header lo cubra */
 body {
     margin: 0;
+    all: unset;  /* Restablecer estilos globales */
+
 }
 
 .menu-inferior {

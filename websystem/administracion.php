@@ -118,3 +118,4 @@ include('estilo/menu.php');
 // Incluir el footer.php
 include('estilo/footer.php');
 ?>
+
