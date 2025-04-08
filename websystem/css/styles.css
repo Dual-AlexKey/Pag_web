@@ -417,17 +417,42 @@ table input[type="checkbox"] {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
 }
+.modal2 {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 👈 Evita que el fondo del modal bloquee clics */
+}
 
+/* FONDO OSCURO */
+.modal-backdrop {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* CONTENIDO DEL MODAL */
 .modal-contenido {
+    position: relative;
+    z-index: 2; /* 👈 Encima del fondo oscuro */
     background-color: white;
-    margin: 10% auto;
+    margin: 2% auto;
     padding: 20px;
     width: 60%;
     max-width: 500px;
     border-radius: 10px;
     text-align: center;
-    position: relative;
+    pointer-events: auto; /* 👈 Asegura que puedas interactuar */
 }
+
 
 .cerrar {
     position: absolute;

@@ -313,19 +313,16 @@ function actualizarExplorador(url) {
 // 🔹 ABRIR Y CERRAR EL MODAL
 // 🔹 MOSTRAR MODAL Y ASIGNAR EL INPUT CORRECTO
 function mostrarExplorador(campoDestino) {
-    let modal = document.getElementById("modal-explorador");
-    if (modal) {
-        modal.style.display = "block";
-        modal.setAttribute("data-campo", campoDestino); // ✅ Guardamos el campo correcto en el modal
-    }
+    const modal = document.getElementById("modal-explorador");
+    modal.style.display = "block";
+    modal.setAttribute("data-campo", campoDestino);
 }
+
 
 // 🔹 CERRAR MODAL
 function cerrarExplorador() {
-    let modal = document.querySelector("#modal-explorador");
-    if (modal) {
-        modal.style.display = "none";
-    }
+    const modal = document.getElementById("modal-explorador");
+    modal.style.display = "none";
 }
 
 
@@ -482,9 +479,6 @@ function subirImagen() {
 
 // 🔹 SELECCIONAR UNA IMAGEN Y AJUSTAR SU RUTA EN EL INPUT CORRECTO
 function seleccionar(ruta) {
-    $('#editor').summernote('insertImage', ruta, function ($image) {
-        $image.addClass('img-responsive');
-      });
     let modal = document.getElementById("modal-explorador");
     let campoDestino = modal.getAttribute("data-campo"); // Obtener el input de destino
 
@@ -510,7 +504,7 @@ function seleccionar(ruta) {
     // ✅ Guardar la URL en el input correcto
     inputTexto.value = ruta;
 
-    
+
     // ✅ Cerrar el explorador
     cerrarExplorador();
 }
@@ -538,6 +532,7 @@ function cambiarID(menu, id, cambio) {
     })
     .catch(error => console.error("Error:", error));
 }
+
 
 
 

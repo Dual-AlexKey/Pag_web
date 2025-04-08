@@ -1,6 +1,5 @@
 <?php
 header('Content-Type: application/json');
-
 function subirImagen($archivo) {
     if (isset($archivo) && $archivo['error'] == 0) {
         $directorio = "../../img/";

@@ -62,12 +62,12 @@ if (!empty($cod)) {
                 <tr>
                     <td class="colgrishome">Contenido:</td>
                     <td class="colblancocen">
-    <!-- Incluimos el iframe que carga el editor -->
-    <iframe src="editor.php" style="width:100%; height:600px; border:none;"></iframe>
-</td>
-
+                        <!-- El iframe que carga el editor -->
+                        <iframe id="editorIframe" src="editor.php" style="width:100%; height:520px; border:none;"></iframe>
+                        <!-- Campo oculto que guardará el contenido del editor -->
+                        <textarea name="contenido" id="contenido" style="display:none;"><?= htmlspecialchars($datos['contenido']) ?></textarea>
+                    </td>
                 </tr>
-
             </table>
         </div>
 
@@ -122,18 +122,6 @@ if (!empty($cod)) {
     </form>
 </div>
 
-</div>
-
-<!-- Modal para bloque de código -->
-<div id="codeModal" class="modal">
-    <div class="modal-contenido">
-        <span class="cerrar" onclick="closeCodeModal()">&times;</span>
-        <h3>Insertar Bloque de Código</h3>
-        <textarea id="code-input" rows="5" style="width: 100%;"></textarea>
-        <br><br>
-        <button type="button" onclick="insertCodeBlock()">Insertar</button>
-        <button type="button" onclick="closeCodeModal()">Cerrar</button>
-    </div>
 </div>
 
 
