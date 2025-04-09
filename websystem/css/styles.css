@@ -695,6 +695,10 @@ table input[type="checkbox"] {
     cursor: pointer;
     border-radius: 3px;
 }
-
+.form-control {
+    width: 200px; /* Ajusta el ancho según tus necesidades */
+    height: 30px; /* Ajusta la altura según tus necesidades */
+    box-sizing: border-box; /* Asegura que el padding no afecte el tamaño total */
+}
 
 

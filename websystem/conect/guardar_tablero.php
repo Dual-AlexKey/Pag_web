@@ -931,7 +931,54 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
                 echo "Error al insertar: " . $conn->error;
             }
         }
-    } 
+    }  
+    elseif ($tipoFormulario == "User") {
+        $nombres = $_POST['nombres'] ?? '';
+        $correo = $_POST['correo'] ?? '';
+        $documento = $_POST['documento'] ?? '';
+        $fecha = $_POST['fecha_aniversario'] ?? '';
+        $sexo = $_POST['sexo'] ?? '';
+        $perfil = $_POST['perfil'] ?? '';
+        $pais = $_POST['pais'] ?? '';
+        $dpto = $_POST['dpto'] ?? '';
+        $city = $_POST['city'] ?? '';
+        $direccion = $_POST['direccion'] ?? '';
+        $telefono = $_POST['telefono'] ?? '';
+        $movil = $_POST['movil'] ?? '';
+
+        // Verificar si el usuario ya existe en la base de datos
+        $sql_check = "SELECT id FROM log WHERE correo = ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->bind_param("s", $correo);
+        $stmt_check->execute();
+        $result_check = $stmt_check->get_result();
+        $exists = $result_check->num_rows > 0;
+        $stmt_check->close();
+
+        if ($exists) {
+            // Actualizar datos del usuario existente
+            $sql_update = "UPDATE log SET nombres = ?, documento = ?, fecha = ?, sexo = ?, perfil = ?, pais = ?, dpto = ?, city = ?, direccion = ?, telefono = ?, movil = ? WHERE correo = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param("ssssssssssss", $nombres, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil, $correo);
+            if ($stmt_update->execute()) {
+                echo "✅ Usuario actualizado correctamente.";
+            } else {
+                echo "❌ Error al actualizar: " . $stmt_update->error;
+            }
+            $stmt_update->close();
+        } else {
+            // Insertar nuevo usuario
+            $sql_insert = "INSERT INTO log (nombres, correo, documento, fecha, sexo, perfil, pais, dpto, city, direccion, telefono, movil) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt_insert = $conn->prepare($sql_insert);
+            $stmt_insert->bind_param("ssssssssssss", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil);
+            if ($stmt_insert->execute()) {
+                echo "✅ Nuevo usuario registrado correctamente.";
+            } else {
+                echo "❌ Error al registrar: " . $stmt_insert->error;
+            }
+            $stmt_insert->close();
+        }
+    }
     
    
     // 📌 Ejecutar la consulta

@@ -32,41 +32,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Función para insertar un bloque de código
-    
-});
-
-
-$(document).ready(function() {
-    $('#editor').summernote({
-        toolbar: [
-            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
-            ['font', ['strikethrough', 'superscript', 'subscript']],
-            ['fontname', ['fontname']],
-            ['color', ['forecolor', 'backcolor']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['insert', ['myPicture', 'link', 'video', 'table']], // Botón personalizado
-        ],
-        buttons: {
-            myPicture: function(context) {
-                var ui = $.summernote.ui;
-                return ui.button({
-                    contents: '<i class="note-icon-picture"/>', // Ícono del botón
-                    tooltip: 'Insertar imagen desde el explorador',
-                    click: function() {
-                        // Llama a tu función para abrir el modal
-                        mostrarExplorador('imagen_linkED'); // Cambiar 'imagen_linkED' si necesitas otro campo
-                    }
-                }).render();
-            }
-        }
-    });
-});
-
-  
-
-document.addEventListener("DOMContentLoaded", function () {
-    
     const departamentos = {
         peru: [
             "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica",
@@ -139,9 +104,37 @@ document.addEventListener("DOMContentLoaded", function () {
                 citySelect.innerHTML += `<option value="${provincia}">${provincia}</option>`;
             });
         }
-    });
-
+    });    
 });
+
+
+$(document).ready(function() {
+    $('#editor').summernote({
+        toolbar: [
+            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['fontname', ['fontname']],
+            ['color', ['forecolor', 'backcolor']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['myPicture', 'link', 'video', 'table']], // Botón personalizado
+        ],
+        buttons: {
+            myPicture: function(context) {
+                var ui = $.summernote.ui;
+                return ui.button({
+                    contents: '<i class="note-icon-picture"/>', // Ícono del botón
+                    tooltip: 'Insertar imagen desde el explorador',
+                    click: function() {
+                        // Llama a tu función para abrir el modal
+                        mostrarExplorador('imagen_linkED'); // Cambiar 'imagen_linkED' si necesitas otro campo
+                    }
+                }).render();
+            }
+        }
+    });
+});
+
+  
 
 function guardarFormulario() {
     var nombre = document.getElementById('nombre').value; // Obtener el nombre del formulario
@@ -183,9 +176,11 @@ function cambiarEstilos() {
         estilos = [
             { src: 'https://i.ibb.co/1frpx8B2/estiloblog.gif', alt: 'Blog', name: 'Blog' },
             { src: 'https://i.ibb.co/qLdNSmzM/estiloresumen.gif', alt: 'Resumen', name: 'Resumen' },
-            /*{ src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Galería' },
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Galería', name: 'Galería' },
             { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Portafolio', name: 'Portafolio' },
-            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Album', name: 'Album' },*/
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Acordion', name: 'Acordion' },
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Album', name: 'Album' },
+            { src: 'https://i.ibb.co/k29qfG19/estilogaleria.gif', alt: 'Videos', name: 'Videos' }
         ];
     } else if (modulo === 'Catalogo') {
         estilos = [
@@ -197,13 +192,14 @@ function cambiarEstilos() {
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Registro', name: 'Registro' },
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Recuperar', name: 'Recuperar' },
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Login', name: 'Login' },
+            { src: 'https://i.ibb.co/mr84FKDj/estilolistado.gif', alt: 'Panel', name: 'Panel' }
         ];
     } else if (modulo === 'Formularios') {
         estilos = [
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Contactos', name: 'Contactos' },
-            /*{ src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Pedidos', name: 'Pedidos' },
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Pedidos', name: 'Pedidos' },
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Reserva', name: 'Reserva' },
-            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Facturacion', name: 'Facturacion' },*/
+            { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Facturacion', name: 'Facturacion' },
             { src: 'https://i.ibb.co/kLZTY7D/estilosformulario.gif', alt: 'Suscribe', name: 'Suscribe' }
         ];
     }
