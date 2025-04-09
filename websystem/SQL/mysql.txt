@@ -76,9 +76,21 @@ VALUES
     fecha_final DATE DEFAULT NULL       -- Fecha de finalización
 );
 CREATE TABLE log (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usu VARCHAR(50) UNIQUE NOT NULL,
-    con VARCHAR(255) NOT NULL
+	usu VARCHAR(50) UNIQUE NOT NULL,   -- nombre de usuario
+	con VARCHAR(255) NOT NULL,          -- contraseña
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	nombres VARCHAR(100) NOT NULL,
+	correo VARCHAR(100) UNIQUE NOT NULL,
+	documento VARCHAR(50),
+	fecha DATE,
+	sexo ENUM('M', 'F') DEFAULT NULL,
+	perfil VARCHAR(50),
+	pais VARCHAR(50),
+	dpto VARCHAR(50),
+	city VARCHAR(50),
+	direccion VARCHAR(100),
+	telefono VARCHAR(20),
+	movil VARCHAR(20)
 );
 drop table detalles
 	select*from paginas;
