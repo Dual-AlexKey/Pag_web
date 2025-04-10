@@ -34,8 +34,8 @@ include('estilo/tabla_menu.php');
                 <tr>
                     <td class="colgrishome">Módulo:</td>
                     <td class="colblancocen">
-                        <select id="modulo" name="modulo" style="width: 30%;" required onchange="cambiarEstilos()">
-                            <option value="Contenidos">Contenidos</option>
+                        <select id="modulo" name="modulo" style="width: 30%;" required>
+                            <option value="Contenidos" selected>Contenidos</option>
                             <option value="Usuarios">Usuarios</option>
                             <option value="Formularios">Formularios</option>
                         </select>
@@ -44,12 +44,12 @@ include('estilo/tabla_menu.php');
                 <tr>
                     <td class="colgrishome">Estilos:</td>
                     <td class="colblancocen">
-                        <div style="display: flex; gap: 20px; align-items: flex-start;" id="estilos">
+                        <div style="display: flex; gap: 20px; align-items: flex-start;" id="estilos" data-seleccionado="">
                             <!-- Los estilos se cargarán aquí dinámicamente -->
                         </div>
                     </td>
                 </tr>
-                <tr>
+
                     <td class="colgrishome">Publicar en Menú:</td>
                     <td class="colblancocen">
                         <?php if (!empty($menus)): ?>

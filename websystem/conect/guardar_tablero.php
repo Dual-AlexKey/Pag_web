@@ -1,6 +1,14 @@
 <?php
 include 'conexion.php';          // 🔹 Se encuentra en la misma carpeta que `guardar.php`
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}   
+
+if (!isset($_SESSION["usuario"])) {
+    die("❌ Debes iniciar sesión para realizar esta acción.");
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tipoFormulario = $_POST['formulario_tipo'] ?? null;
     $sql = "";
@@ -932,51 +940,120 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
             }
         }
     }  
-    elseif ($tipoFormulario == "User") {
-        $nombres = $_POST['nombres'] ?? '';
-        $correo = $_POST['correo'] ?? '';
-        $documento = $_POST['documento'] ?? '';
-        $fecha = $_POST['fecha_aniversario'] ?? '';
-        $sexo = $_POST['sexo'] ?? '';
-        $perfil = $_POST['perfil'] ?? '';
-        $pais = $_POST['pais'] ?? '';
-        $dpto = $_POST['dpto'] ?? '';
-        $city = $_POST['city'] ?? '';
-        $direccion = $_POST['direccion'] ?? '';
-        $telefono = $_POST['telefono'] ?? '';
-        $movil = $_POST['movil'] ?? '';
+    elseif ($tipoFormulario === "User") {
+        // 🛡️ Verificar CSRF token
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            die("❌ Token CSRF inválido.");
+        }
+    
+        // Recolectar el ID del usuario
+        $id = intval($_POST['id'] ?? 0);
+    
+        // Verificar si el formulario incluye datos básicos o solo la contraseña
+        $nuevaCon = $_POST['con'] ?? null;
+        $confirmar = $_POST['confirmar_con'] ?? null;
+        $user_post = true;
 
-        // Verificar si el usuario ya existe en la base de datos
-        $sql_check = "SELECT id FROM log WHERE correo = ?";
-        $stmt_check = $conn->prepare($sql_check);
-        $stmt_check->bind_param("s", $correo);
-        $stmt_check->execute();
-        $result_check = $stmt_check->get_result();
-        $exists = $result_check->num_rows > 0;
-        $stmt_check->close();
-
-        if ($exists) {
-            // Actualizar datos del usuario existente
-            $sql_update = "UPDATE log SET nombres = ?, documento = ?, fecha = ?, sexo = ?, perfil = ?, pais = ?, dpto = ?, city = ?, direccion = ?, telefono = ?, movil = ? WHERE correo = ?";
-            $stmt_update = $conn->prepare($sql_update);
-            $stmt_update->bind_param("ssssssssssss", $nombres, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil, $correo);
-            if ($stmt_update->execute()) {
-                echo "✅ Usuario actualizado correctamente.";
-            } else {
-                echo "❌ Error al actualizar: " . $stmt_update->error;
+    
+        if (!empty($nuevaCon) || !empty($confirmar)) {
+            // 🔐 Cambiar contraseña
+            if ($nuevaCon !== $confirmar) {
+                die("❌ Las contraseñas no coinciden.");
             }
-            $stmt_update->close();
+            if (strlen($nuevaCon) < 6) {
+                die("❌ La contraseña debe tener al menos 6 caracteres.");
+            }
+            $passwordHash = password_hash($nuevaCon, PASSWORD_DEFAULT);
+    
+            // Verificar si el usuario existe por ID
+            $sql_check = "SELECT id FROM log WHERE id = ?";
+            $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bind_param("i", $id);
+            $stmt_check->execute();
+            $result_check = $stmt_check->get_result();
+            $exists = $result_check->num_rows > 0;
+            $stmt_check->close();
+    
+            if ($exists) {
+                // Actualizar la contraseña
+                $sql_update = "UPDATE log SET con = ? WHERE id = ?";
+                $stmt_update = $conn->prepare($sql_update);
+                $stmt_update->bind_param("si", $passwordHash, $id);
+    
+                if ($stmt_update->execute()) {
+                    echo "✅ Contraseña actualizada correctamente.";
+                } else {
+                    echo "❌ Error al actualizar la contraseña: " . $stmt_update->error;
+                }
+                $stmt_update->close();
+            } else {
+                die("❌ Usuario no encontrado.");
+            }
         } else {
-            // Insertar nuevo usuario
-            $sql_insert = "INSERT INTO log (nombres, correo, documento, fecha, sexo, perfil, pais, dpto, city, direccion, telefono, movil) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt_insert = $conn->prepare($sql_insert);
-            $stmt_insert->bind_param("ssssssssssss", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil);
-            if ($stmt_insert->execute()) {
-                echo "✅ Nuevo usuario registrado correctamente.";
-            } else {
-                echo "❌ Error al registrar: " . $stmt_insert->error;
+            // 🧹 Recolectar y limpiar datos básicos
+            $nombres = trim($_POST['nombres'] ?? '');
+            $correo = trim($_POST['correo'] ?? '');
+            $documento = trim($_POST['documento'] ?? '');
+            $fecha = trim($_POST['fecha_aniversario'] ?? '');
+            $sexo = trim($_POST['sexo'] ?? '');
+            $perfil = trim($_POST['perfil'] ?? '');
+            $pais = trim($_POST['pais'] ?? '');
+            $dpto = trim($_POST['dpto'] ?? '');
+            $city = trim($_POST['city'] ?? '');
+            $direccion = trim($_POST['direccion'] ?? '');
+            $telefono = trim($_POST['telefono'] ?? '');
+            $movil = trim($_POST['movil'] ?? '');
+            $user_post = true;
+    
+            if ($id === 0) {
+                // Verificar si el correo ya existe en otro registro (solo al guardar un nuevo usuario)
+                $sql_check = "SELECT id FROM log WHERE correo = ?";
+                $stmt_check = $conn->prepare($sql_check);
+                $stmt_check->bind_param("s", $correo);
+                $stmt_check->execute();
+                $result_check = $stmt_check->get_result();
+                $correo_duplicado = $result_check->num_rows > 0;
+                $stmt_check->close();
+    
+                if ($correo_duplicado) {
+                    die("❌ El correo ya está registrado en otro usuario.");
+                }
             }
-            $stmt_insert->close();
+    
+            // Verificar si el usuario existe por ID
+            $sql_check = "SELECT id FROM log WHERE id = ?";
+            $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bind_param("i", $id);
+            $stmt_check->execute();
+            $result_check = $stmt_check->get_result();
+            $exists = $result_check->num_rows > 0;
+            $stmt_check->close();
+    
+            if ($exists) {
+                // Actualizar datos básicos
+                $sql_update = "UPDATE log SET nombres = ?, correo = ?, documento = ?, fecha = ?, sexo = ?, perfil = ?, pais = ?, dpto = ?, city = ?, direccion = ?, telefono = ?, movil = ? WHERE id = ?";
+                $stmt_update = $conn->prepare($sql_update);
+                $stmt_update->bind_param("ssssssssssssi", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil, $id);
+    
+                if ($stmt_update->execute()) {
+                    echo "✅ Datos básicos actualizados correctamente.";
+                } else {
+                    echo "❌ Error al actualizar los datos básicos: " . $stmt_update->error;
+                }
+                $stmt_update->close();
+            } else {
+                // Insertar nuevo usuario
+                $sql_insert = "INSERT INTO log (nombres, correo, documento, fecha, sexo, perfil, pais, dpto, city, direccion, telefono, movil) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt_insert = $conn->prepare($sql_insert);
+                $stmt_insert->bind_param("ssssssssssss", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil);
+    
+                if ($stmt_insert->execute()) {
+                    echo "✅ Nuevo usuario registrado correctamente.";
+                } else {
+                    echo "❌ Error al registrar el usuario: " . $stmt_insert->error;
+                }
+                $stmt_insert->close();
+            }
         }
     }
     
@@ -999,6 +1076,9 @@ if (file_put_contents($rutaArchivo, $contenido) !== false) {
 }
 if ($sef_seccion) {
     header("Location: ../secciones.php");
+} 
+elseif ($user_post) {
+    header("Location: ../administracion.php");
 } 
 elseif($panel_post) {
     header("Location: ../panel.php");

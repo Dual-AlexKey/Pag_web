@@ -17,10 +17,15 @@ if (isset($_SESSION["usuario"])) {
 
 // Procesar login
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Verifica token CSRF
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("❌ Token CSRF inválido.");
+    }
+
     $usuario = trim($_POST["usuario"]);
     $password = $_POST["password"];
 
-    $stmt = $conn->prepare("SELECT con FROM log WHERE usu = ?");
+    $stmt = $conn->prepare("SELECT con FROM log WHERE correo = ?");
     $stmt->bind_param("s", $usuario);
     $stmt->execute();
     $stmt->bind_result($hash);
@@ -30,10 +35,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($hash && password_verify($password, $hash)) {
         $_SESSION["usuario"] = $usuario;
         $_SESSION["ultimo_acceso"] = time(); // Registrar la hora de inicio de sesión
+        session_regenerate_id(true); // Seguridad extra
         header("Location: websystem/panel.php");
         exit();
-    } 
+    } else {
+        echo "<script>alert('Usuario o contraseña incorrectos');</script>";
+    }
 }
+
+// Generar token CSRF para el formulario
+$csrf_token = bin2hex(random_bytes(32));
+$_SESSION['csrf_token'] = $csrf_token;
+
 $conn->close();
 ?>
 
@@ -55,9 +68,12 @@ $conn->close();
 
             <label class="label">Contraseña:</label>
             <input class="input-field" type="password" name="password" required><br>
+            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+
 
             <button class="submit-btn" type="submit">Ingresar</button>
         </form>
+
     </div>
 </div>
 

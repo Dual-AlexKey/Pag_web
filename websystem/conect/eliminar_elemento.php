@@ -9,6 +9,8 @@ $cod_parametro = isset($_GET['cod']) ? trim($_GET['cod']) : '';
 $codtab_parametro = isset($_GET['codtab']) ? trim($_GET['codtab']) : '';
 $archivo_a_borrar = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
 $nombre = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
+$id_usuario = isset($_GET['id_user']) ? trim($_GET['id_user']) : '';
+
 
 
 eliminar_archivo_y_contador($archivo_a_borrar . '.php');
@@ -267,6 +269,29 @@ else if (!empty($id_tablero)) {
 
     $stmt_check_id->close();
 }
+$se_borro_user_id = false;
+
+if (!empty($id_usuario)) {
+    // Verificar si el usuario existe en la tabla `log`
+    $sql_check_id = "SELECT id FROM log WHERE id = ?";
+    $stmt_check_id = $conn->prepare($sql_check_id);
+    $stmt_check_id->bind_param("s", $id_usuario);
+    $stmt_check_id->execute();
+    $result_check_id = $stmt_check_id->get_result();
+
+    if ($result_check_id->num_rows > 0) {
+        // Eliminar el usuario de la tabla `log`
+        $sql_delete_id = "DELETE FROM log WHERE id = ?";
+        $stmt_delete_id = $conn->prepare($sql_delete_id);
+        $stmt_delete_id->bind_param("s", $id_usuario);
+        if ($stmt_delete_id->execute()) {
+            $se_borro_user_id = true;
+        }
+        $stmt_delete_id->close();
+    }
+
+    $stmt_check_id->close();
+}
 
 // ✅ 🔥 Redireccionar según el tipo de eliminación
 if ($se_borro_id) {
@@ -280,7 +305,11 @@ elseif ($se_borro_id_tab) {
 elseif ($se_borro_cod_o_codtab) {
     header("Location: ../secciones.php");
     exit();
-} else {
+}elseif($se_borro_user_id) {
+    header("Location: ../administracion.php");
+    exit();
+} 
+else {
     die("Error: No se encontraron registros para eliminar.");
 }
 ?>

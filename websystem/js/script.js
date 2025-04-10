@@ -106,58 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });    
 });
-
-
-$(document).ready(function() {
-    $('#editor').summernote({
-        toolbar: [
-            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
-            ['font', ['strikethrough', 'superscript', 'subscript']],
-            ['fontname', ['fontname']],
-            ['color', ['forecolor', 'backcolor']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['insert', ['myPicture', 'link', 'video', 'table']], // Botón personalizado
-        ],
-        buttons: {
-            myPicture: function(context) {
-                var ui = $.summernote.ui;
-                return ui.button({
-                    contents: '<i class="note-icon-picture"/>', // Ícono del botón
-                    tooltip: 'Insertar imagen desde el explorador',
-                    click: function() {
-                        // Llama a tu función para abrir el modal
-                        mostrarExplorador('imagen_linkED'); // Cambiar 'imagen_linkED' si necesitas otro campo
-                    }
-                }).render();
-            }
-        }
-    });
-});
-
-  
-
-function guardarFormulario() {
-    var nombre = document.getElementById('nombre').value; // Obtener el nombre del formulario
-    if (nombre != "") {
-        // Usar AJAX para enviar el formulario a PHP
-        var formData = new FormData(document.getElementById("form"));
-        formData.append("action", "create_page"); // Acción para identificar que se debe crear el archivo
-
-        // Crear una solicitud AJAX
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "crear_pagina.php", true); // Cambiar 'crear_pagina.php' al nombre del archivo PHP que manejará la solicitud
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                alert("Página creada exitosamente.");
-                window.location.reload(); // Recargar la página
-            }
-        };
-        xhr.send(formData);
-    } else {
-        alert("El nombre no puede estar vacío.");
-    }
-}
-    
 function cambiarEstilos() {
     const modulo = document.getElementById('modulo').value;
     const estilosDiv = document.getElementById('estilos');
@@ -218,6 +166,58 @@ function cambiarEstilos() {
 // Llamar a la función al cargar la página para que el módulo predeterminado (Módulo 1) tenga los estilos cargados
 window.onload = cambiarEstilos;
 cambiarEstilos();
+
+$(document).ready(function() {
+    $('#editor').summernote({
+        toolbar: [
+            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['fontname', ['fontname']],
+            ['color', ['forecolor', 'backcolor']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['myPicture', 'link', 'video', 'table']], // Botón personalizado
+        ],
+        buttons: {
+            myPicture: function(context) {
+                var ui = $.summernote.ui;
+                return ui.button({
+                    contents: '<i class="note-icon-picture"/>', // Ícono del botón
+                    tooltip: 'Insertar imagen desde el explorador',
+                    click: function() {
+                        // Llama a tu función para abrir el modal
+                        mostrarExplorador('imagen_linkED'); // Cambiar 'imagen_linkED' si necesitas otro campo
+                    }
+                }).render();
+            }
+        }
+    });
+});
+
+  
+
+function guardarFormulario() {
+    var nombre = document.getElementById('nombre').value; // Obtener el nombre del formulario
+    if (nombre != "") {
+        // Usar AJAX para enviar el formulario a PHP
+        var formData = new FormData(document.getElementById("form"));
+        formData.append("action", "create_page"); // Acción para identificar que se debe crear el archivo
+
+        // Crear una solicitud AJAX
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "crear_pagina.php", true); // Cambiar 'crear_pagina.php' al nombre del archivo PHP que manejará la solicitud
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                alert("Página creada exitosamente.");
+                window.location.reload(); // Recargar la página
+            }
+        };
+        xhr.send(formData);
+    } else {
+        alert("El nombre no puede estar vacío.");
+    }
+}
+    
+
 
 
 function actualizarURL() {

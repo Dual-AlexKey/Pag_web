@@ -76,7 +76,6 @@ VALUES
     fecha_final DATE DEFAULT NULL       -- Fecha de finalización
 );
 CREATE TABLE log (
-	usu VARCHAR(50) UNIQUE NOT NULL,   -- nombre de usuario
 	con VARCHAR(255) NOT NULL,          -- contraseña
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	nombres VARCHAR(100) NOT NULL,

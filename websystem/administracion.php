@@ -4,7 +4,7 @@ include('estilo/header.php');
 include('estilo/menu.php');
 
 // Inicializamos variables
-$region = $_GET['region'] ?? '';
+$region = $_GET['dpto'] ?? '';
 $nombre = $_GET['nombre'] ?? '';
 $documento = $_GET['documento'] ?? '';
 $correo = $_GET['correo'] ?? '';
@@ -132,17 +132,17 @@ $orden = $_GET['orden'] ?? 'nombre';
             echo "<td>" . htmlspecialchars($row['telefono']) . "</td>";
             echo "<td>" . htmlspecialchars($row['movil']) . "</td>";
             echo "<td>
-                    <a href='editar_usuario.php?id={$row['id']}' class='btn_st'>
+                    <a href='new_user.php?id={$row['id']}' class='btn_st'>
                         <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Botón Editar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                     </a>
                 </td>";
             echo "<td>
-                <a href='con.php?id={$row['id']}' class='btn_st'>
+                <a href='user_seg.php?id={$row['id']}' class='btn_st'>
                     <img src='https://i.ibb.co/V0BcC0nq/ws-clave.png' alt='Botón con' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                 </a>
             </td>";
             echo "<td>
-                    <a href='eliminar_usuario.php?id={$row['id']}' class='btn_st'>
+                    <a href='conect/eliminar_elemento.php?id_user={$row['id']}' class='btn_st'>
                         <img src='https://i.ibb.co/LdTnB39W/wp-borrar.png' alt='Botón Eliminar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                     </a>
                 </td>";
