@@ -46,7 +46,7 @@
     max-height: 80px; /* Ajusta el tamaño máximo */
 }
 
-.custom-container {
+.custom-container {/*revisar*/
     max-width: 100%; /* Cambia el ancho máximo aquí (por ejemplo, 95% o un tamaño fijo como 1400px) */
     margin: auto; /* Para centrar el contenido */
 }
@@ -282,6 +282,96 @@ html.websystem {
 
 .submit-btn:hover {
     background-color: #218838;
+}
+
+/* Contenedor para los elementos del submenú */
+.custom-submenu {
+    background-color: #ff0; /* Fondo amarillo */
+    border: none;
+    padding: 15px; /* Espaciado interno */
+    width: 100%; /* Asegurar que ocupe todo el ancho */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra para destacar el submenú */
+}
+
+/* Contenedor de columnas del submenú */
+.custom-submenu .row {
+    display: flex;
+    flex-wrap: wrap; /* Permitir que las columnas se ajusten automáticamente */
+    gap: 15px; /* Espaciado entre columnas */
+}
+
+/* Columnas del submenú */
+.custom-submenu .col-md-4 {
+    flex: 0 0 33.33%; /* Cada columna ocupa un tercio del ancho */
+    max-width: 33.33%; /* Limitar el ancho máximo */
+    text-align: left; /* Alinear el texto a la izquierda */
+    padding: 10px; /* Espaciado interno */
+}
+
+/* Encabezados de las categorías */
+.custom-submenu .dropdown-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 1px solid #000; /* Línea debajo del encabezado */
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+/* Lista de elementos dentro de cada columna */
+.custom-submenu .list-unstyled {
+    margin: 0;
+    padding: 0;
+    list-style: none; /* Eliminar viñetas */
+}
+
+/* Elementos del submenú */
+.custom-submenu .dropdown-item {
+    padding: 5px 10px;
+    color: #000; /* Texto negro */
+    text-decoration: none; /* Eliminar subrayado */
+    transition: background-color 0.3s ease;
+}
+
+
+/* Separador entre niveles */
+.custom-submenu .dropdown-divider {
+    margin: 10px 0;
+    width: 100%;
+    border-top: 2px solid #ccc;
+}
+
+
+
+/* Estilo para el Mega Menú */
+.custom-mega-menu {
+    width: 100%; /* Asegurar que ocupe todo el ancho */
+    left: 0; /* Alinear al borde izquierdo */
+    right: 0; /* Alinear al borde derecho */
+    position: absolute; /* Posición absoluta para que se superponga */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
+    z-index: 1050; /* Asegurar que esté por encima de otros elementos */
+}
+
+/* Encabezados de las categorías */
+.custom-mega-menu .dropdown-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+/* Lista de elementos */
+.custom-mega-menu .list-unstyled {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.custom-mega-menu .dropdown-item {
+    padding: 5px 10px;
+    color: #000;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
 }
 
 

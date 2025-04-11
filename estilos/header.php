@@ -1,39 +1,103 @@
 <?php
-include __DIR__ . '/../websystem/conect/conexion.php'; // ✅ Conexión a la base de datos
+include __DIR__ . '/../websystem/conect/conexion.php';
 
-$menu_items = []; // Array para almacenar los datos del menú
+$menu_items = [];
+$estructura = [];
 
-// ✅ Obtener todas las tablas que terminan en "_cabecerat"
+// Obtener tablas con datos
 $sql = "SHOW TABLES LIKE '%_cabecerat'";
 $result = $conn->query($sql);
 
 while ($row = $result->fetch_array()) {
-    $table_name = $row[0]; // Nombre de la tabla
-    $base_name = str_replace('_cabecerat', '', $table_name); // Quitamos "_cabecera"
-    
-    // ✅ Consulta para obtener el contenido de cada tabla
+    $table_name = $row[0];
     $sql_data = "SELECT * FROM `$table_name`";
     $result_data = $conn->query($sql_data);
 
     while ($data = $result_data->fetch_assoc()) {
-        $nombre_item = $data['nombre'] ?? ''; // Ajustar si la columna tiene otro nombre
-        if (!empty($nombre_item)) {
-            $menu_items[$nombre_item] = urlencode(strtolower($nombre_item)) . ".php";
+        $nombre = trim($data['nombre'] ?? '');
+        $secciones = trim($data['secciones'] ?? '');
+
+        $nombre_url = urlencode(strtolower($nombre)) . '.php';
+
+        if (!empty($secciones)) {
+            $parts = array_values(array_filter(explode('/', $secciones)));
+
+            if (count($parts) === 1) {
+                // Ej: /pie
+                $padre = $parts[0];
+                $estructura[$padre]['label'] = ucfirst($padre);
+                $estructura[$padre]['url'] = '#';
+                $estructura[$padre]['submenu'][] = [
+                    'label' => ucfirst($nombre),
+                    'url' => $nombre_url
+                ];
+            } elseif (count($parts) === 2) {
+                [$padre, $categoria] = $parts;
+                $estructura[$padre]['label'] = ucfirst($padre);
+                $estructura[$padre]['url'] = '#';
+                $estructura[$padre]['categorias'][$categoria][] = [
+                    'label' => ucfirst($nombre),
+                    'url' => $nombre_url
+                ];
+            } else {
+                // Más niveles → opcional manejar
+                $menu_items[$nombre] = [
+                    'label' => ucfirst($nombre),
+                    'url' => $nombre_url
+                ];
+            }
+        } else {
+            // Sin secciones, agregar directo al menú
+            $menu_items[$nombre] = [
+                'label' => ucfirst($nombre),
+                'url' => $nombre_url
+            ];
         }
     }
 }
 
-$sql = "SELECT imgcabe, cabfondo FROM Empresa LIMIT 1"; // Suponemos que hay un solo registro relevante
-$result = $conn->query($sql);
+// Convertir estructura a $menu_items
+foreach ($estructura as $padre => $data) {
+    $submenu = [];
 
-$headerStyle = ''; // Inicializamos la variable para los estilos dinámicos
+    // Items sin categoría dentro del padre
+    if (!empty($data['submenu'])) {
+        foreach ($data['submenu'] as $item) {
+            $submenu[] = [
+                'label' => $item['label'],
+                'url' => $item['url'],
+            ];
+        }
+    }
+
+    // Items agrupados por categoría
+    if (!empty($data['categorias'])) {
+        foreach ($data['categorias'] as $cat => $items) {
+            foreach ($items as $item) {
+                $submenu[] = [
+                    'label' => $item['label'],
+                    'url' => $item['url']
+                ];
+            }
+        }
+    }
+
+    $menu_items[$padre] = [
+        'label' => ucfirst($padre),
+        'url' => '#',
+        'submenu' => $submenu
+    ];
+}
+
+// Obtener estilos del encabezado
+$sql = "SELECT imgcabe, cabfondo FROM Empresa LIMIT 1";
+$result = $conn->query($sql);
+$headerStyle = '';
 
 if ($result && $row = $result->fetch_assoc()) {
     if (!empty($row['imgcabe'])) {
-        // Si 'imgcabe' tiene un valor, usarlo como fondo de imagen
         $headerStyle = "background-image: url('{$row['imgcabe']}'); background-size: cover; background-position: center; background-repeat: no-repeat;";
     } elseif (!empty($row['cabfondo'])) {
-        // Si 'cabfondo' tiene un valor, usarlo como color de fondo
         $headerStyle = "background-color: {$row['cabfondo']};";
     }
 }
@@ -44,59 +108,60 @@ if ($result && $row = $result->fetch_assoc()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Web</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="estilos/css/styles.css?<?php echo time(); ?>">
 </head>
 <body>
-    <!-- Cabecera -->
-    <header class="py-3 text-white" style="<?= $headerStyle; ?>">
-    <div class="container custom-container">
-        <div class="row align-items-center text-center">
-            <!-- Columna 1: Logo -->
-            <div class="col-4">
-                <a href="index.php">
-                    <img src="https://i.ibb.co/1JYrfbjH/Logo.png" alt="Logo" class="img-fluid">
-                </a>
-            </div>
-            <!-- Columna 2: Carro o Inicio -->
-            <div class="col-4">
-                <img src="https://via.placeholder.com/100" alt="Carro o Inicio" class="img-fluid">
-            </div>
-            <!-- Columna 3: Contactos -->
-            <div class="col-4">
-                <img src="https://via.placeholder.com/100" alt="Contacto" class="img-fluid">
-            </div>
-        </div>
-    </div>
-</header>
 
-
-    <!-- Menú de navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container custom-container">
-        
+<!-- Menú de navegación con Mega Menú -->
+<nav class="navbar navbar-expand-lg" style="<?= $headerStyle ?>">
+    <div class="container-fluid justify-content-center">
+        <a class="navbar-brand text-white" href="index.php">
+            <img src="https://i.ibb.co/1JYrfbjH/Logo.png" alt="Logo" style="height: 40px;">
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : '' ?>" href="index.php">Inicio</a>
+                    <a class="nav-link text-white <?= basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : '' ?>" href="index.php">Inicio</a>
                 </li>
-                <?php foreach ($menu_items as $nombre => $url): ?>
-                    <li class="nav-item">
-                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) === $url ? 'active' : '' ?>" href="<?= $url ?>">
-                            <?= ucfirst($nombre) ?>
-                        </a>
-                    </li>
+
+                <?php foreach ($menu_items as $item): ?>
+                    <?php if (isset($item['submenu'])): ?>
+                        <li class="nav-item dropdown position-static">
+                            <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
+                                <?= $item['label'] ?>
+                            </a>
+                            <div class="dropdown-menu w-100 mt-0 custom-mega-menu">
+                                <div class="container">
+                                    <div class="row">
+                                        <?php
+                                        $columnas = array_chunk($item['submenu'], 3);
+                                        foreach ($columnas as $col): ?>
+                                            <div class="col-md-4">
+                                                <?php foreach ($col as $sub): ?>
+                                                    <a class="dropdown-item" href="<?= $sub['url'] ?>">|└─ <?= $sub['label'] ?></a>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="<?= $item['url'] ?>">|└─ <?= $item['label'] ?></a>
+                        </li>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </ul>
         </div>
     </div>
 </nav>
 
-    
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
