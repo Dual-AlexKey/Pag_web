@@ -77,13 +77,8 @@ header img {
     color: rgba(255, 255, 255, 1); /* Brilla cuando pasas el mouse */
 }
 
-.nav-link.active {
-    color: #ffffff; /* Color blanco puro para el enlace activo */
-    font-weight: bold; /* Resalta el texto */
-    background-color: rgba(0, 123, 255, 0.5); /* Fondo azul translúcido */
-    border-radius: 0.25rem; /* Bordes redondeados */
-    padding: 0.5rem 1rem; /* Espaciado adicional */
-}
+
+
 
 
 /* Agregar un margen superior al contenido para evitar que el header lo cubra */
@@ -284,94 +279,81 @@ html.websystem {
     background-color: #218838;
 }
 
-/* Contenedor para los elementos del submenú */
-.custom-submenu {
-    background-color: #ff0; /* Fondo amarillo */
-    border: none;
-    padding: 15px; /* Espaciado interno */
-    width: 100%; /* Asegurar que ocupe todo el ancho */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra para destacar el submenú */
+.navbar-nav .nav-link {
+    color: white !important; /* Cambia el color de la letra del navbar a blanco */
+    font-size: 0.95rem;        /* Texto un poco más grande, sin pasarse */
+    height: 40px;              /* Igual al logo */
+    line-height: 40px;         /* Centrado vertical */
+    position: relative;
+    transition: color 0.2s ease;
+}
+.navbar-brand img {
+    height: 40px;
 }
 
-/* Contenedor de columnas del submenú */
-.custom-submenu .row {
-    display: flex;
-    flex-wrap: wrap; /* Permitir que las columnas se ajusten automáticamente */
-    gap: 15px; /* Espaciado entre columnas */
+/* Opcional: alinear los dropdown también dentro del alto */
+.dropdown-menu .list-group-item {
+    font-size: 0.95rem;
+    padding: 0.4rem 1rem; /* Ajusta altura interna de los subitems */
 }
 
-/* Columnas del submenú */
-.custom-submenu .col-md-4 {
-    flex: 0 0 33.33%; /* Cada columna ocupa un tercio del ancho */
-    max-width: 33.33%; /* Limitar el ancho máximo */
-    text-align: left; /* Alinear el texto a la izquierda */
-    padding: 10px; /* Espaciado interno */
-}
-
-/* Encabezados de las categorías */
-.custom-submenu .dropdown-header {
+/* Negrita y mayúsculas para el nivel 2 */
+.dropdown-menu .list-group-item.font-weight-bold {
     font-weight: bold;
     text-transform: uppercase;
-    border-bottom: 1px solid #000; /* Línea debajo del encabezado */
-    margin-bottom: 10px;
-    padding-bottom: 5px;
 }
 
-/* Lista de elementos dentro de cada columna */
-.custom-submenu .list-unstyled {
-    margin: 0;
-    padding: 0;
-    list-style: none; /* Eliminar viñetas */
+/* Asegura que el dropdown se mantenga visible mientras el mouse está en el área */
+.nav-item.dropdown {
+    position: relative;
 }
 
-/* Elementos del submenú */
-.custom-submenu .dropdown-item {
-    padding: 5px 10px;
-    color: #000; /* Texto negro */
-    text-decoration: none; /* Eliminar subrayado */
-    transition: background-color 0.3s ease;
+/* Mostrar menú al hacer hover sobre el nav-item */
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+    visibility: visible;
+    opacity: 1;
 }
 
-
-/* Separador entre niveles */
-.custom-submenu .dropdown-divider {
-    margin: 10px 0;
-    width: 100%;
-    border-top: 2px solid #ccc;
+/* Ocultar por defecto */
+.dropdown-menu {
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 1s ease;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    padding-top: 0;
+    margin-top: 0;
 }
 
-
-
-/* Estilo para el Mega Menú */
-.custom-mega-menu {
-    width: 100%; /* Asegurar que ocupe todo el ancho */
-    left: 0; /* Alinear al borde izquierdo */
-    right: 0; /* Alinear al borde derecho */
-    position: absolute; /* Posición absoluta para que se superponga */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
-    z-index: 1050; /* Asegurar que esté por encima de otros elementos */
+/* Mantener visible al hacer hover sobre el menú también */
+.nav-item.dropdown:hover .dropdown-menu:hover {
+    visibility: visible;
+    opacity: 1;
+}
+/* 1. Quitar la flecha de Bootstrap */
+.nav-link.dropdown-toggle::after {
+    display: none !important;
 }
 
-/* Encabezados de las categorías */
-.custom-mega-menu .dropdown-header {
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
+.navbar-nav .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    width: 60%;
+    height: 2px;
+    background-color: #007bff; /* Puedes cambiar el color aquí */
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    transform-origin: center;
 }
 
-/* Lista de elementos */
-.custom-mega-menu .list-unstyled {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+/* Mostrar la línea al hacer hover */
+.navbar-nav .nav-link:hover::before,
+.navbar-nav .nav-link.active::before {
+    transform: scaleX(1);
 }
-
-.custom-mega-menu .dropdown-item {
-    padding: 5px 10px;
-    color: #000;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-}
-
-

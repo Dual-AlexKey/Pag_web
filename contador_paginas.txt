@@ -1,9 +1,5 @@
 {
-    "prueba1": 59,
-    "pie": 70,
-    "prueba2": 43,
-    "PruebaNV1": 14,
     "prueba3": 13,
     "PruebaNV2": 2,
-    "vv": 24
+    "vv": 25
 }

@@ -2,10 +2,8 @@
 include('estilos/header.php');
 include __DIR__ . '/estilos/generar_design.php';
 include ('contador_visitas.php');
-// Obtener el nombre del archivo actual
 $nombreArchivo = basename(__FILE__, '.php');
 $contador = manejar_contador_por_pagina($nombreArchivo);
-
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -21,6 +19,4 @@ $contador = manejar_contador_por_pagina($nombreArchivo);
     </div>
 </body>
 </html>
-<?php
-include('estilos/footer.php'); // Footer
-?>
+<?php include('estilos/footer.php'); ?>

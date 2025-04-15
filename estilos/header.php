@@ -1,102 +1,64 @@
 <?php
 include __DIR__ . '/../websystem/conect/conexion.php';
 
-$menu_items = [];
-$estructura = [];
+$menu = [];
 
-// Obtener tablas con datos
+// Obtener tablas con _cabecerat
 $sql = "SHOW TABLES LIKE '%_cabecerat'";
 $result = $conn->query($sql);
 
 while ($row = $result->fetch_array()) {
     $table_name = $row[0];
-    $sql_data = "SELECT * FROM `$table_name`";
-    $result_data = $conn->query($sql_data);
+    $query = "SELECT nombre, Num_nivel, secciones FROM `$table_name`";
+    $data = $conn->query($query);
 
-    while ($data = $result_data->fetch_assoc()) {
-        $nombre = trim($data['nombre'] ?? '');
-        $secciones = trim($data['secciones'] ?? '');
+    while ($rowData = $data->fetch_assoc()) {
+        $nombre = strtolower(trim($rowData['nombre']));
+        $nivel = intval($rowData['Num_nivel']);
+        $secciones = trim($rowData['secciones'] ?? '');
+        $path = array_values(array_filter(explode('/', $secciones)));
+        $url = urlencode($nombre) . ".php";
 
-        $nombre_url = urlencode(strtolower($nombre)) . '.php';
-
-        if (!empty($secciones)) {
-            $parts = array_values(array_filter(explode('/', $secciones)));
-
-            if (count($parts) === 1) {
-                // Ej: /pie
-                $padre = $parts[0];
-                $estructura[$padre]['label'] = ucfirst($padre);
-                $estructura[$padre]['url'] = '#';
-                $estructura[$padre]['submenu'][] = [
-                    'label' => ucfirst($nombre),
-                    'url' => $nombre_url
-                ];
-            } elseif (count($parts) === 2) {
-                [$padre, $categoria] = $parts;
-                $estructura[$padre]['label'] = ucfirst($padre);
-                $estructura[$padre]['url'] = '#';
-                $estructura[$padre]['categorias'][$categoria][] = [
-                    'label' => ucfirst($nombre),
-                    'url' => $nombre_url
-                ];
-            } else {
-                // Más niveles → opcional manejar
-                $menu_items[$nombre] = [
-                    'label' => ucfirst($nombre),
-                    'url' => $nombre_url
-                ];
-            }
-        } else {
-            // Sin secciones, agregar directo al menú
-            $menu_items[$nombre] = [
+        // NIVEL 1 (siempre entra aunque secciones esté vacío)
+        if ($nivel === 1) {
+            $nivel1 = !empty($path[0]) ? $path[0] : $nombre;
+            $menu[$nivel1] = [
                 'label' => ucfirst($nombre),
-                'url' => $nombre_url
+                'url' => $url,
+                'children' => []
+            ];
+        }
+
+        // NIVEL 2 (si tiene al menos nivel 1 como padre)
+        elseif ($nivel === 2 && isset($path[0])) {
+            $parent = $path[0];
+            $key = $nombre;
+            $menu[$parent]['children'][$key] = [
+                'label' => ucfirst($nombre),
+                'url' => $url,
+                'children' => []
+            ];
+        }
+
+        // NIVEL 3 (si tiene al menos nivel 1 y 2 como padre)
+        elseif ($nivel === 3 && isset($path[0], $path[1])) {
+            $parent = $path[0];
+            $child = $path[1];
+            $menu[$parent]['children'][$child]['children'][] = [
+                'label' => ucfirst($nombre),
+                'url' => $url
             ];
         }
     }
 }
 
-// Convertir estructura a $menu_items
-foreach ($estructura as $padre => $data) {
-    $submenu = [];
-
-    // Items sin categoría dentro del padre
-    if (!empty($data['submenu'])) {
-        foreach ($data['submenu'] as $item) {
-            $submenu[] = [
-                'label' => $item['label'],
-                'url' => $item['url'],
-            ];
-        }
-    }
-
-    // Items agrupados por categoría
-    if (!empty($data['categorias'])) {
-        foreach ($data['categorias'] as $cat => $items) {
-            foreach ($items as $item) {
-                $submenu[] = [
-                    'label' => $item['label'],
-                    'url' => $item['url']
-                ];
-            }
-        }
-    }
-
-    $menu_items[$padre] = [
-        'label' => ucfirst($padre),
-        'url' => '#',
-        'submenu' => $submenu
-    ];
-}
-
-// Obtener estilos del encabezado
-$sql = "SELECT imgcabe, cabfondo FROM Empresa LIMIT 1";
-$result = $conn->query($sql);
+// Fondo de encabezado
 $headerStyle = '';
-
-if ($result && $row = $result->fetch_assoc()) {
+$sql = "SELECT imgcabe, cabfondo FROM Empresa LIMIT 1";
+$res = $conn->query($sql);
+if ($res && $row = $res->fetch_assoc()) {
     if (!empty($row['imgcabe'])) {
-        $headerStyle = "background-image: url('{$row['imgcabe']}'); background-size: cover; background-position: center; background-repeat: no-repeat;";
+        $headerStyle = "background-image: url('{$row['imgcabe']}'); background-size: cover; background-position: center;";
     } elseif (!empty($row['cabfondo'])) {
         $headerStyle = "background-color: {$row['cabfondo']};";
     }
@@ -107,55 +69,70 @@ if ($result && $row = $result->fetch_assoc()) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <title>Nav</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="estilos/css/styles.css?<?php echo time(); ?>">
+    <link rel="stylesheet" href="estilos/css/styles.css?<?php echo time(); ?>">
 </head>
 <body>
 
-<!-- Menú de navegación con Mega Menú -->
 <nav class="navbar navbar-expand-lg" style="<?= $headerStyle ?>">
-    <div class="container-fluid justify-content-center">
-        <a class="navbar-brand text-white" href="index.php">
-            <img src="https://i.ibb.co/1JYrfbjH/Logo.png" alt="Logo" style="height: 40px;">
+    <div class="container-fluid">
+        <!-- Logo -->
+        <a class="navbar-brand" href="index.php">
+            <img src="https://i.ibb.co/1JYrfbjH/Logo.png" alt="Logo">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
+
+        <!-- Toggle button -->
+        <button class="navbar-toggler px-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarExample2" aria-controls="navbarExample2" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
+        <!-- Collapsible wrapper -->
+        <div class="collapse navbar-collapse justify-content-center" id="navbarExample2">
+            <ul class="navbar-nav" style="padding-left: 0.15rem">
+                <!-- Inicio -->
                 <li class="nav-item">
-                    <a class="nav-link text-white <?= basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : '' ?>" href="index.php">Inicio</a>
+                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : '' ?>" href="index.php">Inicio</a>
                 </li>
 
-                <?php foreach ($menu_items as $item): ?>
-                    <?php if (isset($item['submenu'])): ?>
-                        <li class="nav-item dropdown position-static">
-                            <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
-                                <?= $item['label'] ?>
-                            </a>
-                            <div class="dropdown-menu w-100 mt-0 custom-mega-menu">
-                                <div class="container">
-                                    <div class="row">
-                                        <?php
-                                        $columnas = array_chunk($item['submenu'], 3);
-                                        foreach ($columnas as $col): ?>
-                                            <div class="col-md-4">
-                                                <?php foreach ($col as $sub): ?>
-                                                    <a class="dropdown-item" href="<?= $sub['url'] ?>">|└─ <?= $sub['label'] ?></a>
-                                                <?php endforeach; ?>
+                <!-- Menú dinámico -->
+                <?php foreach ($menu as $nivel1): ?>
+                    <li class="nav-item dropdown position-static">
+                    <a class="nav-link dropdown-toggle" href="<?= $nivel1['url'] ?>" id="navbarDropdown<?= $nivel1['label'] ?>" >
+                        <?= $nivel1['label'] ?>
+                    </a>
+
+                        <div class="dropdown-menu w-100 mt-0" aria-labelledby="navbarDropdown<?= $nivel1['label'] ?>">
+                            <div class="container">
+                                <div class="row">
+                                    <?php 
+                                    $count = 0; // Contador para las filas
+                                    foreach ($nivel1['children'] as $nivel2): 
+                                        if ($count % 3 === 0 && $count !== 0): ?>
+                                            </div><div class="row"> <!-- Nueva fila cada 3 elementos -->
+                                        <?php endif; ?>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="list-group list-group-flush">
+                                                <!-- Nivel 2 ahora es seleccionable -->
+                                                <a href="<?= $nivel2['url'] ?>" class="mb-0 list-group-item text-uppercase font-weight-bold">
+                                                    <?= $nivel2['label'] ?>
+                                                </a>
+                                                <?php if (!empty($nivel2['children'])): ?>
+                                                    <?php foreach ($nivel2['children'] as $nivel3): ?>
+                                                        <a href="<?= $nivel3['url'] ?>" class="list-group-item list-group-item-action">
+                                                            <?= $nivel3['label'] ?>
+                                                        </a>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
                                             </div>
-                                        <?php endforeach; ?>
-                                    </div>
+                                        </div>
+                                        <?php $count++; ?>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="<?= $item['url'] ?>">|└─ <?= $item['label'] ?></a>
-                        </li>
-                    <?php endif; ?>
+                        </div>
+                    </li>
                 <?php endforeach; ?>
             </ul>
         </div>

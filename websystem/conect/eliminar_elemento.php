@@ -10,8 +10,7 @@ $codtab_parametro = isset($_GET['codtab']) ? trim($_GET['codtab']) : '';
 $archivo_a_borrar = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
 $nombre = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
 $id_usuario = isset($_GET['id_user']) ? trim($_GET['id_user']) : '';
-
-
+$seccion = isset($_GET['secc']) ? trim($_GET['secc']) : '';
 
 eliminar_archivo_y_contador($archivo_a_borrar . '.php');
 

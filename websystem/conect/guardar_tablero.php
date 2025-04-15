@@ -469,6 +469,18 @@ elseif ($tipoFormulario == "Editseccion") {
             }
         }
     }
+    // 🔹 3️⃣ Actualizar la columna `secciones` en todas las tablas seleccionadas
+    foreach ($tablas_existentes as $tabla) {
+        $sql_update_secciones = "UPDATE $tabla SET secciones = REPLACE(secciones, ?, ?) WHERE secciones LIKE ?";
+        $stmt_update_secciones = $conn->prepare($sql_update_secciones);
+        if ($stmt_update_secciones) {
+            $like_pattern = "%/$nameold%"; // Buscar todas las coincidencias con el nombre anterior
+            $stmt_update_secciones->bind_param("sss", $nameold, $nombre, $like_pattern);
+            $stmt_update_secciones->execute();
+            $stmt_update_secciones->close();
+        }
+    }
+
 
 // 🔹 1️⃣ Configuración de Rutas
 $directorioBase = __DIR__ . '/../../';  
@@ -508,152 +520,181 @@ if (!is_dir($directorioActual)) {
         }
     }
 
-    }
-    elseif ($tipoFormulario == "Subseccion") {
-        $cod = $_POST["cod"] ?? null; // Puede venir vacío
-        $codtab = null; // Se generará si hay múltiples tablas
-        $nombre = $_POST["nombre"] ?? null;
-        $link = $_POST["link"] ?? null;
-        $modulo = $_POST["modulo"] ?? null;
-        $estilos = !empty($_POST["estilos"]) ? (is_array($_POST["estilos"]) ? implode(',', $_POST["estilos"]) : $_POST["estilos"]) : null;
-        $publicar = isset($_POST["publicar"]) ? $_POST["publicar"] : [];
-        $secciones = $_POST["secciones"] ?? null;
-        $sef_seccion = true;
+}
+elseif ($tipoFormulario == "Subseccion") {
+    $cod = $_POST["cod"] ?? null;
+    $codtab = null;
+    $nombre = $_POST["nombre"] ?? null;
+    $link = $_POST["link"] ?? null;
+    $modulo = $_POST["modulo"] ?? null;
+    $estilos = !empty($_POST["estilos"]) ? (is_array($_POST["estilos"]) ? implode(',', $_POST["estilos"]) : $_POST["estilos"]) : null;
+    $publicar = $_POST["publicar"] ?? [];
+    $secciones = $_POST["secciones"] ?? null;
+    $nameold = trim($_POST["nameold"]);
 
-    
-        if (empty($publicar)) {
-            echo "Error: No se ha seleccionado ninguna tabla.";
-            exit();
-        }
-    
-        // 🔍 **Buscar todas las tablas que comienzan con 'menu_'**
-        $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
-        $result_tablas = $conn->query($sql_buscar_tablas);
-        $tablas_existentes = [];
-        $mantener_cod = [];
-    
-        if ($result_tablas) {
-            while ($fila = $result_tablas->fetch_array()) {
-                $tabla = $fila[0];
-    
-                // Verificar si el registro existe en la tabla
-                $sql_check = "SELECT codtab FROM $tabla WHERE cod = ?";
-                $stmt_check = $conn->prepare($sql_check);
-                if ($stmt_check) {
-                    $stmt_check->bind_param("s", $cod);
-                    $stmt_check->execute();
-                    $stmt_check->bind_result($codtab_existente);
-                    $stmt_check->fetch();
-                    $stmt_check->close();
-    
-                    if ($codtab_existente) {
-                        $tablas_existentes[] = $tabla;
-                        $mantener_cod[] = $tabla;
-                        $codtab = $codtab_existente; // Usar el mismo codtab si ya existe
-                    }
+    if (empty($publicar)) {
+        die("❌ Error: No se ha seleccionado ninguna tabla.");
+    }
+
+    if (empty($cod)) {
+        die("❌ Error: Código (cod) está vacío. No se puede continuar.");
+    }
+
+    // Calcular Num_nivel
+    $num_nivel = 0;
+    if (!empty($secciones)) {
+        $limpio = trim($secciones, "/");
+        $palabras = explode("/", $limpio);
+        $num_nivel = count($palabras) + 1;
+    }
+
+    // Buscar tablas existentes
+    $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
+    $result_tablas = $conn->query($sql_buscar_tablas);
+    $tablas_existentes = [];
+    $mantener_cod = [];
+
+    if ($result_tablas) {
+        while ($fila = $result_tablas->fetch_array()) {
+            $tabla = $fila[0];
+            $sql_check = "SELECT codtab FROM $tabla WHERE cod = ?";
+            $stmt_check = $conn->prepare($sql_check);
+            if ($stmt_check) {
+                $stmt_check->bind_param("s", $cod);
+                $stmt_check->execute();
+                $stmt_check->bind_result($codtab_existente);
+                $stmt_check->fetch();
+                $stmt_check->close();
+
+                if ($codtab_existente) {
+                    $tablas_existentes[] = $tabla;
+                    $mantener_cod[] = $tabla;
+                    $codtab = $codtab_existente;
                 }
             }
         }
-    
-        // 🆕 **Generar `codtab` si se guarda en varias tablas y no tiene uno**
-        if (!$codtab && count($publicar) > 1) {
-            $tabla_base = reset($publicar);
-            $prefijo = strtolower(substr($tabla_base, 5, 3)); // Extrae los 3 caracteres después de "menu_"
-    
-            // Buscar el mayor codtab en las tablas seleccionadas
-            $max_cod = 0;
-            foreach ($publicar as $tabla) {
-                $sql_codigo = "SELECT MAX(CAST(SUBSTRING(codtab, 4) AS UNSIGNED)) AS max_cod FROM `$tabla` WHERE codtab LIKE '$prefijo%'";
-                $result_codigo = $conn->query($sql_codigo);
-                if ($result_codigo && $row = $result_codigo->fetch_assoc()) {
-                    $max_cod = max($max_cod, (int) $row["max_cod"]);
-                }
+    }
+
+    // Generar codtab si aplica
+    if (!$codtab && count($publicar) > 1) {
+        $tabla_base = reset($publicar);
+        $prefijo = strtolower(substr($tabla_base, 5, 3));
+        $max_cod = 0;
+        foreach ($publicar as $tabla) {
+            $sql_codigo = "SELECT MAX(CAST(SUBSTRING(codtab, 4) AS UNSIGNED)) AS max_cod FROM `$tabla` WHERE codtab LIKE '$prefijo%'";
+            $result_codigo = $conn->query($sql_codigo);
+            if ($result_codigo && $row = $result_codigo->fetch_assoc()) {
+                $max_cod = max($max_cod, (int) $row["max_cod"]);
             }
-    
-            // Generar nuevo codtab incrementado
-            $nuevo_codigo = $max_cod + 1;
-            $codtab = $prefijo . str_pad($nuevo_codigo, 2, "0", STR_PAD_LEFT); // Formato: xyz01
         }
-    
-        // 📝 **Actualizar registros en tablas existentes**
-        foreach ($tablas_existentes as $tabla) {
-            $sql_update = "UPDATE $tabla SET nombre = ?, link = ?, modulo = ?, estilos = ? WHERE cod = ?";
-            $stmt_update = $conn->prepare($sql_update);
+        $nuevo_codigo = $max_cod + 1;
+        $codtab = $prefijo . str_pad($nuevo_codigo, 2, "0", STR_PAD_LEFT);
+    }
+
+    // Actualizar secciones en tablas que ya contienen el cod
+    foreach ($mantener_cod as $tabla) {
+        $sql_update_secciones = "UPDATE $tabla SET secciones = REPLACE(secciones, ?, ?) WHERE secciones LIKE ?";
+        $stmt_secciones = $conn->prepare($sql_update_secciones);
+        if ($stmt_secciones) {
+            $like_antiguo = '%' . $nameold . '%';
+            $stmt_secciones->bind_param("sss", $nameold, $nombre, $like_antiguo);
+            $stmt_secciones->execute();
+            $stmt_secciones->close();
+        }
+    }
+
+    // Insertar o actualizar en tablas seleccionadas
+    foreach ($publicar as $tabla) {
+        $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla);
+
+        $existe = false;
+        $sql_existe = "SELECT 1 FROM `$tabla` WHERE cod = ? LIMIT 1";
+        $stmt_existe = $conn->prepare($sql_existe);
+        if ($stmt_existe) {
+            $stmt_existe->bind_param("s", $cod);
+            $stmt_existe->execute();
+            $stmt_existe->store_result();
+            $existe = $stmt_existe->num_rows > 0;
+            $stmt_existe->close();
+        }
+
+        if ($existe) {
+            $sql_update_existente = "UPDATE `$tabla` SET nombre = ?, link = ?, modulo = ?, Num_nivel = ?, estilos = ?, secciones = ? WHERE cod = ?";
+            $stmt_update = $conn->prepare($sql_update_existente);
             if ($stmt_update) {
-                $stmt_update->bind_param("sssss", $nombre, $link, $modulo, $estilos, $cod);
+                $stmt_update->bind_param("sssssss", $nombre, $link, $modulo, $num_nivel, $estilos, $secciones, $cod);
                 $stmt_update->execute();
                 $stmt_update->close();
             }
-        }
-    
-        // 🗑️ **Eliminar registros de tablas no seleccionadas**
-        foreach ($tablas_existentes as $tabla) {
-            if (!in_array($tabla, $publicar)) {
-                $sql_delete = "DELETE FROM $tabla WHERE cod = ?";
-                $stmt_delete = $conn->prepare($sql_delete);
-                if ($stmt_delete) {
-                    $stmt_delete->bind_param("s", $cod);
-                    $stmt_delete->execute();
-                    $stmt_delete->close();
+        } else {
+            if ($codtab) {
+                $sql_insert = "INSERT INTO `$tabla` (cod, codtab, nombre, link, modulo, Num_nivel, estilos, secciones) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt_insert = $conn->prepare($sql_insert);
+                if ($stmt_insert) {
+                    $stmt_insert->bind_param("ssssssss", $cod, $codtab, $nombre, $link, $modulo, $num_nivel, $estilos, $secciones);
+                    $stmt_insert->execute();
+                    $stmt_insert->close();
+                }
+            } else {
+                $sql_insert = "INSERT INTO `$tabla` (cod, nombre, link, modulo, Num_nivel, estilos, secciones) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $stmt_insert = $conn->prepare($sql_insert);
+                if ($stmt_insert) {
+                    $stmt_insert->bind_param("sssssss", $cod, $nombre, $link, $modulo, $num_nivel, $estilos, $secciones);
+                    $stmt_insert->execute();
+                    $stmt_insert->close();
                 }
             }
         }
-    
-        // ✅ **Insertar en nuevas tablas**
-        foreach ($publicar as $tabla) {
-            $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla);
-    
-            if (!in_array($tabla, $tablas_existentes)) {
-                if ($codtab) {
-                    $sql_insert = "INSERT INTO $tabla (cod, codtab, nombre, link, modulo, Num_nivel, estilos,secciones) 
-                                   VALUES (?, ?, ?, ?, ?, '2', ?, ?)";
-                    $stmt_insert = $conn->prepare($sql_insert);
-                    if ($stmt_insert) {
-                        $stmt_insert->bind_param("sssssss", $cod, $codtab, $nombre, $link, $modulo, $estilos, $secciones);
-                        $stmt_insert->execute();
-                        $stmt_insert->close();
-                    }
-                } else {
-                    $sql_insert = "INSERT INTO $tabla (cod, nombre, link, modulo, Num_nivel, estilos,secciones) 
-                                   VALUES (?, ?, ?, ?, '2', ?, ?)";
-                    $stmt_insert = $conn->prepare($sql_insert);
-                    if ($stmt_insert) {
-                        $stmt_insert->bind_param("ssssss", $cod, $nombre, $link, $modulo, $estilos, $secciones);
-                        $stmt_insert->execute();
-                        $stmt_insert->close();
-                    }
-                }
-            }
-        }
+    }
+    // ---------------------- MANEJO DE ARCHIVOS Y RUTAS -----------------------
+    if (empty($nombre)) {
+        die("Error: Nombre inválido.");
+    }
 
-            // Validar que el nombre no esté vacío
-        if (empty($nombre)) {
-            die("Error: Nombre inválido.");
-        }
+    $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
+    $nombreAntiguoLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nameold);
 
-        // Sanitizar el nombre del archivo y la carpeta (permitir solo letras, números, guiones y guiones bajos)
-        $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
+    // Construcción de rutas
+    $directorioBase = __DIR__ . '/../../';
 
-// Definir la carpeta y la ruta completa del archivo
-$directorioBase = __DIR__ . '/../../';  
-$directorio = $directorioBase . $nombreLimpio; // Carpeta con el nombre limpio
-$rutaArchivo = $directorioBase . $nombreLimpio . '.php'; // Archivo al mismo nivel que la carpeta
+    // Ruta anterior
+    $old_path = trim($secciones, '/');
+    $rutas_old = array_filter(explode('/', $old_path));
+    $pathOld = implode('/', $rutas_old);
+    $carpetaAnterior = "$directorioBase$pathOld/$nombreAntiguoLimpio";
+    $archivoAnterior = "$directorioBase$pathOld/$nombreAntiguoLimpio.php";
 
-// Crear la carpeta si no existe
-if (!is_dir($directorio)) {
-    mkdir($directorio, 0777, true);
-}
+    // Ruta nueva
+    $rutas_new = array_filter(explode('/', trim($secciones, '/')));
+    $pathFinal = implode('/', $rutas_new);
+    $destinoRuta = $directorioBase . $pathFinal;
+    $rutaPhpFinal = "$destinoRuta/$nombreLimpio.php";
+    $carpetaDestino = "$destinoRuta/$nombreLimpio";
 
-// Contenido del archivo
-$contenido = <<<PHP
+    // Crear nueva ruta si no existe
+    if (!is_dir($destinoRuta)) {
+        mkdir($destinoRuta, 0777, true);
+    }
+
+    // Renombrar archivo y carpeta si existe
+    if (file_exists($archivoAnterior) && $archivoAnterior !== $rutaPhpFinal) {
+        rename($archivoAnterior, $rutaPhpFinal);
+    }
+
+    if (is_dir($carpetaAnterior) && $carpetaAnterior !== $carpetaDestino) {
+        rename($carpetaAnterior, $carpetaDestino);
+    }
+
+    // Contenido del archivo PHP
+    $contenido = <<<PHP
 <?php
 include('estilos/header.php');
 include __DIR__ . '/estilos/generar_design.php';
 include ('contador_visitas.php');
-// Obtener el nombre del archivo actual
 \$nombreArchivo = basename(__FILE__, '.php');
 \$contador = manejar_contador_por_pagina(\$nombreArchivo);
-
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -669,408 +710,412 @@ include ('contador_visitas.php');
     </div>
 </body>
 </html>
-<?php
-include('estilos/footer.php'); // Footer
-?>
+<?php include('estilos/footer.php'); ?>
 PHP;
 
-// Crear el archivo al mismo nivel que la carpeta
-if (file_put_contents($rutaArchivo, $contenido) !== false) {
-    echo "Página creada exitosamente en <a href='../$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
-} else {
-    echo "Error al crear el archivo.";
+    // Guardar archivo si no existe (evita reescribir si ya lo movimos)
+    if (!file_exists($rutaPhpFinal)) {
+        if (file_put_contents($rutaPhpFinal, $contenido) !== false) {
+            echo "✅ Página creada: <a href='../$pathFinal/$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
+        } else {
+            echo "❌ Error al crear el archivo.";
+        }
+    } else {
+        echo "✅ Página actualizada: <a href='../$pathFinal/$nombreLimpio.php' target='_blank'>$nombreLimpio.php</a>";
+    }
 }
 
+
+elseif ($tipoFormulario == "SeccionPag") {
+    $titulo = $_POST['nombreT'] ?? '';
+    $contenido = $_POST['contenido'] ?? '';
+    $tituloS = $_POST['nombreS'] ?? '';
+    $descripcion = $_POST['descrip'] ?? '';
+    $cod = $_POST['cod'] ?? '';
+    $metatags = $_POST['meta'] ?? '';
+    $imagen_referencia = $_POST['imagen_link2'] ?? '';
+    $imagen_social = $_POST['imagen_link3'] ?? '';
+    $sef_seccion = true;
+
+
+    // 🔹 Verificar si `cod` ya existe en la base de datos
+    $sql_check = "SELECT cod FROM paginas WHERE cod = ?";
+    if ($stmt_check = $conn->prepare($sql_check)) {
+        $stmt_check->bind_param("s", $cod);
+        $stmt_check->execute();
+        $result = $stmt_check->get_result();
+        $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
+        $stmt_check->close();
     }
-    elseif ($tipoFormulario == "SeccionPag") {
-        $titulo = $_POST['nombreT'] ?? '';
-        $contenido = $_POST['contenido'] ?? '';
-        $tituloS = $_POST['nombreS'] ?? '';
-        $descripcion = $_POST['descrip'] ?? '';
-        $cod = $_POST['cod'] ?? '';
-        $metatags = $_POST['meta'] ?? '';
-        $imagen_referencia = $_POST['imagen_link2'] ?? '';
-        $imagen_social = $_POST['imagen_link3'] ?? '';
-        $sef_seccion = true;
 
-    
-        // 🔹 Verificar si `cod` ya existe en la base de datos
-        $sql_check = "SELECT cod FROM paginas WHERE cod = ?";
-        if ($stmt_check = $conn->prepare($sql_check)) {
-            $stmt_check->bind_param("s", $cod);
-            $stmt_check->execute();
-            $result = $stmt_check->get_result();
-            $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
-            $stmt_check->close();
-        }
-    
-        if ($exists) {
-            // 🔹 Si `cod` ya existe, actualizar los datos
-            $sql_update = "UPDATE paginas SET titulo=?, contenido=?, tituloS=?, descripcion=?, metatags=?, imagen_referencia=?, imagen_social=? 
-                           WHERE cod=?";
-            
-            if ($stmt_update = $conn->prepare($sql_update)) {
-                $stmt_update->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $metatags, $imagen_referencia, $imagen_social, $cod);
-                if ($stmt_update->execute()) {
-                    echo "✅ Página actualizada correctamente.";
-                } else {
-                    echo "❌ Error al actualizar: " . $stmt_update->error;
-                }
-                $stmt_update->close();
-            }
-        } else {
-            // 🔹 Si `cod` no existe, insertar un nuevo registro
-            $sql_insert = "INSERT INTO paginas (titulo, contenido, tituloS, descripcion, cod, metatags, imagen_referencia, imagen_social) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    
-            if ($stmt_insert = $conn->prepare($sql_insert)) {
-                $stmt_insert->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $cod, $metatags, $imagen_referencia, $imagen_social);
-                if ($stmt_insert->execute()) {
-                    echo "✅ Nueva página guardada correctamente.";
-                } else {
-                    echo "❌ Error al guardar: " . $stmt_insert->error;
-                }
-                $stmt_insert->close();
-            }
-        }
-    }
-    elseif ($tipoFormulario == "SeccionPar") {
-        $cod = $_POST['cod'] ?? '';
-        $nombre = $_POST['nombre'] ?? '';
-        $estructsecc = $_POST['estructsecc'] ?? '';
-        $mostrar = isset($_POST['mostrar']) ? implode(',', $_POST['mostrar']) : null;
-        $estilosubsec = $_POST['estilosubsec'] ?? '';
-        $fondsecc = $_POST['fondsecc'] ?? '';
-        $galeria = $_POST['galeria'] ?? '';
-        $barrasubmenu = $_POST['barrasubmenu'] ?? '';
-        $ordensecc = $_POST['ordensecc'] ?? '';
-        $orden = $_POST['orden'] ?? '';
-        $ordencont = $_POST['ordencont'] ?? '';
-        $sef_seccion = true;
-
-
-    
-        // 🔹 Verificar si `cod` ya existe en la base de datos
-        $sql_check = "SELECT cod FROM detalles WHERE cod = ?";
-        if ($stmt_check = $conn->prepare($sql_check)) {
-            $stmt_check->bind_param("s", $cod);
-            $stmt_check->execute();
-            $result = $stmt_check->get_result();
-            $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
-            $stmt_check->close();
-        }
-    
-        if ($exists) {
-            // 🔹 Si `cod` ya existe, actualizar los datos
-            $sql_update = "UPDATE detalles SET estructsecc=?, nombre=?, mostrar=?, estilosubsec=?, fondsecc=?, galeria=?, barrasubmenu=?, ordensecc=?, orden=?, ordencont=? 
-                           WHERE cod=?";
-            
-            if ($stmt_update = $conn->prepare($sql_update)) {
-                $stmt_update->bind_param("sssssssssss", $estructsecc, $nombre, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont, $cod);
-                if ($stmt_update->execute()) {
-                    echo "✅ Página actualizada correctamente.";
-                } else {
-                    echo "❌ Error al actualizar: " . $stmt_update->error;
-                }
-                $stmt_update->close();
-            }
-        } else {
-            // 🔹 Si `cod` no existe, insertar un nuevo registro
-            $sql_insert = "INSERT INTO detalles (cod, nombre, estructsecc, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, ordensecc, orden, ordencont) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
-            if ($stmt_insert = $conn->prepare($sql_insert)) {
-                $stmt_insert->bind_param("sssssssssss", $cod, $nombre, $estructsecc, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont);
-                if ($stmt_insert->execute()) {
-                    echo "✅ Nueva página guardada correctamente.";
-                } else {
-                    echo "❌ Error al guardar: " . $stmt_insert->error;
-                }
-                $stmt_insert->close();
-            }
-        }
-    }
-    elseif ($tipoFormulario == "Imagenes_Tablero") {
-        $nombre = $_POST['nombre'] ?? '';
-        $imagen_1 = $_POST['imagen_1'] ?? '';
-        $transicion = $_POST['transicion'] ?? '';
-        $altura = $_POST['altura'] ?? 0;
-        $orden = $_POST['orden'] ?? 0;
-        $img = true;
-
-        // Convertir a enteros (seguridad)
-        $altura = is_numeric($altura) ? intval($altura) : 0;
-        $orden = is_numeric($orden) ? intval($orden) : 0;
-
-        // Consulta SQL
-        $sql_img = "INSERT INTO Imagenes (nombre, imagen_1, transicion, altura, orden) VALUES (?, ?, ?, ?, ?)";
-
-        if ($stmt = $conn->prepare($sql_img)) {
-            $stmt->bind_param("sssii", $nombre, $imagen_1, $transicion, $altura, $orden);
-            if ($stmt->execute()) {
-                echo "✅ Imagen guardada correctamente.";
+    if ($exists) {
+        // 🔹 Si `cod` ya existe, actualizar los datos
+        $sql_update = "UPDATE paginas SET titulo=?, contenido=?, tituloS=?, descripcion=?, metatags=?, imagen_referencia=?, imagen_social=? 
+                        WHERE cod=?";
+        
+        if ($stmt_update = $conn->prepare($sql_update)) {
+            $stmt_update->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $metatags, $imagen_referencia, $imagen_social, $cod);
+            if ($stmt_update->execute()) {
+                echo "✅ Página actualizada correctamente.";
             } else {
-                echo "❌ Error al guardar: " . $stmt->error;
+                echo "❌ Error al actualizar: " . $stmt_update->error;
             }
-            $stmt->close();
-        } else {
-            echo "❌ Error en la consulta: " . $conn->error;
+            $stmt_update->close();
         }
-    } 
-    elseif ($tipoFormulario == "ElementoImg") {
-     // Recibir los datos del formulario
-        $padre = $_POST['nombre'] ?? NULL;
-        $titulo = $_POST['titulo'] ?? '';
-        $tipo = $_POST['tipo'] ?? '';
-        $imagen_2 = $_POST['imagen_link2'] ?? '';
-        $link = $_POST['link'] ?? '';
-        $PosX = (float) ($_POST['PosX'] ?? 0);
-        $PosY = (float) ($_POST['PosY'] ?? 0);
-        $estilo = $_POST['estilo'] ?? '';
-        $orden_2 = (int) ($_POST['orden_2'] ?? 0);
+    } else {
+        // 🔹 Si `cod` no existe, insertar un nuevo registro
+        $sql_insert = "INSERT INTO paginas (titulo, contenido, tituloS, descripcion, cod, metatags, imagen_referencia, imagen_social) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        // Verificar si el registro ya existe (por ejemplo, usando el campo `titulo`)
-        $sql_check = "SELECT id_img FROM Imagenes2 WHERE titulo = ?";
-        if ($stmt_check = $conn->prepare($sql_check)) {
-            $stmt_check->bind_param("s", $titulo);
-            $stmt_check->execute();
-            $result = $stmt_check->get_result();
-            $exists = $result->num_rows > 0; // Si hay resultados, el título ya existe
-            $stmt_check->close();
-        }
-
-        // Si el registro existe, actualizar
-        if ($exists) {
-            $sql_update = "UPDATE Imagenes2 SET tipo=?, imagen_2=?, link=?, PosX=?, PosY=?, estilo=?, orden_2=? WHERE titulo=?";
-            
-            if ($stmt_update = $conn->prepare($sql_update)) {
-                $stmt_update->bind_param("ssssddis", $tipo, $imagen_2, $link, $PosX, $PosY, $estilo, $orden_2, $titulo);
-                if ($stmt_update->execute()) {
-                    echo "✅ Registro actualizado correctamente.";
-                } else {
-                    echo "❌ Error al actualizar: " . $stmt_update->error;
-                }
-                $stmt_update->close();
+        if ($stmt_insert = $conn->prepare($sql_insert)) {
+            $stmt_insert->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $cod, $metatags, $imagen_referencia, $imagen_social);
+            if ($stmt_insert->execute()) {
+                echo "✅ Nueva página guardada correctamente.";
+            } else {
+                echo "❌ Error al guardar: " . $stmt_insert->error;
             }
-        } else {
-            // Si no existe, insertar un nuevo registro
-            $sql_insert = "INSERT INTO Imagenes2 (padre, titulo, tipo, imagen_2, link, PosX, PosY, estilo, orden_2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-            if ($stmt_insert = $conn->prepare($sql_insert)) {
-                $stmt_insert->bind_param("sssssddsi", $padre, $titulo, $tipo, $imagen_2, $link, $PosX, $PosY, $estilo, $orden_2);
-                if ($stmt_insert->execute()) {
-                    echo "✅ Nuevo registro guardado correctamente.";
-                } else {
-                    echo "❌ Error al guardar: " . $stmt_insert->error;
-                }
-                $stmt_insert->close();
-            }
+            $stmt_insert->close();
         }
     }
-    elseif ($tipoFormulario == "Webconfig") {
-        // Recibir datos del formulario
-        $url_pagina = $_POST['url_pagina'];
-        $nombre = $_POST['nombre'];
-        $idioma = $_POST['idioma'];
-        $logo = $_POST['logo'];
-        $favicon = $_POST['favicon'];
-        $seo_titulo = $_POST['seo_titulo'];
-        $seo_descripcion = $_POST['seo_descripcion'];
-        $seo_metatags = $_POST['seo_metatags'];
-        $pie_pagina = $_POST['pie_pagina'];
-        $imgcabe = $_POST['imgcabe'];   
-        $cabfondo = $_POST['cabfondo'];   
-        $piefondo = $_POST['piefondo'];   
-        $empresa = $_POST['empresa'];
-        $ruc = $_POST['ruc'];
-        $descripcion = $_POST['descripcion'];
-        $pais = $_POST['pais'];
-        $dpto = $_POST['dpto'];
-        $city = $_POST['city'];
-        $direccion_principal = $_POST['direccion_principal'];
-        $email_contactos = $_POST['email_contactos'];
-        $email_ventas = $_POST['email_ventas'];
-        $telefono_fijo = $_POST['telefono_fijo'];
-        $telefono_movil = $_POST['telefono_movil'];
-        $moneda = $_POST['moneda']; 
-        $precios = $_POST['precios'];
-        $carrito_compras = $_POST['carrito_compras'];
-        $zona_usuarios = $_POST['zona_usuarios'];
-        $terminos_condiciones = $_POST['terminos_condiciones'];
-        $panel_post = true;
+}
+elseif ($tipoFormulario == "SeccionPar") {
+    $cod = $_POST['cod'] ?? '';
+    $nombre = $_POST['nombre'] ?? '';
+    $estructsecc = $_POST['estructsecc'] ?? '';
+    $mostrar = isset($_POST['mostrar']) ? implode(',', $_POST['mostrar']) : null;
+    $estilosubsec = $_POST['estilosubsec'] ?? '';
+    $fondsecc = $_POST['fondsecc'] ?? '';
+    $galeria = $_POST['galeria'] ?? '';
+    $barrasubmenu = $_POST['barrasubmenu'] ?? '';
+    $ordensecc = $_POST['ordensecc'] ?? '';
+    $orden = $_POST['orden'] ?? '';
+    $ordencont = $_POST['ordencont'] ?? '';
+    $sef_seccion = true;
 
-        // Verificar si ya existe una empresa en la base de datos
-        $sql_check = "SELECT COUNT(*) AS total FROM Empresa";
-        $result = $conn->query($sql_check);
-        $row = $result->fetch_assoc();
 
-        if ($row['total'] > 0) {
-            // Si ya existe una empresa, actualizar sus datos
-            $sql_update = "UPDATE Empresa SET 
-                url_pagina='$url_pagina', nombre='$nombre', idioma='$idioma', logo='$logo', favicon='$favicon', 
-                seo_titulo='$seo_titulo', seo_descripcion='$seo_descripcion', seo_metatags='$seo_metatags', 
-                empresa='$empresa', pie_pagina='$pie_pagina', imgcabe='$imgcabe', cabfondo='$cabfondo', piefondo='$piefondo', 
-                ruc='$ruc', descripcion='$descripcion', pais='$pais', dpto='$dpto', city='$city', 
-                direccion_principal='$direccion_principal', email_contactos='$email_contactos', 
-                email_ventas='$email_ventas', telefono_fijo='$telefono_fijo', telefono_movil='$telefono_movil', 
-                moneda='$moneda', precios='$precios', carrito_compras='$carrito_compras', 
-                zona_usuarios='$zona_usuarios', terminos_condiciones='$terminos_condiciones'";
 
-            if ($conn->query($sql_update) === TRUE) {
-                echo "Configuración actualizada con éxito.";
+    // 🔹 Verificar si `cod` ya existe en la base de datos
+    $sql_check = "SELECT cod FROM detalles WHERE cod = ?";
+    if ($stmt_check = $conn->prepare($sql_check)) {
+        $stmt_check->bind_param("s", $cod);
+        $stmt_check->execute();
+        $result = $stmt_check->get_result();
+        $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
+        $stmt_check->close();
+    }
+
+    if ($exists) {
+        // 🔹 Si `cod` ya existe, actualizar los datos
+        $sql_update = "UPDATE detalles SET estructsecc=?, nombre=?, mostrar=?, estilosubsec=?, fondsecc=?, galeria=?, barrasubmenu=?, ordensecc=?, orden=?, ordencont=? 
+                        WHERE cod=?";
+        
+        if ($stmt_update = $conn->prepare($sql_update)) {
+            $stmt_update->bind_param("sssssssssss", $estructsecc, $nombre, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont, $cod);
+            if ($stmt_update->execute()) {
+                echo "✅ Página actualizada correctamente.";
             } else {
-                echo "Error al actualizar: " . $conn->error;
+                echo "❌ Error al actualizar: " . $stmt_update->error;
             }
+            $stmt_update->close();
+        }
+    } else {
+        // 🔹 Si `cod` no existe, insertar un nuevo registro
+        $sql_insert = "INSERT INTO detalles (cod, nombre, estructsecc, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, ordensecc, orden, ordencont) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        if ($stmt_insert = $conn->prepare($sql_insert)) {
+            $stmt_insert->bind_param("sssssssssss", $cod, $nombre, $estructsecc, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont);
+            if ($stmt_insert->execute()) {
+                echo "✅ Nueva página guardada correctamente.";
+            } else {
+                echo "❌ Error al guardar: " . $stmt_insert->error;
+            }
+            $stmt_insert->close();
+        }
+    }
+}
+elseif ($tipoFormulario == "Imagenes_Tablero") {
+    $nombre = $_POST['nombre'] ?? '';
+    $imagen_1 = $_POST['imagen_1'] ?? '';
+    $transicion = $_POST['transicion'] ?? '';
+    $altura = $_POST['altura'] ?? 0;
+    $orden = $_POST['orden'] ?? 0;
+    $img = true;
+
+    // Convertir a enteros (seguridad)
+    $altura = is_numeric($altura) ? intval($altura) : 0;
+    $orden = is_numeric($orden) ? intval($orden) : 0;
+
+    // Consulta SQL
+    $sql_img = "INSERT INTO Imagenes (nombre, imagen_1, transicion, altura, orden) VALUES (?, ?, ?, ?, ?)";
+
+    if ($stmt = $conn->prepare($sql_img)) {
+        $stmt->bind_param("sssii", $nombre, $imagen_1, $transicion, $altura, $orden);
+        if ($stmt->execute()) {
+            echo "✅ Imagen guardada correctamente.";
         } else {
-            // Si no hay ninguna empresa, insertar una nueva
-            $sql_insert = "INSERT INTO Empresa (url_pagina, nombre, idioma, logo, favicon, seo_titulo, 
-                seo_descripcion, seo_metatags, empresa, pie_pagina, imgcabe, cabfondo, piefondo, ruc, descripcion, pais, dpto, 
-                city, direccion_principal, email_contactos, email_ventas, telefono_fijo, 
-                telefono_movil, moneda, precios, carrito_compras, zona_usuarios, terminos_condiciones) 
-                VALUES ('$url_pagina', '$nombre', '$idioma', '$logo', '$favicon', '$seo_titulo', 
-                '$seo_descripcion', '$seo_metatags', '$empresa','$pie_pagina', '$imgcabe', '$cabfondo', '$piefondo', '$ruc', '$descripcion', '$pais', 
-                '$dpto', '$city', '$direccion_principal', '$email_contactos', 
-                '$email_ventas', '$telefono_fijo', '$telefono_movil', '$moneda', '$precios', 
-                '$carrito_compras', '$zona_usuarios', '$terminos_condiciones')";
+            echo "❌ Error al guardar: " . $stmt->error;
+        }
+        $stmt->close();
+    } else {
+        echo "❌ Error en la consulta: " . $conn->error;
+    }
+} 
+elseif ($tipoFormulario == "ElementoImg") {
+    // Recibir los datos del formulario
+    $padre = $_POST['nombre'] ?? NULL;
+    $titulo = $_POST['titulo'] ?? '';
+    $tipo = $_POST['tipo'] ?? '';
+    $imagen_2 = $_POST['imagen_link2'] ?? '';
+    $link = $_POST['link'] ?? '';
+    $PosX = (float) ($_POST['PosX'] ?? 0);
+    $PosY = (float) ($_POST['PosY'] ?? 0);
+    $estilo = $_POST['estilo'] ?? '';
+    $orden_2 = (int) ($_POST['orden_2'] ?? 0);
 
-            if ($conn->query($sql_insert) === TRUE) {
-                echo "Configuración guardada con éxito.";
+    // Verificar si el registro ya existe (por ejemplo, usando el campo `titulo`)
+    $sql_check = "SELECT id_img FROM Imagenes2 WHERE titulo = ?";
+    if ($stmt_check = $conn->prepare($sql_check)) {
+        $stmt_check->bind_param("s", $titulo);
+        $stmt_check->execute();
+        $result = $stmt_check->get_result();
+        $exists = $result->num_rows > 0; // Si hay resultados, el título ya existe
+        $stmt_check->close();
+    }
+
+    // Si el registro existe, actualizar
+    if ($exists) {
+        $sql_update = "UPDATE Imagenes2 SET tipo=?, imagen_2=?, link=?, PosX=?, PosY=?, estilo=?, orden_2=? WHERE titulo=?";
+        
+        if ($stmt_update = $conn->prepare($sql_update)) {
+            $stmt_update->bind_param("ssssddis", $tipo, $imagen_2, $link, $PosX, $PosY, $estilo, $orden_2, $titulo);
+            if ($stmt_update->execute()) {
+                echo "✅ Registro actualizado correctamente.";
             } else {
-                echo "Error al insertar: " . $conn->error;
+                echo "❌ Error al actualizar: " . $stmt_update->error;
             }
+            $stmt_update->close();
         }
-    }  
-    elseif ($tipoFormulario === "User") {
-        // 🛡️ Verificar CSRF token
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            die("❌ Token CSRF inválido.");
+    } else {
+        // Si no existe, insertar un nuevo registro
+        $sql_insert = "INSERT INTO Imagenes2 (padre, titulo, tipo, imagen_2, link, PosX, PosY, estilo, orden_2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        if ($stmt_insert = $conn->prepare($sql_insert)) {
+            $stmt_insert->bind_param("sssssddsi", $padre, $titulo, $tipo, $imagen_2, $link, $PosX, $PosY, $estilo, $orden_2);
+            if ($stmt_insert->execute()) {
+                echo "✅ Nuevo registro guardado correctamente.";
+            } else {
+                echo "❌ Error al guardar: " . $stmt_insert->error;
+            }
+            $stmt_insert->close();
         }
-    
-        // Recolectar el ID del usuario
-        $id = intval($_POST['id'] ?? 0);
-    
-        // Verificar si el formulario incluye datos básicos o solo la contraseña
-        $nuevaCon = $_POST['con'] ?? null;
-        $confirmar = $_POST['confirmar_con'] ?? null;
+    }
+}
+elseif ($tipoFormulario == "Webconfig") {
+    // Recibir datos del formulario
+    $url_pagina = $_POST['url_pagina'];
+    $nombre = $_POST['nombre'];
+    $idioma = $_POST['idioma'];
+    $logo = $_POST['logo'];
+    $favicon = $_POST['favicon'];
+    $seo_titulo = $_POST['seo_titulo'];
+    $seo_descripcion = $_POST['seo_descripcion'];
+    $seo_metatags = $_POST['seo_metatags'];
+    $pie_pagina = $_POST['pie_pagina'];
+    $imgcabe = $_POST['imgcabe'];   
+    $cabfondo = $_POST['cabfondo'];   
+    $piefondo = $_POST['piefondo'];   
+    $empresa = $_POST['empresa'];
+    $ruc = $_POST['ruc'];
+    $descripcion = $_POST['descripcion'];
+    $pais = $_POST['pais'];
+    $dpto = $_POST['dpto'];
+    $city = $_POST['city'];
+    $direccion_principal = $_POST['direccion_principal'];
+    $email_contactos = $_POST['email_contactos'];
+    $email_ventas = $_POST['email_ventas'];
+    $telefono_fijo = $_POST['telefono_fijo'];
+    $telefono_movil = $_POST['telefono_movil'];
+    $moneda = $_POST['moneda']; 
+    $precios = $_POST['precios'];
+    $carrito_compras = $_POST['carrito_compras'];
+    $zona_usuarios = $_POST['zona_usuarios'];
+    $terminos_condiciones = $_POST['terminos_condiciones'];
+    $panel_post = true;
+
+    // Verificar si ya existe una empresa en la base de datos
+    $sql_check = "SELECT COUNT(*) AS total FROM Empresa";
+    $result = $conn->query($sql_check);
+    $row = $result->fetch_assoc();
+
+    if ($row['total'] > 0) {
+        // Si ya existe una empresa, actualizar sus datos
+        $sql_update = "UPDATE Empresa SET 
+            url_pagina='$url_pagina', nombre='$nombre', idioma='$idioma', logo='$logo', favicon='$favicon', 
+            seo_titulo='$seo_titulo', seo_descripcion='$seo_descripcion', seo_metatags='$seo_metatags', 
+            empresa='$empresa', pie_pagina='$pie_pagina', imgcabe='$imgcabe', cabfondo='$cabfondo', piefondo='$piefondo', 
+            ruc='$ruc', descripcion='$descripcion', pais='$pais', dpto='$dpto', city='$city', 
+            direccion_principal='$direccion_principal', email_contactos='$email_contactos', 
+            email_ventas='$email_ventas', telefono_fijo='$telefono_fijo', telefono_movil='$telefono_movil', 
+            moneda='$moneda', precios='$precios', carrito_compras='$carrito_compras', 
+            zona_usuarios='$zona_usuarios', terminos_condiciones='$terminos_condiciones'";
+
+        if ($conn->query($sql_update) === TRUE) {
+            echo "Configuración actualizada con éxito.";
+        } else {
+            echo "Error al actualizar: " . $conn->error;
+        }
+    } else {
+        // Si no hay ninguna empresa, insertar una nueva
+        $sql_insert = "INSERT INTO Empresa (url_pagina, nombre, idioma, logo, favicon, seo_titulo, 
+            seo_descripcion, seo_metatags, empresa, pie_pagina, imgcabe, cabfondo, piefondo, ruc, descripcion, pais, dpto, 
+            city, direccion_principal, email_contactos, email_ventas, telefono_fijo, 
+            telefono_movil, moneda, precios, carrito_compras, zona_usuarios, terminos_condiciones) 
+            VALUES ('$url_pagina', '$nombre', '$idioma', '$logo', '$favicon', '$seo_titulo', 
+            '$seo_descripcion', '$seo_metatags', '$empresa','$pie_pagina', '$imgcabe', '$cabfondo', '$piefondo', '$ruc', '$descripcion', '$pais', 
+            '$dpto', '$city', '$direccion_principal', '$email_contactos', 
+            '$email_ventas', '$telefono_fijo', '$telefono_movil', '$moneda', '$precios', 
+            '$carrito_compras', '$zona_usuarios', '$terminos_condiciones')";
+
+        if ($conn->query($sql_insert) === TRUE) {
+            echo "Configuración guardada con éxito.";
+        } else {
+            echo "Error al insertar: " . $conn->error;
+        }
+    }
+}  
+elseif ($tipoFormulario === "User") {
+    // 🛡️ Verificar CSRF token
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("❌ Token CSRF inválido.");
+    }
+
+    // Recolectar el ID del usuario
+    $id = intval($_POST['id'] ?? 0);
+
+    // Verificar si el formulario incluye datos básicos o solo la contraseña
+    $nuevaCon = $_POST['con'] ?? null;
+    $confirmar = $_POST['confirmar_con'] ?? null;
+    $user_post = true;
+
+
+    if (!empty($nuevaCon) || !empty($confirmar)) {
+        // 🔐 Cambiar contraseña
+        if ($nuevaCon !== $confirmar) {
+            die("❌ Las contraseñas no coinciden.");
+        }
+        if (strlen($nuevaCon) < 6) {
+            die("❌ La contraseña debe tener al menos 6 caracteres.");
+        }
+        $passwordHash = password_hash($nuevaCon, PASSWORD_DEFAULT);
+
+        // Verificar si el usuario existe por ID
+        $sql_check = "SELECT id FROM log WHERE id = ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->bind_param("i", $id);
+        $stmt_check->execute();
+        $result_check = $stmt_check->get_result();
+        $exists = $result_check->num_rows > 0;
+        $stmt_check->close();
+
+        if ($exists) {
+            // Actualizar la contraseña
+            $sql_update = "UPDATE log SET con = ? WHERE id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param("si", $passwordHash, $id);
+
+            if ($stmt_update->execute()) {
+                echo "✅ Contraseña actualizada correctamente.";
+            } else {
+                echo "❌ Error al actualizar la contraseña: " . $stmt_update->error;
+            }
+            $stmt_update->close();
+        } else {
+            die("❌ Usuario no encontrado.");
+        }
+    } else {
+        // 🧹 Recolectar y limpiar datos básicos
+        $nombres = trim($_POST['nombres'] ?? '');
+        $correo = trim($_POST['correo'] ?? '');
+        $documento = trim($_POST['documento'] ?? '');
+        $fecha = trim($_POST['fecha_aniversario'] ?? '');
+        $sexo = trim($_POST['sexo'] ?? '');
+        $perfil = trim($_POST['perfil'] ?? '');
+        $pais = trim($_POST['pais'] ?? '');
+        $dpto = trim($_POST['dpto'] ?? '');
+        $city = trim($_POST['city'] ?? '');
+        $direccion = trim($_POST['direccion'] ?? '');
+        $telefono = trim($_POST['telefono'] ?? '');
+        $movil = trim($_POST['movil'] ?? '');
         $user_post = true;
 
-    
-        if (!empty($nuevaCon) || !empty($confirmar)) {
-            // 🔐 Cambiar contraseña
-            if ($nuevaCon !== $confirmar) {
-                die("❌ Las contraseñas no coinciden.");
-            }
-            if (strlen($nuevaCon) < 6) {
-                die("❌ La contraseña debe tener al menos 6 caracteres.");
-            }
-            $passwordHash = password_hash($nuevaCon, PASSWORD_DEFAULT);
-    
-            // Verificar si el usuario existe por ID
-            $sql_check = "SELECT id FROM log WHERE id = ?";
+        if ($id === 0) {
+            // Verificar si el correo ya existe en otro registro (solo al guardar un nuevo usuario)
+            $sql_check = "SELECT id FROM log WHERE correo = ?";
             $stmt_check = $conn->prepare($sql_check);
-            $stmt_check->bind_param("i", $id);
+            $stmt_check->bind_param("s", $correo);
             $stmt_check->execute();
             $result_check = $stmt_check->get_result();
-            $exists = $result_check->num_rows > 0;
+            $correo_duplicado = $result_check->num_rows > 0;
             $stmt_check->close();
-    
-            if ($exists) {
-                // Actualizar la contraseña
-                $sql_update = "UPDATE log SET con = ? WHERE id = ?";
-                $stmt_update = $conn->prepare($sql_update);
-                $stmt_update->bind_param("si", $passwordHash, $id);
-    
-                if ($stmt_update->execute()) {
-                    echo "✅ Contraseña actualizada correctamente.";
-                } else {
-                    echo "❌ Error al actualizar la contraseña: " . $stmt_update->error;
-                }
-                $stmt_update->close();
-            } else {
-                die("❌ Usuario no encontrado.");
-            }
-        } else {
-            // 🧹 Recolectar y limpiar datos básicos
-            $nombres = trim($_POST['nombres'] ?? '');
-            $correo = trim($_POST['correo'] ?? '');
-            $documento = trim($_POST['documento'] ?? '');
-            $fecha = trim($_POST['fecha_aniversario'] ?? '');
-            $sexo = trim($_POST['sexo'] ?? '');
-            $perfil = trim($_POST['perfil'] ?? '');
-            $pais = trim($_POST['pais'] ?? '');
-            $dpto = trim($_POST['dpto'] ?? '');
-            $city = trim($_POST['city'] ?? '');
-            $direccion = trim($_POST['direccion'] ?? '');
-            $telefono = trim($_POST['telefono'] ?? '');
-            $movil = trim($_POST['movil'] ?? '');
-            $user_post = true;
-    
-            if ($id === 0) {
-                // Verificar si el correo ya existe en otro registro (solo al guardar un nuevo usuario)
-                $sql_check = "SELECT id FROM log WHERE correo = ?";
-                $stmt_check = $conn->prepare($sql_check);
-                $stmt_check->bind_param("s", $correo);
-                $stmt_check->execute();
-                $result_check = $stmt_check->get_result();
-                $correo_duplicado = $result_check->num_rows > 0;
-                $stmt_check->close();
-    
-                if ($correo_duplicado) {
-                    die("❌ El correo ya está registrado en otro usuario.");
-                }
-            }
-    
-            // Verificar si el usuario existe por ID
-            $sql_check = "SELECT id FROM log WHERE id = ?";
-            $stmt_check = $conn->prepare($sql_check);
-            $stmt_check->bind_param("i", $id);
-            $stmt_check->execute();
-            $result_check = $stmt_check->get_result();
-            $exists = $result_check->num_rows > 0;
-            $stmt_check->close();
-    
-            if ($exists) {
-                // Actualizar datos básicos
-                $sql_update = "UPDATE log SET nombres = ?, correo = ?, documento = ?, fecha = ?, sexo = ?, perfil = ?, pais = ?, dpto = ?, city = ?, direccion = ?, telefono = ?, movil = ? WHERE id = ?";
-                $stmt_update = $conn->prepare($sql_update);
-                $stmt_update->bind_param("ssssssssssssi", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil, $id);
-    
-                if ($stmt_update->execute()) {
-                    echo "✅ Datos básicos actualizados correctamente.";
-                } else {
-                    echo "❌ Error al actualizar los datos básicos: " . $stmt_update->error;
-                }
-                $stmt_update->close();
-            } else {
-                // Insertar nuevo usuario
-                $sql_insert = "INSERT INTO log (nombres, correo, documento, fecha, sexo, perfil, pais, dpto, city, direccion, telefono, movil) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                $stmt_insert = $conn->prepare($sql_insert);
-                $stmt_insert->bind_param("ssssssssssss", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil);
-    
-                if ($stmt_insert->execute()) {
-                    echo "✅ Nuevo usuario registrado correctamente.";
-                } else {
-                    echo "❌ Error al registrar el usuario: " . $stmt_insert->error;
-                }
-                $stmt_insert->close();
+
+            if ($correo_duplicado) {
+                die("❌ El correo ya está registrado en otro usuario.");
             }
         }
-    }
-    
-   
-    // 📌 Ejecutar la consulta
-    if ($sql != "") {
-        if ($conn->query($sql) === TRUE) {
-            echo "Datos guardados correctamente. Formulario enviado: " . $formu;
+
+        // Verificar si el usuario existe por ID
+        $sql_check = "SELECT id FROM log WHERE id = ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->bind_param("i", $id);
+        $stmt_check->execute();
+        $result_check = $stmt_check->get_result();
+        $exists = $result_check->num_rows > 0;
+        $stmt_check->close();
+
+        if ($exists) {
+            // Actualizar datos básicos
+            $sql_update = "UPDATE log SET nombres = ?, correo = ?, documento = ?, fecha = ?, sexo = ?, perfil = ?, pais = ?, dpto = ?, city = ?, direccion = ?, telefono = ?, movil = ? WHERE id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param("ssssssssssssi", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil, $id);
+
+            if ($stmt_update->execute()) {
+                echo "✅ Datos básicos actualizados correctamente.";
+            } else {
+                echo "❌ Error al actualizar los datos básicos: " . $stmt_update->error;
+            }
+            $stmt_update->close();
         } else {
-            echo "Error al guardar en la base de datos: " . $conn->error;
+            // Insertar nuevo usuario
+            $sql_insert = "INSERT INTO log (nombres, correo, documento, fecha, sexo, perfil, pais, dpto, city, direccion, telefono, movil) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt_insert = $conn->prepare($sql_insert);
+            $stmt_insert->bind_param("ssssssssssss", $nombres, $correo, $documento, $fecha, $sexo, $perfil, $pais, $dpto, $city, $direccion, $telefono, $movil);
+
+            if ($stmt_insert->execute()) {
+                echo "✅ Nuevo usuario registrado correctamente.";
+            } else {
+                echo "❌ Error al registrar el usuario: " . $stmt_insert->error;
+            }
+            $stmt_insert->close();
         }
     }
+}
+
+
+// 📌 Ejecutar la consulta
+if ($sql != "") {
+    if ($conn->query($sql) === TRUE) {
+        echo "Datos guardados correctamente. Formulario enviado: " . $formu;
+    } else {
+        echo "Error al guardar en la base de datos: " . $conn->error;
+    }
+}
 
     // 📌 Cerrar la conexión solo si está definida
     if (isset($conn)) {
         $conn->close();
     }
+
 } else {
     echo "Acceso no permitido.";
 }
