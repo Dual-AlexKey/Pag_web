@@ -88,8 +88,9 @@ $moduloSeleccionado = isset($fila['modulo']) ? $fila['modulo'] : '';
         <form id="miFormulario" action="conect/guardar_tablero.php" method="post">
             <input type="hidden" name="formulario_tipo" value="Subseccion">
             <input type="hidden" name="nameold" value="<?php echo htmlspecialchars($fila['nombre']); ?>">
-            <input type="hidden" name="cod" value="<?php echo htmlspecialchars($fila['cod']); ?>">
-
+            <?php if ($accion === 'subseccion'): ?>
+                <input type="hidden" name="cod" value="<?php echo htmlspecialchars($fila['cod']); ?>">
+            <?php endif; ?>
             <table class="tableborderfull">
                 <tr>
                     <td class="colgrishome">Sección Principal:</td>

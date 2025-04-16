@@ -14,130 +14,91 @@ $seccion = isset($_GET['secc']) ? trim($_GET['secc']) : '';
 
 eliminar_archivo_y_contador($archivo_a_borrar . '.php');
 
-// ✅ Mostrar errores (para depuración)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$raiz_proyecto = dirname(__DIR__, 2); // 📌 Ruta base del proyecto
+$raiz_proyecto = dirname(__DIR__, 2); // Ejemplo: C:\xampp\htdocs\hub
 
 if (!empty($archivo_a_borrar)) {
-    echo "<b>🔍 Buscando registros en la BD...</b><br>";
+    echo "🔍 Buscando registros en la BD...<br>";
 
-    $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
-    $result_tablas = $conn->query($sql_buscar_tablas);
+    // Buscar y eliminar archivo y carpeta principal
+    eliminarArchivoYCarpeta($archivo_a_borrar, $raiz_proyecto);
 
-    $rutas_a_borrar = [];
-    $nombres_a_borrar = [];
-
-    if ($result_tablas->num_rows > 0) {
-        while ($fila = $result_tablas->fetch_array()) {
-            $tabla = $fila[0];
-
-            // ✅ Buscar registros en la BD
-            $sql_buscar = "SELECT nombre, secciones FROM `$tabla` WHERE secciones LIKE ? OR nombre = ?";
-            $stmt_buscar = $conn->prepare($sql_buscar);
-            $param_busqueda = "%/$archivo_a_borrar%"; 
-            $stmt_buscar->bind_param("ss", $param_busqueda, $archivo_a_borrar);
-            $stmt_buscar->execute();
-            $result_buscar = $stmt_buscar->get_result();
-
-            if ($result_buscar->num_rows > 0) {
-                while ($row = $result_buscar->fetch_assoc()) {
-                    $nombre = trim($row['nombre']);
-                    $secciones = isset($row['secciones']) ? trim($row['secciones'], "/") : "";
-
-                    if (!empty($secciones)) {
-                        // ✅ Dividir `secciones` en partes y agregarlas
-                        $rutas_a_borrar = array_merge($rutas_a_borrar, explode("/", $secciones));
-                    } 
-                    
-                    if (!empty($nombre)) {
-                        // ✅ Incluir `nombre` en la lista de eliminaciones
-                        $nombres_a_borrar[] = $nombre;
-                    }
-                }
-            }
-
-            // ✅ Eliminar registros en la BD
-            $sql_delete = "DELETE FROM `$tabla` WHERE secciones LIKE ? OR nombre = ?";
-            $stmt_delete = $conn->prepare($sql_delete);
-            $stmt_delete->bind_param("ss", $param_busqueda, $archivo_a_borrar);
-            $stmt_delete->execute();
-            $stmt_delete->close();
-        }
-    } else {
-        echo "⚠️ No se encontraron tablas que coincidan con 'menu_%'.<br>";
-    }
-
-    // ✅ Unir y eliminar duplicados
-    $rutas_a_borrar = array_unique(array_merge($rutas_a_borrar, $nombres_a_borrar));
-
-    // ✅ Eliminar archivos y carpetas individualmente
-    foreach ($rutas_a_borrar as $ruta) {
-        echo "📌 Eliminando registros y archivos para: <b>$ruta</b><br>";
-        eliminarArchivoYCarpeta($ruta, $raiz_proyecto);
+    // Si no se encontró en la raíz, intentar con seccion
+    if (!empty($seccion)) {
+        $ruta_desde_seccion = $raiz_proyecto . "/" . $seccion;
+        echo "📁 Buscando en la ruta alternativa: $ruta_desde_seccion<br>";
+        buscarYEliminarDesdeRuta($archivo_a_borrar, $ruta_desde_seccion);
     }
 }
 
 /**
- * Función para eliminar archivo y carpeta si existen
+ * Elimina archivo .php y carpeta si están en la raíz del proyecto
  */
-function eliminarArchivoYCarpeta($nombre, $raiz_proyecto) {
-    $nombre_sanitizado = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
+function eliminarArchivoYCarpeta($nombre, $raiz) {
+    $archivo = $raiz . "/" . $nombre . ".php";
+    $carpeta = $raiz . "/" . $nombre;
 
-    // ✅ Rutas absolutas
-    $directorio = $raiz_proyecto . "/" . $nombre_sanitizado; 
-    $ruta_archivo = $raiz_proyecto . "/" . $nombre_sanitizado . '.php';
+    echo "🛠 Intentando eliminar en raíz: $archivo<br>";
 
-    // ✅ Archivos protegidos que no deben eliminarse
-    $archivos_protegidos = ['eliminar_elemento_php.php'];
-    if (in_array($nombre_sanitizado . '.php', $archivos_protegidos)) {
-        echo "❌ No se puede eliminar el archivo protegido: $ruta_archivo<br>";
-        return;
-    }
-
-    echo "🛠 Buscando archivo: $ruta_archivo<br>";
-    echo "🛠 Buscando carpeta: $directorio<br>";
-
-    // 🔥 Eliminar archivo
-    if (file_exists($ruta_archivo)) {
-        if (unlink($ruta_archivo)) {
-            echo "✅ Archivo eliminado: $ruta_archivo<br>";
-        } else {
-            echo "❌ No se pudo eliminar el archivo: $ruta_archivo<br>";
-        }
+    if (file_exists($archivo)) {
+        unlink($archivo);
+        echo "✅ Archivo eliminado: $archivo<br>";
     } else {
-        echo "⚠️ Archivo no encontrado: $ruta_archivo<br>";
+        echo "⚠️ Archivo no encontrado: $archivo<br>";
     }
 
-    // 🗂 Eliminar carpeta y subdirectorios
-    eliminarCarpetaRecursiva($directorio);
+    if (is_dir($carpeta)) {
+        eliminarCarpetaRecursiva($carpeta);
+    } else {
+        echo "⚠️ Carpeta no encontrada: $carpeta<br>";
+    }
 }
 
 /**
- * Función para eliminar carpeta y todo su contenido
+ * Busca y elimina archivo y carpeta dentro de una ruta específica
+ */
+function buscarYEliminarDesdeRuta($nombre, $ruta_base) {
+    $archivo = $ruta_base . "/" . $nombre . ".php";
+    $carpeta = $ruta_base . "/" . $nombre;
+
+    echo "🛠 Buscando archivo en: $archivo<br>";
+    echo "🛠 Buscando carpeta en: $carpeta<br>";
+
+    if (file_exists($archivo)) {
+        unlink($archivo);
+        echo "✅ Archivo eliminado: $archivo<br>";
+    } else {
+        echo "⚠️ Archivo no encontrado: $archivo<br>";
+    }
+
+    if (is_dir($carpeta)) {
+        eliminarCarpetaRecursiva($carpeta);
+    } else {
+        echo "⚠️ Carpeta no encontrada: $carpeta<br>";
+    }
+}
+
+/**
+ * Elimina carpeta y su contenido
  */
 function eliminarCarpetaRecursiva($carpeta) {
-    if (!is_dir($carpeta)) {
-        echo "⚠️ Carpeta no encontrada: $carpeta<br>";
-        return;
-    }
-
     $archivos = array_diff(scandir($carpeta), ['.', '..']);
-    
+
     foreach ($archivos as $archivo) {
         $ruta_completa = $carpeta . "/" . $archivo;
         if (is_dir($ruta_completa)) {
-            eliminarCarpetaRecursiva($ruta_completa); // 🔄 Eliminar subcarpeta
+            eliminarCarpetaRecursiva($ruta_completa);
         } else {
-            unlink($ruta_completa); // 🗑 Eliminar archivo
+            unlink($ruta_completa);
         }
     }
 
     if (rmdir($carpeta)) {
         echo "✅ Carpeta eliminada: $carpeta<br>";
     } else {
-        echo "⚠️ No se pudo eliminar la carpeta: $carpeta (puede no estar vacía)<br>";
+        echo "⚠️ No se pudo eliminar la carpeta: $carpeta<br>";
     }
 }
 

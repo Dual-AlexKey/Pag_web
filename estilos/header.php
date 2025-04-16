@@ -17,8 +17,8 @@ while ($row = $result->fetch_array()) {
         $nivel = intval($rowData['Num_nivel']);
         $secciones = trim($rowData['secciones'] ?? '');
         $path = array_values(array_filter(explode('/', $secciones)));
-        $url = urlencode($nombre) . ".php";
-
+        $seccionesPath = trim($rowData['secciones'] ?? '', '/'); // Quita '/' final si hay
+        $url = ($seccionesPath . '/') . urlencode($nombre) . '.php';
         // NIVEL 1 (siempre entra aunque secciones esté vacío)
         if ($nivel === 1) {
             $nivel1 = !empty($path[0]) ? $path[0] : $nombre;

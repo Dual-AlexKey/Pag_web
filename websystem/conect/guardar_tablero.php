@@ -531,14 +531,13 @@ elseif ($tipoFormulario == "Subseccion") {
     $publicar = $_POST["publicar"] ?? [];
     $secciones = $_POST["secciones"] ?? null;
     $nameold = trim($_POST["nameold"]);
+    $sef_seccion = true;
+
 
     if (empty($publicar)) {
         die("❌ Error: No se ha seleccionado ninguna tabla.");
     }
 
-    if (empty($cod)) {
-        die("❌ Error: Código (cod) está vacío. No se puede continuar.");
-    }
 
     // Calcular Num_nivel
     $num_nivel = 0;
@@ -591,13 +590,14 @@ elseif ($tipoFormulario == "Subseccion") {
         $codtab = $prefijo . str_pad($nuevo_codigo, 2, "0", STR_PAD_LEFT);
     }
 
-    // Actualizar secciones en tablas que ya contienen el cod
+    // Actualizar secciones en tablas que ya contienen el cod, evitando actualizar el mismo registro
     foreach ($mantener_cod as $tabla) {
-        $sql_update_secciones = "UPDATE $tabla SET secciones = REPLACE(secciones, ?, ?) WHERE secciones LIKE ?";
+        $sql_update_secciones = "UPDATE $tabla SET secciones = REPLACE(secciones, ?, ?) 
+            WHERE secciones LIKE ? AND cod != ?";
         $stmt_secciones = $conn->prepare($sql_update_secciones);
         if ($stmt_secciones) {
             $like_antiguo = '%' . $nameold . '%';
-            $stmt_secciones->bind_param("sss", $nameold, $nombre, $like_antiguo);
+            $stmt_secciones->bind_param("ssss", $nameold, $nombre, $like_antiguo, $cod);
             $stmt_secciones->execute();
             $stmt_secciones->close();
         }
@@ -648,6 +648,7 @@ elseif ($tipoFormulario == "Subseccion") {
             }
         }
     }
+
     // ---------------------- MANEJO DE ARCHIVOS Y RUTAS -----------------------
     if (empty($nombre)) {
         die("Error: Nombre inválido.");

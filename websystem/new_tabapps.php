@@ -122,8 +122,7 @@ $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
                                 <option value="RS" <?= (isset($datos['apps']) && $datos['apps'] == 'RS') ? 'selected' : '' ?>>Redes Sociales</option>
                                 <option value="S" <?= (isset($datos['apps']) && $datos['apps'] == 'S') ? 'selected' : '' ?>>Subscribase</option>
                                 <option value="MP" <?= (isset($datos['apps']) && $datos['apps'] == 'MP') ? 'selected' : '' ?>>Menu Pie</option>
-                                <option value="FB" <?= (isset($datos['apps']) && $datos['apps'] == 'FB') ? 'selected' : '' ?>>Formulario Buscar</option>
-                                <option value="FC" <?= (isset($datos['apps']) && $datos['apps'] == 'FC') ? 'selected' : '' ?>>Formulario Contactos</option>
+                                <option value="FC" <?= (isset($datos['apps']) && $datos['apps'] == 'FC') ? 'selected' : '' ?>>Formulario Contacto</option>
                             </select>
                         </td>
                     </tr>

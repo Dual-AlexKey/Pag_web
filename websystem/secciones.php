@@ -97,6 +97,7 @@ $tree = construirArbol($registros);
                 $cod = urlencode($nodo['cod'] ?? '');
                 $codtab = urlencode($nodo['codtab'] ?? '');
                 $nombre_url = urlencode($nodo['nombre']);
+                $seccion_url = urlencode($nodo['secciones']);
                 $seccion_destino = empty($nodo['secciones']) ? "editccion.php" : "subseccion.php";
                 $accion_param = empty($nodo['secciones']) ? "" : "&accion=subseccion";
 
@@ -130,7 +131,7 @@ $tree = construirArbol($registros);
                 echo "<td><a href='secciondetalle.php?cod=$cod&nombre=$nombre_url' class='btn_st'>
                         <img src='https://i.ibb.co/Fq6n7h1M/wp-tools.png' alt='Botón Detalle' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                       </a></td>";
-                echo "<td><a href='conect/eliminar_elemento.php?cod=$cod&codtab=$codtab&nombre=$nombre_url&secc=$seccion_destino' class='btn_st'>
+                echo "<td><a href='conect/eliminar_elemento.php?cod=$cod&codtab=$codtab&nombre=$nombre_url&secc=$seccion_url' class='btn_st'>
                         <img src='https://i.ibb.co/LdTnB39W/wp-borrar.png' alt='Botón Eliminar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                       </a></td>";
                 echo "</tr>";
