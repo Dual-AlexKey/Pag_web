@@ -1,7 +1,10 @@
 <?php
 include __DIR__ . '/../websystem/conect/conexion.php';
-
 $menu = [];
+
+// TODO: QUITAR '/hub' CUANDO SUBAS A PRODUCCIÓN
+$baseURL = '/hub/'; // Ruta base local para XAMPP
+//$baseURL = '/'; // Ajusta si tu sitio no está en la raíz del dominio
 
 // Obtener tablas con _cabecerat
 $sql = "SHOW TABLES LIKE '%_cabecerat'";
@@ -17,9 +20,15 @@ while ($row = $result->fetch_array()) {
         $nivel = intval($rowData['Num_nivel']);
         $secciones = trim($rowData['secciones'] ?? '');
         $path = array_values(array_filter(explode('/', $secciones)));
-        $seccionesPath = trim($rowData['secciones'] ?? '', '/'); // Quita '/' final si hay
-        $url = ($seccionesPath . '/') . urlencode($nombre) . '.php';
-        // NIVEL 1 (siempre entra aunque secciones esté vacío)
+        $seccionesPath = trim($rowData['secciones'] ?? '', '/');
+
+        // Ruta absoluta desde raíz del sitio (para navegadores)
+        $relativePath = trim($seccionesPath . '/' . $nombre . '.php', '/');
+        $url = $baseURL . $relativePath;
+
+        // Si necesitas usar rutas absolutas del sistema de archivos (opcional)
+        $fullFilePath = $_SERVER['DOCUMENT_ROOT'] . '/' . $relativePath;
+
         if ($nivel === 1) {
             $nivel1 = !empty($path[0]) ? $path[0] : $nombre;
             $menu[$nivel1] = [
@@ -27,10 +36,7 @@ while ($row = $result->fetch_array()) {
                 'url' => $url,
                 'children' => []
             ];
-        }
-
-        // NIVEL 2 (si tiene al menos nivel 1 como padre)
-        elseif ($nivel === 2 && isset($path[0])) {
+        } elseif ($nivel === 2 && isset($path[0])) {
             $parent = $path[0];
             $key = $nombre;
             $menu[$parent]['children'][$key] = [
@@ -38,10 +44,7 @@ while ($row = $result->fetch_array()) {
                 'url' => $url,
                 'children' => []
             ];
-        }
-
-        // NIVEL 3 (si tiene al menos nivel 1 y 2 como padre)
-        elseif ($nivel === 3 && isset($path[0], $path[1])) {
+        } elseif ($nivel === 3 && isset($path[0], $path[1])) {
             $parent = $path[0];
             $child = $path[1];
             $menu[$parent]['children'][$child]['children'][] = [
@@ -52,7 +55,8 @@ while ($row = $result->fetch_array()) {
     }
 }
 
-// Fondo de encabezado
+
+// Fondo del encabezado
 $headerStyle = '';
 $sql = "SELECT imgcabe, cabfondo FROM Empresa LIMIT 1";
 $res = $conn->query($sql);
@@ -72,7 +76,7 @@ if ($res && $row = $res->fetch_assoc()) {
     <title>Nav</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="estilos/css/styles.css?<?php echo time(); ?>">
+    <link rel="stylesheet" href="estilos/css/styles.css?<?= time(); ?>">
 </head>
 <body>
 

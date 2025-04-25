@@ -18,6 +18,8 @@ include('estilo/tabla_menu.php');
     <div id="capaformulario">
         <form id="miFormulario" action="conect/guardar_tablero.php" method="post">
             <input type="hidden" name="formulario_tipo" value="Seccion">
+            <input type="hidden" name="estructsecc" value="Estilo Derecha">
+            <input type="hidden" name="orden" value="12">
             <table class="tableborderfull">
                 <tr>
                     <td class="colgrishome">Nombre:</td>
@@ -56,6 +58,10 @@ include('estilo/tabla_menu.php');
                             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                                 <?php foreach ($menus as $index => $menu): ?>
                                     <?php
+                                    // Omitir el menú 'menu_sinselect'
+                                    if ($menu === 'menu_sinselect') {
+                                        continue;
+                                    }
                                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
                                     $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad'];
 
@@ -85,6 +91,7 @@ include('estilo/tabla_menu.php');
         </form>
     </div>
 </div>
+
 
 <?php
 // Incluir el footer.php

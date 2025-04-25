@@ -12,10 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "CREATE TABLE IF NOT EXISTS `$nombre_tabla` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             nombre VARCHAR(255) NOT NULL,
-            modulo VARCHAR(255) NOT NULL,
-            orden VARCHAR(255),
-            nro_item INT,
-            visitas INT,
+            modulo VARCHAR(255) NOT NULL,   
             link VARCHAR(255) NOT NULL,
             Num_nivel VARCHAR(3),
             secciones VARCHAR(255),

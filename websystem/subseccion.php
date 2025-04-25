@@ -1,17 +1,10 @@
 <?php
 include 'conect/conexion.php';
-// Inclusión de información
 include('estilo/data.php');
-
-// Incluir el header.php
 include('estilo/header.php');
-
-// Incluir el menu.php
 include('estilo/menu.php');
-
 include('estilo/tabla_menu.php');
 
-// Inicializar el array con valores vacíos por defecto
 $menu = [
     'nombre'   => '',
     'link'     => '',
@@ -21,76 +14,92 @@ $menu = [
     'secciones' => ''
 ];
 
-// Buscar tablas que comiencen con "menu_"
 $tablas_menu = [];
 $query = "SHOW TABLES LIKE 'menu_%'";
 $resultado_tablas = mysqli_query($conexion, $query);
 
 while ($fila = mysqli_fetch_row($resultado_tablas)) {
-    $tablas_menu[] = $fila[0]; // Almacena el nombre de la tabla
+    $tablas_menu[] = $fila[0];
 }
 
 // Recoger valores de la URL
-$nombre = isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : '';
-$accion = isset($_GET['accion']) ? htmlspecialchars($_GET['accion']) : '';
-$seccion_principal = ''; // Valor predeterminado
+$nombre = isset($_GET['nombre']) ? htmlspecialchars(trim($_GET['nombre'])) : '';
+$accion = isset($_GET['accion']) ? htmlspecialchars(trim($_GET['accion'])) : '';
+$cod = isset($_GET['cod']) ? htmlspecialchars(trim($_GET['cod'])) : '';
 
-// Buscar en las tablas si hay un registro que coincida con `nombre`
-foreach ($tablas_menu as $tabla) {
-    $sql = "SELECT * FROM $tabla WHERE nombre = '$nombre' LIMIT 1";
-    $resultado = $conexion->query($sql);
+$seccion_principal = '';
+$datos_subnivel = [];
 
-    if ($resultado && $resultado->num_rows > 0) {
-        $fila = $resultado->fetch_assoc();
-
-        // Recuperar todos los datos del registro en $menu
-        $menu['nombre'] = $fila['nombre'];
-        $menu['link'] = $fila['link'] ?? '';
-        $menu['modulo'] = $fila['modulo'] ?? '';
-        $menu['estilos'] = $fila['estilos'] ?? '';
-        $menu['secciones'] = $fila['secciones'] ?? '';
-
-        // Mostrar solo el valor de `secciones` si el identificador está presente
-        if ($accion === 'subseccion') {
-            $seccion_principal = $menu['secciones'];
-        } else {
-            // Si `secciones` está vacío o NULL, construir como "/nombre"
-            if (empty($fila['secciones'])) {
-                $seccion_principal = "/" . $nombre;
-            } else {
-                // Si `secciones` tiene un valor, añadir el valor de `nombre`
-                $seccion_principal = $fila['secciones'] . "/" . $nombre;
-            }
+// ✅ 1. Buscar en subnivel si accion=subseccion y cod existe
+if ($accion === 'subseccion' && !empty($cod)) {
+    $sql_subnivel = "SELECT * FROM subnivel WHERE cod = ?";
+    $stmt_subnivel = $conexion->prepare($sql_subnivel);
+    if ($stmt_subnivel) {
+        $stmt_subnivel->bind_param("s", $cod);
+        $stmt_subnivel->execute();
+        $resultado_subnivel = $stmt_subnivel->get_result();
+        if ($resultado_subnivel->num_rows > 0) {
+            $datos_subnivel = $resultado_subnivel->fetch_assoc();
+            // ✅ Rellenar menú
+            $menu['nombre'] = $datos_subnivel['nombre'] ?? '';
+            $menu['link'] = $datos_subnivel['link'] ?? '';
+            $menu['modulo'] = $datos_subnivel['modulo'] ?? '';
+            $menu['estilos'] = $datos_subnivel['estilos'] ?? '';
+            $menu['secciones'] = $datos_subnivel['secciones'] ?? '';
         }
-        break;
+        $stmt_subnivel->close();
     }
 }
 
-// Si no hay identificador, vaciar todos los campos excepto "Sección Principal" y "Estilos"
-if ($accion !== 'subseccion') {
-    $menu['nombre'] = '';
-    $menu['link'] = '';
-    $menu['modulo'] = '';
-    $menu['publicar'] = [];
-    // "Sección Principal" y "Estilos" permanecen como están
-    $seccion_principal = empty($menu['secciones']) ? "/" . $nombre : $menu['secciones'] . "/" . $nombre;
+// ✅ 2. Buscar nombre en tabla subnivel y usar secciones si coincide
+$seccion_base = '';
+$sql_check_nombre = "SELECT secciones FROM subnivel WHERE nombre = ? LIMIT 1";
+$stmt_nombre = $conexion->prepare($sql_check_nombre);
+if ($stmt_nombre) {
+    $stmt_nombre->bind_param("s", $nombre);
+    $stmt_nombre->execute();
+    $stmt_nombre->store_result();
+    if ($stmt_nombre->num_rows > 0) {
+        $stmt_nombre->bind_result($seccion_subnivel);
+        $stmt_nombre->fetch();
+        $seccion_base = $seccion_subnivel;
+    }
+    $stmt_nombre->close();
 }
-$estiloSeleccionado = isset($fila['estilos']) ? $fila['estilos'] : ''; 
-$moduloSeleccionado = isset($fila['modulo']) ? $fila['modulo'] : ''; 
 
+// ✅ Siempre incluir el nombre del URL
+if ($accion === 'subseccion') {
+    // Mostrar solo el valor guardado en secciones
+    $seccion_principal = $menu['secciones'] ?? '';
+    if (empty($seccion_principal)) {
+        $seccion_principal = '/'; // o lo que desees como fallback
+    }
+} else {
+    // Armar Sección Principal combinando secciones + nombre
+    $seccion_principal = rtrim($seccion_base, '/') . '/' . $nombre;
+    if (empty($seccion_base)) {
+        $seccion_principal = '/' . $nombre;
+    }
+}
 
-?>
+$estiloSeleccionado = $menu['estilos'] ?? '';
+$moduloSeleccionado = $menu['modulo'] ?? '';
+?>      
 
 <div class="contenido-derecha">
     <a href="secciones.php"><button class="boton-cerrar">X</button></a>
-    <div class="bloque-verde"><h2>Nueva Subseccion</h2></div>
+    <div class="bloque-verde">
+    <h2><?= ($accion === 'subseccion') ? 'Editar Subseccion' : 'Nueva Subseccion'; ?></h2>
+</div>
     <div id="capaformulario">
         <form id="miFormulario" action="conect/guardar_tablero.php" method="post">
             <input type="hidden" name="formulario_tipo" value="Subseccion">
-            <input type="hidden" name="nameold" value="<?php echo htmlspecialchars($fila['nombre']); ?>">
-            <?php if ($accion === 'subseccion'): ?>
-                <input type="hidden" name="cod" value="<?php echo htmlspecialchars($fila['cod']); ?>">
-            <?php endif; ?>
+            <input type="hidden" name="nameold" value="<?php echo isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : ''; ?>">
+            <input type="hidden" name="estructsecc" value="Estilo Derecha">
+            <input type="hidden" name="orden" value="12">
+            <input type="hidden" name="cod" value="<?php echo isset($_GET['cod']) ? htmlspecialchars($_GET['cod']) : ''; ?>">
+            
+            
             <table class="tableborderfull">
                 <tr>
                     <td class="colgrishome">Sección Principal:</td>
@@ -134,47 +143,52 @@ $moduloSeleccionado = isset($fila['modulo']) ? $fila['modulo'] : '';
                 <tr>
                     <td class="colgrishome">Publicar en Menú:</td>
                     <td class="colblancocen">
-                        <?php if (!empty($tablas_menu)): ?>
-                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                                <?php foreach ($tablas_menu as $index => $tabla_menu): ?>
-                                    <?php
-                                    // Limpieza del nombre de la tabla
-                                    $menu_limpio = preg_replace('/^menu_/', '', $tabla_menu);
-                                    $ubicaciones = ['cabecerat', 'pie', 'cabeceral', 'cabeceram', 'columnai', 'columnad'];
+                    <?php if (!empty($tablas_menu)): ?>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <?php foreach ($tablas_menu as $index => $tabla_menu): ?>
+                                <?php
+                                // Omitir la tabla 'menu_sinselect'
+                                if ($tabla_menu === 'menu_sinselect') {
+                                    continue;
+                                }
 
-                                    foreach ($ubicaciones as $ubicacion) {
-                                        $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);
-                                    }
+                                // Limpieza del nombre de la tabla
+                                $menu_limpio = preg_replace('/^menu_/', '', $tabla_menu);
+                                $ubicaciones = ['cabecerat', 'pie', 'cabeceral', 'cabeceram', 'columnai', 'columnad'];
 
-                                    // Verificar si el registro existe en la tabla
-                                    $checked = '';
-                                    if ($accion === 'subseccion') {
-                                        $sql_check = "SELECT COUNT(*) FROM $tabla_menu WHERE nombre = ?";
-                                        $stmt_check = $conexion->prepare($sql_check);
-                                        if ($stmt_check) {
-                                            $stmt_check->bind_param("s", $nombre);
-                                            $stmt_check->execute();
-                                            $stmt_check->bind_result($existe);
-                                            $stmt_check->fetch();
-                                            $stmt_check->close();
-                                            if ($existe > 0) {
-                                                $checked = 'checked';
-                                            }
+                                foreach ($ubicaciones as $ubicacion) {
+                                    $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);
+                                }
+
+                                // Verificar si el registro existe en la tabla
+                                $checked = '';
+                                if ($accion === 'subseccion') {
+                                    $sql_check = "SELECT COUNT(*) FROM $tabla_menu WHERE nombre = ?";
+                                    $stmt_check = $conexion->prepare($sql_check);
+                                    if ($stmt_check) {
+                                        $stmt_check->bind_param("s", $nombre);
+                                        $stmt_check->execute();
+                                        $stmt_check->bind_result($existe);
+                                        $stmt_check->fetch();
+                                        $stmt_check->close();
+                                        if ($existe > 0) {
+                                            $checked = 'checked';
                                         }
                                     }
-                                    ?>
-                                    <label style="display: flex; align-items: center;">
-                                        <input type="checkbox" id="publicar_<?= $index; ?>" name="publicar[]" value="<?= $tabla_menu; ?>" <?= $checked; ?>>
-                                        <span style="margin-left: 5px;"><?= htmlspecialchars($menu_limpio); ?></span>
-                                    </label>
-                                    <?php if (($index + 1) % 3 == 0): ?>
-                                        <br>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <p>No hay menús disponibles.</p>
-                        <?php endif; ?>
+                                }
+                                ?>
+                                <label style="display: flex; align-items: center;">
+                                    <input type="checkbox" id="publicar_<?= $index; ?>" name="publicar[]" value="<?= $tabla_menu; ?>" <?= $checked; ?>>
+                                    <span style="margin-left: 5px;"><?= htmlspecialchars($menu_limpio); ?></span>
+                                </label>
+                                <?php if (($index + 1) % 3 == 0): ?>
+                                    <br>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <p>No hay menús disponibles.</p>
+                    <?php endif; ?>
                     </td>
                 </tr>
             </table>

@@ -68,7 +68,7 @@ if (!empty($cod)) {
                                 "Estilo Full" => "https://i.ibb.co/G4BKp12v/estiloweb04.gif",
                             ];
                             foreach ($estilos as $key => $img) {
-                                $checked = (isset($datos['estructsecc']) && $datos['estructsecc'] == $key) ? 'checked' : '';
+                                $checked = (isset($datos['estructsecc']) && $datos['estructsecc'] == $key) || (!isset($datos['estructsecc']) && $key == "Estilo Derecha") ? 'checked' : '';
                                 echo "<div style='width: 90px;'>
                                         <img src='$img' alt='$key' style='width: 80px; height: auto;'><br>
                                         <input type='radio' name='estructsecc' value='$key' $checked> <span>$key</span>

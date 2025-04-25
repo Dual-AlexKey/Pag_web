@@ -259,7 +259,7 @@ function crearArchivo(event) {
         return;
     }
 
-    // ✅ Mensajes de error combinados
+    /*// ✅ Mensajes de error combinados
     if (!menuSeleccionado && !estilosSeleccionados) {
         alert("⚠️ Falta seleccionar información: Estilos y 'Publicar en Menú'.");
         return;
@@ -268,7 +268,7 @@ function crearArchivo(event) {
     if (!menuSeleccionado) {
         alert("⚠️ Falta seleccionar información: 'Publicar en Menú'.");
         return;
-    }
+    }*/
 
     if (!estilosSeleccionados) {
         alert("⚠️ Falta seleccionar información: Estilos.");

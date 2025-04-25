@@ -11,6 +11,9 @@ $archivo_a_borrar = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
 $nombre = isset($_GET['nombre']) ? trim($_GET['nombre']) : '';
 $id_usuario = isset($_GET['id_user']) ? trim($_GET['id_user']) : '';
 $seccion = isset($_GET['secc']) ? trim($_GET['secc']) : '';
+$id_sub = isset($_GET['idSub']) ? trim($_GET['idSub']) : '';
+
+
 
 eliminar_archivo_y_contador($archivo_a_borrar . '.php');
 
@@ -101,8 +104,69 @@ function eliminarCarpetaRecursiva($carpeta) {
         echo "⚠️ No se pudo eliminar la carpeta: $carpeta<br>";
     }
 }
+// ✅ 🔥 Continúa con la eliminación en la base de datos si hay `cod` o `codtab`
+$se_borro_cod_o_codtab = false;
 
+// Contar cuántas secciones hay
+$partes = array_filter(explode('/', $seccion));
+$num_niveles = count($partes);
 
+if ($num_niveles >= 2) {
+    // ✅ Caso 1: Hay 2 niveles o más (ej: /pie/prueba) → solo se borra el actual
+    $sql_delete = "DELETE FROM subnivel WHERE id = ?";
+    $stmt = $conn->prepare($sql_delete);
+    $stmt->bind_param("i", $id_sub);
+    if ($stmt->execute()) {
+        echo "✅ Registro (nivel final) eliminado (ID: $id_sub)";
+    } else {
+        echo "❌ Error al eliminar: " . $stmt->error;
+    }
+    $stmt->close();
+
+} elseif ($num_niveles === 1) {
+    // ✅ Caso 2: solo un nivel → borrar este ID y todos los que tengan su nombre como parte de 'secciones'
+
+    // Obtener el nombre del registro principal
+    $nombre = null;
+    $sql_nombre = "SELECT nombre FROM subnivel WHERE id = ?";
+    $stmt_nombre = $conn->prepare($sql_nombre);
+    if ($stmt_nombre) {
+        $stmt_nombre->bind_param("i", $id_sub);
+        $stmt_nombre->execute();
+        $stmt_nombre->bind_result($nombre);
+        $stmt_nombre->fetch();
+        $stmt_nombre->close();
+    }
+
+    if ($nombre) {
+        // Eliminar hijos: secciones que contienen /$nombre
+        $like_secciones = "%/$nombre%";
+        $sql_delete_hijos = "DELETE FROM subnivel WHERE secciones LIKE ?";
+        $stmt_hijos = $conn->prepare($sql_delete_hijos);
+        if ($stmt_hijos) {
+            $stmt_hijos->bind_param("s", $like_secciones);
+            $stmt_hijos->execute();
+            echo "🧹 Se eliminaron hijos con secciones que contienen '/$nombre'<br>";
+            $stmt_hijos->close();
+        }
+
+        // Eliminar el registro original
+        $sql_delete_self = "DELETE FROM subnivel WHERE id = ?";
+        $stmt_self = $conn->prepare($sql_delete_self);
+        if ($stmt_self) {
+            $stmt_self->bind_param("i", $id_sub);
+            $stmt_self->execute();
+            echo "✅ Registro principal eliminado (ID: $id_sub)";
+            $stmt_self->close();
+        }
+
+    } else {
+        echo "❌ No se encontró el nombre del ID: $id_sub.";
+    }
+
+} else {
+    echo "❌ La ruta de secciones es inválida.";
+}
 if (!empty($nombre)) {
     $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
     $result_tablas = $conn->query($sql_buscar_tablas);
@@ -132,8 +196,7 @@ if (!empty($nombre)) {
     }
 }
 
-// ✅ 🔥 Continúa con la eliminación en la base de datos si hay `cod` o `codtab`
-$se_borro_cod_o_codtab = false;
+
 
 if (!empty($cod_parametro) || !empty($codtab_parametro)) {
     $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
@@ -186,6 +249,8 @@ if (!empty($cod_parametro)){
     }
     $stmt_delete->close();
 }
+
+
 
 // ✅ 🔥 Si se proporcionó `id`, eliminar en la tabla `tablero`
 $se_borro_id = false;

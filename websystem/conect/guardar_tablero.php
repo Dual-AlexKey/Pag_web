@@ -207,7 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
     }
-
     elseif ($tipoFormulario == "Seccion") {
     $cod = $_POST["cod"] ?? null; // Puede venir vacío
     $codtab = null; // Se generará si hay múltiples tablas
@@ -220,8 +219,66 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
     if (empty($publicar)) {
-        echo "Error: No se ha seleccionado ninguna tabla.";
-        exit();
+    $sef_seccion = true;
+
+        // Generar `codtab` si no existe
+    if (!$codtab) {
+        $prefijo = 'sin'; // Prefijo fijo para la tabla `menu_sinselect`
+
+        // Buscar el mayor `codtab` en la tabla `menu_sinselect`
+        $sql_codigo = "SELECT MAX(CAST(SUBSTRING(codtab, 4) AS UNSIGNED)) AS max_cod FROM `menu_sinselect` WHERE codtab LIKE '$prefijo%'";
+        $result_codigo = $conn->query($sql_codigo);
+        $max_cod = 0;
+        if ($result_codigo && $row = $result_codigo->fetch_assoc()) {
+            $max_cod = (int) $row["max_cod"];
+        }
+
+        // Generar nuevo `codtab` incrementado
+        $nuevo_codigo = $max_cod + 1;
+        $codtab = $prefijo . str_pad($nuevo_codigo, 3, "0", STR_PAD_LEFT); // Formato: sin001
+    }
+
+    // Verificar si el registro ya existe en `menu_sinselect`
+    $sql_check = "SELECT cod FROM menu_sinselect WHERE cod = ?";
+    $stmt_check = $conn->prepare($sql_check);
+    $registro_existe = false;
+
+    if ($stmt_check) {
+        $stmt_check->bind_param("s", $cod);
+        $stmt_check->execute();
+        $stmt_check->store_result();
+        $registro_existe = $stmt_check->num_rows > 0;
+        $stmt_check->close();
+    }
+
+    if ($registro_existe) {
+        // Actualizar el registro existente
+        $sql_update = "UPDATE menu_sinselect SET nombre = ?, link = ?, modulo = ?, estilos = ?, codtab = ? WHERE cod = ?";
+        $stmt_update = $conn->prepare($sql_update);
+        if ($stmt_update) {
+            $stmt_update->bind_param("ssssss", $nombre, $link, $modulo, $estilos, $codtab, $cod);
+            if ($stmt_update->execute()) {
+                echo "✅ Registro actualizado correctamente en 'menu_sinselect'.";
+            } else {
+                echo "❌ Error al actualizar el registro: " . $stmt_update->error;
+            }
+            $stmt_update->close();
+        }
+    } else {
+        // Insertar un nuevo registro en `menu_sinselect`
+        $sql_insert = "INSERT INTO menu_sinselect (cod, codtab, nombre, link, modulo, Num_nivel, estilos) 
+                       VALUES (?, ?, ?, ?, ?, '1', ?)";
+        $stmt_insert = $conn->prepare($sql_insert);
+        if ($stmt_insert) {
+            $stmt_insert->bind_param("ssssss", $cod, $codtab, $nombre, $link, $modulo, $estilos);
+            if ($stmt_insert->execute()) {
+                echo "✅ Nuevo registro guardado correctamente en 'menu_sinselect'.";
+            } else {
+                echo "❌ Error al guardar el registro: " . $stmt_insert->error;
+            }
+            $stmt_insert->close();
+        }
+    }
     }
 
     // 🔍 **Buscar todas las tablas que comienzan con 'menu_'**
@@ -328,6 +385,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($nombre)) {
         die("Error: Nombre inválido.");
     }
+    $estructsecc = $_POST['estructsecc'] ?? null;
+    $orden = $_POST['orden'] ?? null;
+
+if (!empty($estructsecc)) {
+    // Buscar el cod insertado previamente según datos relacionados
+    $cod_encontrado = null;
+
+    foreach ($publicar as $tabla) {
+        $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla);
+
+        $sql_buscar_cod = "SELECT cod FROM `$tabla` WHERE nombre = ? AND link = ? AND modulo = ? LIMIT 1";
+        $stmt_buscar_cod = $conn->prepare($sql_buscar_cod);
+
+        if ($stmt_buscar_cod) {
+            $stmt_buscar_cod->bind_param("sss", $nombre, $link, $modulo);
+            $stmt_buscar_cod->execute();
+            $stmt_buscar_cod->bind_result($cod_resultado);
+            if ($stmt_buscar_cod->fetch()) {
+                $cod_encontrado = $cod_resultado;
+            }
+            $stmt_buscar_cod->close();
+        }
+
+        if ($cod_encontrado) break;
+    }
+
+    if (!$cod_encontrado) {
+        echo "❌ No se pudo encontrar el código insertado anteriormente.";
+        exit();
+    }
+
+    // Verificar si ya existe ese estructsecc
+    $sql_check = "SELECT cod FROM detalles WHERE cod = ?";
+    $stmt_check = $conn->prepare($sql_check);
+    $stmt_check->bind_param("s", $estructsecc);
+    $stmt_check->execute();
+    $result = $stmt_check->get_result();
+    $exists = $result->num_rows > 0;
+    $stmt_check->close();
+
+
+    if ($exists) {
+        echo "✅ El registro ya existe en la base de datos.";
+    } else {
+        // Insertar el cod encontrado junto con estructsecc
+        $sql_insert = "INSERT INTO detalles (cod, nombre, estructsecc, orden) VALUES (?, ?, ?, ?)";
+        $stmt_insert = $conn->prepare($sql_insert);
+        $stmt_insert->bind_param("sssi", $cod_encontrado, $nombre, $estructsecc, $orden);
+
+        if ($stmt_insert->execute()) {
+            echo "✅ Nuevo registro guardado correctamente. Código usado: $cod_encontrado";
+        } else {
+            echo "❌ Error al guardar en detalles: " . $stmt_insert->error;
+        }
+        $stmt_insert->close();
+    }
+} else {
+    echo "❌ Error: El campo 'estructsecc' está vacío.";
+}
 
     // Sanitizar el nombre del archivo y la carpeta (permitir solo letras, números, guiones y guiones bajos)
 $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
@@ -344,13 +460,21 @@ if (!is_dir($directorio)) {
 
 $contenido = <<<PHP
 <?php
-include('estilos/header.php');
-include __DIR__ . '/estilos/generar_design.php';
-include ('contador_visitas.php');
-// Obtener el nombre del archivo actual
+// Detecta la profundidad de la ruta
+\$uri = \$_SERVER['REQUEST_URI'];
+\$secciones = trim(\$uri, '/'); // Elimina "/" inicial y final
+\$niveles = substr_count(\$secciones, '/');
+
+// Construye el prefijo para subir directorios
+\$dirPrefix = str_repeat('../', \$niveles -1);
+
+// Incluye archivos con rutas relativas dinámicas
+include(\$dirPrefix . 'estilos/header.php');
+include(\$dirPrefix . 'estilos/generar_design.php');
+include(\$dirPrefix . 'contador_visitas.php');
+
 \$nombreArchivo = basename(__FILE__, '.php');
 \$contador = manejar_contador_por_pagina(\$nombreArchivo);
-
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -358,7 +482,7 @@ include ('contador_visitas.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diseño Dinámico - <?php echo \$nombreArchivo; ?></title>
-    <link rel="stylesheet" href="estilos/css/styles.css">
+    <link rel="stylesheet" href="<?php echo \$dirPrefix; ?>estilos/css/styles.css">
 </head>
 <body>
     <div class="layout">
@@ -366,9 +490,7 @@ include ('contador_visitas.php');
     </div>
 </body>
 </html>
-<?php
-include('estilos/footer.php'); // Footer
-?>
+<?php include(\$dirPrefix . 'estilos/footer.php'); ?>
 PHP;
 
 // Crear el archivo al mismo nivel que la carpeta
@@ -533,121 +655,116 @@ elseif ($tipoFormulario == "Subseccion") {
     $nameold = trim($_POST["nameold"]);
     $sef_seccion = true;
 
-
     if (empty($publicar)) {
         die("❌ Error: No se ha seleccionado ninguna tabla.");
     }
 
 
-    // Calcular Num_nivel
-    $num_nivel = 0;
-    if (!empty($secciones)) {
-        $limpio = trim($secciones, "/");
-        $palabras = explode("/", $limpio);
-        $num_nivel = count($palabras) + 1;
-    }
+    // 🔄 Calcular número de nivel según `secciones`
+$num_nivel = 1;
+if (!empty($secciones)) {
+    $limpio = trim($secciones, "/");
+    $partes = explode("/", $limpio);
+    $num_nivel = count($partes) + 1;
+}
 
-    // Buscar tablas existentes
-    $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
-    $result_tablas = $conn->query($sql_buscar_tablas);
-    $tablas_existentes = [];
-    $mantener_cod = [];
+// 🆕 Generar codtab si hay múltiples tablas seleccionadas
+if (!$codtab && count($publicar) > 1) {
+    $tabla_base = reset($publicar);
+    $prefijo = strtolower(substr($tabla_base, 5, 3)); // extrae después de "menu_"
 
-    if ($result_tablas) {
-        while ($fila = $result_tablas->fetch_array()) {
-            $tabla = $fila[0];
-            $sql_check = "SELECT codtab FROM $tabla WHERE cod = ?";
-            $stmt_check = $conn->prepare($sql_check);
-            if ($stmt_check) {
-                $stmt_check->bind_param("s", $cod);
-                $stmt_check->execute();
-                $stmt_check->bind_result($codtab_existente);
-                $stmt_check->fetch();
-                $stmt_check->close();
-
-                if ($codtab_existente) {
-                    $tablas_existentes[] = $tabla;
-                    $mantener_cod[] = $tabla;
-                    $codtab = $codtab_existente;
-                }
-            }
+    $max_cod = 0;
+    foreach ($publicar as $tabla) {
+        $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla); // seguridad
+        $sql_codigo = "SELECT MAX(CAST(SUBSTRING(codtab, 4) AS UNSIGNED)) AS max_cod FROM `$tabla` WHERE codtab LIKE '$prefijo%'";
+        $result_codigo = $conn->query($sql_codigo);
+        if ($result_codigo && $row = $result_codigo->fetch_assoc()) {
+            $max_cod = max($max_cod, (int)$row["max_cod"]);
         }
     }
 
-    // Generar codtab si aplica
-    if (!$codtab && count($publicar) > 1) {
-        $tabla_base = reset($publicar);
-        $prefijo = strtolower(substr($tabla_base, 5, 3));
-        $max_cod = 0;
-        foreach ($publicar as $tabla) {
-            $sql_codigo = "SELECT MAX(CAST(SUBSTRING(codtab, 4) AS UNSIGNED)) AS max_cod FROM `$tabla` WHERE codtab LIKE '$prefijo%'";
-            $result_codigo = $conn->query($sql_codigo);
-            if ($result_codigo && $row = $result_codigo->fetch_assoc()) {
-                $max_cod = max($max_cod, (int) $row["max_cod"]);
-            }
-        }
-        $nuevo_codigo = $max_cod + 1;
-        $codtab = $prefijo . str_pad($nuevo_codigo, 2, "0", STR_PAD_LEFT);
-    }
+    $nuevo_codigo = $max_cod + 1;
+    $codtab = $prefijo . str_pad($nuevo_codigo, 2, "0", STR_PAD_LEFT); // Ej: xyz01
+}
 
-    // Actualizar secciones en tablas que ya contienen el cod, evitando actualizar el mismo registro
-    foreach ($mantener_cod as $tabla) {
-        $sql_update_secciones = "UPDATE $tabla SET secciones = REPLACE(secciones, ?, ?) 
-            WHERE secciones LIKE ? AND cod != ?";
-        $stmt_secciones = $conn->prepare($sql_update_secciones);
-        if ($stmt_secciones) {
-            $like_antiguo = '%' . $nameold . '%';
-            $stmt_secciones->bind_param("ssss", $nameold, $nombre, $like_antiguo, $cod);
-            $stmt_secciones->execute();
-            $stmt_secciones->close();
-        }
-    }
+// ✅ Insertar en `subnivel`
+$sql_insert = "INSERT INTO subnivel (cod, codtab, nombre, link, modulo, Num_nivel, estilos, secciones)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+$stmt_insert = $conn->prepare($sql_insert);
 
-    // Insertar o actualizar en tablas seleccionadas
+if ($stmt_insert) {
+    $stmt_insert->bind_param("ssssssss", $cod, $codtab, $nombre, $link, $modulo, $num_nivel, $estilos, $secciones);
+    if ($stmt_insert->execute()) {
+        echo "✅ Nuevo registro guardado correctamente. Código usado: $cod<br>";
+        echo "✅ Página creada: $link";
+    } else {
+        echo "❌ Error al guardar en subnivel: " . $stmt_insert->error;
+    }
+    $stmt_insert->close();
+} else {
+    echo "❌ Error al preparar inserción en subnivel.";
+}
+
+
+    $estructsecc = $_POST['estructsecc'] ?? null;
+    $orden = $_POST['orden'] ?? null;
+
+if (!empty($estructsecc)) {
+    // Buscar el cod insertado previamente según datos relacionados
+    $cod_encontrado = null;
+
     foreach ($publicar as $tabla) {
         $tabla = preg_replace('/[^a-zA-Z0-9_]/', '', $tabla);
 
-        $existe = false;
-        $sql_existe = "SELECT 1 FROM `$tabla` WHERE cod = ? LIMIT 1";
-        $stmt_existe = $conn->prepare($sql_existe);
-        if ($stmt_existe) {
-            $stmt_existe->bind_param("s", $cod);
-            $stmt_existe->execute();
-            $stmt_existe->store_result();
-            $existe = $stmt_existe->num_rows > 0;
-            $stmt_existe->close();
+        $sql_buscar_cod = "SELECT cod FROM subnivel WHERE nombre = ? AND link = ? AND modulo = ? LIMIT 1";
+        $stmt_buscar_cod = $conn->prepare($sql_buscar_cod);
+
+        if ($stmt_buscar_cod) {
+            $stmt_buscar_cod->bind_param("sss", $nombre, $link, $modulo);
+            $stmt_buscar_cod->execute();
+            $stmt_buscar_cod->bind_result($cod_resultado);
+            if ($stmt_buscar_cod->fetch()) {
+                $cod_encontrado = $cod_resultado;
+            }
+            $stmt_buscar_cod->close();
         }
 
-        if ($existe) {
-            $sql_update_existente = "UPDATE `$tabla` SET nombre = ?, link = ?, modulo = ?, Num_nivel = ?, estilos = ?, secciones = ? WHERE cod = ?";
-            $stmt_update = $conn->prepare($sql_update_existente);
-            if ($stmt_update) {
-                $stmt_update->bind_param("sssssss", $nombre, $link, $modulo, $num_nivel, $estilos, $secciones, $cod);
-                $stmt_update->execute();
-                $stmt_update->close();
-            }
-        } else {
-            if ($codtab) {
-                $sql_insert = "INSERT INTO `$tabla` (cod, codtab, nombre, link, modulo, Num_nivel, estilos, secciones) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                $stmt_insert = $conn->prepare($sql_insert);
-                if ($stmt_insert) {
-                    $stmt_insert->bind_param("ssssssss", $cod, $codtab, $nombre, $link, $modulo, $num_nivel, $estilos, $secciones);
-                    $stmt_insert->execute();
-                    $stmt_insert->close();
-                }
-            } else {
-                $sql_insert = "INSERT INTO `$tabla` (cod, nombre, link, modulo, Num_nivel, estilos, secciones) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
-                $stmt_insert = $conn->prepare($sql_insert);
-                if ($stmt_insert) {
-                    $stmt_insert->bind_param("sssssss", $cod, $nombre, $link, $modulo, $num_nivel, $estilos, $secciones);
-                    $stmt_insert->execute();
-                    $stmt_insert->close();
-                }
-            }
-        }
+        if ($cod_encontrado) break;
     }
+
+    if (!$cod_encontrado) {
+        echo "❌ No se pudo encontrar el código insertado anteriormente.";
+        exit();
+    }
+
+    // Verificar si ya existe ese estructsecc
+    $sql_check = "SELECT cod FROM detalles WHERE cod = ?";
+    $stmt_check = $conn->prepare($sql_check);
+    $stmt_check->bind_param("s", $estructsecc);
+    $stmt_check->execute();
+    $result = $stmt_check->get_result();
+    $exists = $result->num_rows > 0;
+    $stmt_check->close();
+
+
+    if ($exists) {
+        echo "✅ El registro ya existe en la base de datos.";
+    } else {
+        // Insertar el cod encontrado junto con estructsecc
+        $sql_insert = "INSERT INTO detalles (cod, nombre, estructsecc, orden) VALUES (?, ?, ?, ?)";
+        $stmt_insert = $conn->prepare($sql_insert);
+        $stmt_insert->bind_param("sssi", $cod_encontrado, $nombre, $estructsecc, $orden);
+
+        if ($stmt_insert->execute()) {
+            echo "✅ Nuevo registro guardado correctamente. Código usado: $cod_encontrado";
+        } else {
+            echo "❌ Error al guardar en detalles: " . $stmt_insert->error;
+        }
+        $stmt_insert->close();
+    }
+} else {
+    echo "❌ Error: El campo 'estructsecc' está vacío.";
+}
 
     // ---------------------- MANEJO DE ARCHIVOS Y RUTAS -----------------------
     if (empty($nombre)) {
@@ -691,9 +808,19 @@ elseif ($tipoFormulario == "Subseccion") {
     // Contenido del archivo PHP
     $contenido = <<<PHP
 <?php
-include('estilos/header.php');
-include __DIR__ . '/estilos/generar_design.php';
-include ('contador_visitas.php');
+// Detecta la profundidad de la ruta
+\$uri = \$_SERVER['REQUEST_URI'];
+\$secciones = trim(\$uri, '/'); // Elimina "/" inicial y final
+\$niveles = substr_count(\$secciones, '/');
+
+// Construye el prefijo para subir directorios
+\$dirPrefix = str_repeat('../', \$niveles -1);
+
+// Incluye archivos con rutas relativas dinámicas
+include(\$dirPrefix . 'estilos/header.php');
+include(\$dirPrefix . 'estilos/generar_design.php');
+include(\$dirPrefix . 'contador_visitas.php');
+
 \$nombreArchivo = basename(__FILE__, '.php');
 \$contador = manejar_contador_por_pagina(\$nombreArchivo);
 ?>
@@ -703,7 +830,7 @@ include ('contador_visitas.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diseño Dinámico - <?php echo \$nombreArchivo; ?></title>
-    <link rel="stylesheet" href="estilos/css/styles.css">
+    <link rel="stylesheet" href="<?php echo \$dirPrefix; ?>estilos/css/styles.css">
 </head>
 <body>
     <div class="layout">
@@ -711,7 +838,7 @@ include ('contador_visitas.php');
     </div>
 </body>
 </html>
-<?php include('estilos/footer.php'); ?>
+<?php include(\$dirPrefix . 'estilos/footer.php'); ?>
 PHP;
 
     // Guardar archivo si no existe (evita reescribir si ya lo movimos)

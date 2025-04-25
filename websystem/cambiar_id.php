@@ -6,9 +6,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id = intval($_POST['id']);
     $cambio = intval($_POST['cambio']);
 
-    // Obtener el número total de registros en la tabla
-    $total_registros = $conn->query("SELECT COUNT(*) as total FROM `$menu`")->fetch_assoc()['total'];
-
+    // Calcular el nuevo ID
     $nuevo_id = $id + $cambio;
 
     // Verificar si el nuevo ID ya existe
@@ -25,31 +23,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $conn->query("UPDATE `$menu` SET id = $nuevo_id WHERE id = $id");
     }
 
+    // Reordenar los IDs para que sean secuenciales
+    $conn->query("SET @rownum := 0");
+    $conn->query("UPDATE `$menu` SET id = (@rownum := @rownum + 1) ORDER BY id ASC");
+
     // Obtener la tabla actualizada después del cambio
     $sql_items = "SELECT id, nombre FROM `$menu` ORDER BY id ASC"; 
     $result_items = $conn->query($sql_items);
     
     ob_start();
-    $primero = true;
-    $contador = 0;
+    $contador = 1; // ID visual siempre comienza en 1
 
     if ($result_items->num_rows > 0):
         while ($item = $result_items->fetch_assoc()):
-            $contador++;
 ?>
             <tr class="fila" id="fila-<?php echo $menu . '-' . $item['id']; ?>">
                 <td class="nombre">
-                    <?php echo $item['id'] . " - " . htmlspecialchars($item['nombre']); ?>
+                    <?php echo $contador . " - " . htmlspecialchars($item['nombre']); ?>
                 </td>
                 <td class="acciones">
-                    <?php if ($total_registros == 1): ?>
-                        <!-- Si solo hay un registro, no mostrar botones -->
-                    
-                    <?php elseif ($primero): ?> 
+                    <?php if ($contador == 1): ?>
                         <!-- Si es el primer registro, solo mostrar flecha abajo -->
                         <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, 1)">↓</button>
                     
-                    <?php elseif ($contador == $total_registros): ?>
+                    <?php elseif ($contador == $result_items->num_rows): ?>
                         <!-- Si es el último registro, solo mostrar flecha arriba -->
                         <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>',<?php echo $item['id']; ?>, -1)">↑</button>
                     
@@ -61,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </td>
             </tr>
 <?php
-        $primero = false;
+        $contador++; // Incrementar el ID visual
         endwhile;
     endif;
     $tabla_actualizada = ob_get_clean();

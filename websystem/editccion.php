@@ -30,7 +30,7 @@ while ($fila = $result_tablas->fetch_array()) {
 // ✅ Unir correctamente los datos de cada tabla para buscar coincidencias en `cod` o `codtab`
 $queries = [];
 foreach ($menu_tables as $tabla) {
-    $queries[] = "SELECT '$tabla' AS tabla, nombre, modulo, orden, nro_item, visitas, link, Num_nivel, cod, codtab, estilos FROM `$tabla` 
+    $queries[] = "SELECT '$tabla' AS tabla, nombre, modulo, link, Num_nivel, cod, codtab, estilos FROM `$tabla` 
                   WHERE cod = '$cod_parametro' OR codtab = '$codtab_parametro'";
 }
 
@@ -108,6 +108,10 @@ foreach ($menu_tables as $menu) {
                             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                                 <?php foreach ($menu_tables as $index => $menu): ?>
                                     <?php
+                                    // Omitir el menú 'menu_sinselect'
+                                    if ($menu === 'menu_sinselect') {
+                                        continue;
+                                    }
                                     // Quitar "menu_" del inicio
                                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
 

@@ -1,18 +1,9 @@
 <?php
 include 'conect/conexion.php';
-
-//inclusion de informacion
 include('estilo/data.php');
-
-// Incluir el header.php
 include('estilo/header.php');
-
-// Incluir el menu.php
-
 include('estilo/menu.php');
-// Consultar las tablas que comienzan con 'menu_'
 include('estilo/tabla_menu.php');
-
 
 // Obtener todas las tablas que empiezan con "menu_"
 $menus = [];
@@ -20,8 +11,6 @@ $result_tables = $conn->query("SHOW TABLES LIKE 'menu_%'");
 while ($row = $result_tables->fetch_array()) {
     $menus[] = $row[0];
 }
-
-
 ?>
 
 <div class="contenido-derecha">
@@ -46,7 +35,7 @@ while ($row = $result_tables->fetch_array()) {
             </tr>
         </table>
         <div class="boton-container">
-        <button type="submit" class="botonesAyC" onclick="window.location = 'menus.php'" style="width: 30%; margin-bottom: 10px;">Crear Menu</button>
+            <button type="submit" class="botonesAyC" onclick="window.location = 'menus.php'" style="width: 30%; margin-bottom: 10px;">Crear Menu</button>
         </div>
     </form>
 
@@ -55,12 +44,15 @@ while ($row = $result_tables->fetch_array()) {
         <?php if (!empty($menus)): ?>
             <?php foreach ($menus as $menu): ?>
                 <?php
+                    // Omitir el menú 'menu_sinselect'
+                    if ($menu === 'menu_sinselect') {
+                        continue;
+                    }
                     // Quitar "menu_" del inicio
                     $menu_limpio = preg_replace('/^menu_/', '', $menu);
                     
-                    // Ubicaciones a eliminar del nombre
-                    $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad'];
-
+                    // Limpiar sufijos de ubicación
+                    $ubicaciones = ['cabecerat', 'pie','cabeceral', 'cabeceram', 'columnai', 'columnad', 'sinselect'];
                     foreach ($ubicaciones as $ubicacion) {
                         $menu_limpio = preg_replace('/_' . preg_quote($ubicacion, '/') . '$/', '', $menu_limpio);
                     }
@@ -75,39 +67,40 @@ while ($row = $result_tables->fetch_array()) {
                     </form>
                 </div>
 
-                <!-- Tabla de elementos SIN encabezado -->
+                <!-- Tabla de elementos -->
                 <table class="tabla">
                     <tbody id="tabla-<?php echo $menu; ?>">
                         <?php
-                        $sql_items = "SELECT id, nombre FROM `$menu` ORDER BY id ASC"; 
+                        // Solo mostrar donde Num_nivel = 1
+                        $sql_items = "SELECT nombre FROM `$menu` WHERE Num_nivel = '1' ORDER BY id ASC"; 
                         $result_items = $conn->query($sql_items);
                         $total_registros = $result_items->num_rows;
                         $contador = 0;
 
                         if ($total_registros > 0):
                             while ($item = $result_items->fetch_assoc()):
-                                $contador++;
+                                $contador++; // ID visual
                         ?>
-                            <tr class="fila" id="fila-<?php echo $menu . '-' . $item['id']; ?>">
+                            <tr class="fila" id="fila-<?php echo $menu . '-' . $contador; ?>">
                                 <td class="nombre">
-                                    <?php echo $item['id'] . " - " . htmlspecialchars($item['nombre']); ?>
+                                    <?php echo $contador . " - " . htmlspecialchars($item['nombre']); ?>
                                 </td>
                                 <td class="acciones">
                                     <?php if ($total_registros == 1): ?>
-                                        <!-- Si solo hay un registro, no mostrar botones -->
+                                        <!-- Solo un registro, sin botones -->
 
-                                    <?php elseif ($contador == 1): ?> 
-                                        <!-- Si es el primer registro, solo mostrar flecha abajo -->
-                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, 1)">↓</button>
+                                    <?php elseif ($contador == 1): ?>
+                                        <!-- Primero -->
+                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $contador; ?>, 1)">↓</button>
 
                                     <?php elseif ($contador == $total_registros): ?>
-                                        <!-- Si es el último registro, solo mostrar flecha arriba -->
-                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>',<?php echo $item['id']; ?>, -1)">↑</button>
+                                        <!-- Último -->
+                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $contador; ?>, -1)">↑</button>
 
                                     <?php else: ?>
-                                        <!-- Si es cualquier otro, mostrar ambos botones -->
-                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, -1)">↑</button>
-                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $item['id']; ?>, 1)">↓</button>
+                                        <!-- Intermedios -->
+                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $contador; ?>, -1)">↑</button>
+                                        <button class="botonM" onclick="cambiarID('<?php echo $menu; ?>', <?php echo $contador; ?>, 1)">↓</button>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -118,7 +111,5 @@ while ($row = $result_tables->fetch_array()) {
         <?php endif; ?>
     </div>
 </div>
-<?php
-// Incluir el footer.php
-include('estilo/footer.php');
-?>
+
+<?php include('estilo/footer.php'); ?>
