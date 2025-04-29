@@ -105,26 +105,71 @@ function eliminarCarpetaRecursiva($carpeta) {
     }
 }
 // ✅ 🔥 Continúa con la eliminación en la base de datos si hay `cod` o `codtab`
-$se_borro_cod_o_codtab = false;
 
 // Contar cuántas secciones hay
 $partes = array_filter(explode('/', $seccion));
 $num_niveles = count($partes);
+// 3️⃣ NUEVO ➕: Eliminar por cod o codtab en menu_% y subnivel
+if (!empty($cod_parametro) || !empty($codtab_parametro)) {
+    $sql_tablas = "SHOW TABLES LIKE 'menu_%'";
+    $tablas = $conn->query($sql_tablas);
+    if ($tablas && $tablas->num_rows > 0) {
+        while ($fila = $tablas->fetch_array()) {
+            $tabla = $fila[0];
+
+            if (!empty($codtab_parametro)) {
+                $sql_delete_tab = "DELETE FROM `$tabla` WHERE codtab = ?";
+                $stmt = $conn->prepare($sql_delete_tab);
+                if ($stmt) {
+                    $stmt->bind_param("s", $codtab_parametro);
+                    $stmt->execute();
+                    echo "🗑️ Eliminado codtab '$codtab_parametro' en $tabla<br>";
+                    $stmt->close();
+                }
+            }
+
+            if (!empty($cod_parametro)) {
+                $sql_delete_cod = "DELETE FROM `$tabla` WHERE cod = ?";
+                $stmt = $conn->prepare($sql_delete_cod);
+                if ($stmt) {
+                    $stmt->bind_param("s", $cod_parametro);
+                    $stmt->execute();
+                    echo "🗑️ Eliminado cod '$cod_parametro' en $tabla<br>";
+                    $stmt->close();
+                }
+            }
+        }
+    }
+
+    // 🔁 Eliminar también en subnivel por cod
+    if (!empty($cod_parametro)) {
+        $sql_delete_subnivel_cod = "DELETE FROM subnivel WHERE cod = ?";
+        $stmt = $conn->prepare($sql_delete_subnivel_cod);
+        if ($stmt) {
+            $stmt->bind_param("s", $cod_parametro);
+            $stmt->execute();
+            $filas = $stmt->affected_rows;
+            echo "🧹 Eliminados $filas subniveles con cod = '$cod_parametro'<br>";
+            $stmt->close();
+        }
+    }
+}
 
 if ($num_niveles >= 2) {
-    // ✅ Caso 1: Hay 2 niveles o más (ej: /pie/prueba) → solo se borra el actual
+    // ✅ CASO: nivel 2 o más → solo borrar el nodo actual
     $sql_delete = "DELETE FROM subnivel WHERE id = ?";
     $stmt = $conn->prepare($sql_delete);
     $stmt->bind_param("i", $id_sub);
     if ($stmt->execute()) {
-        echo "✅ Registro (nivel final) eliminado (ID: $id_sub)";
+        echo "✅ Registro (nivel final) eliminado (ID: $id_sub)<br>";
+        $se_borro_cod_o_codtab = true;
     } else {
         echo "❌ Error al eliminar: " . $stmt->error;
     }
     $stmt->close();
 
 } elseif ($num_niveles === 1) {
-    // ✅ Caso 2: solo un nivel → borrar este ID y todos los que tengan su nombre como parte de 'secciones'
+    // ✅ CASO: nivel raíz → borrar nodo y todos sus hijos
 
     // Obtener el nombre del registro principal
     $nombre = null;
@@ -139,7 +184,7 @@ if ($num_niveles >= 2) {
     }
 
     if ($nombre) {
-        // Eliminar hijos: secciones que contienen /$nombre
+        // 1️⃣ Eliminar hijos: secciones que contienen /$nombre
         $like_secciones = "%/$nombre%";
         $sql_delete_hijos = "DELETE FROM subnivel WHERE secciones LIKE ?";
         $stmt_hijos = $conn->prepare($sql_delete_hijos);
@@ -150,15 +195,17 @@ if ($num_niveles >= 2) {
             $stmt_hijos->close();
         }
 
-        // Eliminar el registro original
+        // 2️⃣ Eliminar el nodo raíz
         $sql_delete_self = "DELETE FROM subnivel WHERE id = ?";
         $stmt_self = $conn->prepare($sql_delete_self);
         if ($stmt_self) {
             $stmt_self->bind_param("i", $id_sub);
             $stmt_self->execute();
-            echo "✅ Registro principal eliminado (ID: $id_sub)";
+            echo "✅ Registro principal eliminado (ID: $id_sub)<br>";
+            $se_borro_cod_o_codtab = true;
             $stmt_self->close();
         }
+        
 
     } else {
         echo "❌ No se encontró el nombre del ID: $id_sub.";
@@ -167,69 +214,7 @@ if ($num_niveles >= 2) {
 } else {
     echo "❌ La ruta de secciones es inválida.";
 }
-if (!empty($nombre)) {
-    $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
-    $result_tablas = $conn->query($sql_buscar_tablas);
 
-    if ($result_tablas->num_rows > 0) {
-        while ($fila = $result_tablas->fetch_array()) {
-            $tabla = $fila[0];
-
-            // Buscar registros donde 'secciones' comience con "/$nombre"
-            $sql_buscar = "SELECT id FROM `$tabla` WHERE secciones LIKE ?";
-            $stmt_buscar = $conn->prepare($sql_buscar);
-            $param_busqueda = "/$nombre%";
-            $stmt_buscar->bind_param("s", $param_busqueda);
-            $stmt_buscar->execute();
-            $result_buscar = $stmt_buscar->get_result();
-
-            if ($result_buscar->num_rows > 0) {
-                // Eliminar registros encontrados
-                $sql_delete = "DELETE FROM `$tabla` WHERE secciones LIKE ?";
-                $stmt_delete = $conn->prepare($sql_delete);
-                $stmt_delete->bind_param("s", $param_busqueda);
-                $stmt_delete->execute();
-                $stmt_delete->close();
-            }
-            $stmt_buscar->close();
-        }
-    }
-}
-
-
-
-if (!empty($cod_parametro) || !empty($codtab_parametro)) {
-    $sql_buscar_tablas = "SHOW TABLES LIKE 'menu_%'";
-    $result_tablas = $conn->query($sql_buscar_tablas);
-
-    if ($result_tablas->num_rows > 0) {
-        while ($fila = $result_tablas->fetch_array()) {
-            $tabla = $fila[0];
-
-            // ✅ Eliminar por `codtab`
-            if (!empty($codtab_parametro)) {
-                $sql_delete = "DELETE FROM `$tabla` WHERE codtab = ?";
-                $stmt_delete = $conn->prepare($sql_delete);
-                $stmt_delete->bind_param("s", $codtab_parametro);
-                if ($stmt_delete->execute()) {
-                    $se_borro_cod_o_codtab = true;
-                }
-                $stmt_delete->close();
-            }
-
-            // ✅ Eliminar por `cod`
-            if (!empty($cod_parametro)) {
-                $sql_delete = "DELETE FROM `$tabla` WHERE cod = ?";
-                $stmt_delete = $conn->prepare($sql_delete);
-                $stmt_delete->bind_param("s", $cod_parametro);
-                if ($stmt_delete->execute()) {
-                    $se_borro_cod_o_codtab = true;
-                }
-                $stmt_delete->close();
-            }
-        }
-    }
-}
 
 if (!empty($cod_parametro)){
     $sql_delete = "DELETE FROM detalles WHERE cod = ?";
