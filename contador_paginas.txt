@@ -1,6 +1,5 @@
 {
     "PruebaNV2": 2,
     "asd": 2,
-    "prueba322": 1,
-    "prub": 2
+    "prueba322": 1
 }

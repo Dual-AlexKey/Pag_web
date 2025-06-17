@@ -25,17 +25,18 @@ while ($fila = mysqli_fetch_row($resultado_tablas)) {
 // Recoger valores de la URL
 $nombre = isset($_GET['nombre']) ? htmlspecialchars(trim($_GET['nombre'])) : '';
 $accion = isset($_GET['accion']) ? htmlspecialchars(trim($_GET['accion'])) : '';
-$cod = isset($_GET['cod']) ? htmlspecialchars(trim($_GET['cod'])) : '';
+$codp = isset($_GET['codpS']) ? htmlspecialchars(trim($_GET['codpS'])) : '';
+$id = isset($_GET['idSub']) ? htmlspecialchars(trim($_GET['idSub'])) : '';
 
 $seccion_principal = '';
 $datos_subnivel = [];
 
 // ✅ 1. Buscar en subnivel si accion=subseccion y cod existe
-if ($accion === 'subseccion' && !empty($cod)) {
-    $sql_subnivel = "SELECT * FROM subnivel WHERE cod = ?";
+if ($accion === 'subseccion' && !empty($codp)) {
+    $sql_subnivel = "SELECT * FROM subnivel WHERE codp = ?";
     $stmt_subnivel = $conexion->prepare($sql_subnivel);
     if ($stmt_subnivel) {
-        $stmt_subnivel->bind_param("s", $cod);
+        $stmt_subnivel->bind_param("s", $codp);
         $stmt_subnivel->execute();
         $resultado_subnivel = $stmt_subnivel->get_result();
         if ($resultado_subnivel->num_rows > 0) {

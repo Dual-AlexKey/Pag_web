@@ -37,8 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             FOR EACH ROW 
             BEGIN
                 DECLARE max_cod INT;
-                SELECT IFNULL(MAX(SUBSTRING(cod, 4)), 0) + 1 INTO max_cod FROM `$nombre_tabla`;
-
+                SELECT IFNULL(MAX(CAST(SUBSTRING(cod, 4) AS UNSIGNED)), 0) + 1 INTO max_cod FROM `$nombre_tabla`;
                 -- Solo generar un nuevo cod si está vacío o NULL
                 IF NEW.cod = '' OR NEW.cod IS NULL THEN
                     SET NEW.cod = CONCAT('$inicial', max_cod);

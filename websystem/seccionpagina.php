@@ -9,25 +9,27 @@ include('estilo/menu.php');
 
 // 🔹 Obtener "cod" desde la URL
 $cod = $_GET['cod'] ?? '';
+$codp = $_GET['codpD'] ?? '';
 
 $datos = [
-    'cod' => $cod,
     'titulo' => '',
     'contenido' => '',
     'tituloS' => '',
     'descripcion' => '',
     'metatags' => '',
     'imagen_referencia' => '',
-    'imagen_social' => ''
+    'imagen_social' => '',
+    'cod' => $cod, 
+    'codp' => $codp, 
 ];
 
 // 🔹 Si hay un "cod", buscar los datos en la base de datos
-if (!empty($cod)) {
-    $sql = "SELECT cod, titulo, contenido, tituloS, descripcion, metatags, imagen_referencia, imagen_social 
-            FROM paginas WHERE cod = ?";
+if (!empty($codp)) {
+    $sql = "SELECT codp,cod, titulo, contenido, tituloS, descripcion, metatags, imagen_referencia, imagen_social 
+            FROM paginas WHERE codp = ?";
     
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("s", $cod); // "s" porque cod es texto
+        $stmt->bind_param("s", $codp); // "s" porque cod es texto
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -38,7 +40,7 @@ if (!empty($cod)) {
         $stmt->close();
     }
 }
-?>
+?> 
 
 <div class="contenido-derecha">
     <a href="secciones.php"><button class="boton-cerrar">X</button></a>
@@ -47,7 +49,8 @@ if (!empty($cod)) {
     <div id="capaformulario">
     <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
         <input type="hidden" name="formulario_tipo" value="SeccionPag"> 
-        <input type="hidden" name="cod" value="<?= htmlspecialchars($datos['cod']) ?>">
+        <input type="hidden" name="cod" value="<?= htmlspecialchars($cod) ?>">
+        <input type="hidden" name="codp" value="<?= htmlspecialchars($codp) ?>">
 
         <div class="columna-formulario">
             <table class="tableborderfull">

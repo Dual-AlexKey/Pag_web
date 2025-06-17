@@ -7,9 +7,11 @@ include('estilo/header.php');
 // Incluir el menu.php
 include('estilo/menu.php');
 
-// 🔹 Obtener "cod" desde la URL
-$cod = $_GET['cod'] ?? '';
+// 🔹 Obtener "id" desde la URL (en lugar de "cod")
+$id = $_GET['idSub'] ?? ''; //hacer que recocoga usar nuevo codp
 $nombre = $_GET['nombre'] ?? '';
+$cod = $_GET['cod'] ?? '';
+$codp = $_GET['codpD'] ?? '';
 
 $datos = [
     'cod' => $cod,
@@ -22,16 +24,17 @@ $datos = [
     'barrasubmenu' => '',
     'ordensecc' => '',
     'orden' => '',
-    'ordencont' => ''
+    'ordencont' => '',
+    'codp' => $codp // Asegurarse de que 'cod' esté presente
 ];
 
-// 🔹 Si hay un "cod", buscar los datos en la base de datos
-if (!empty($cod)) {
-    $sql = "SELECT cod, nombre, estructsecc, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, ordensecc, orden, ordencont 
-            FROM detalles WHERE cod = ?";
+// 🔹 Si hay un "id", buscar los datos en la base de datos
+if (!empty($codp)) {
+    $sql = "SELECT codp, cod, nombre, estructsecc, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, ordensecc, orden, ordencont 
+            FROM detalles WHERE codp = ?";
     
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("s", $cod); // "s" porque cod es texto
+        $stmt->bind_param("s", $codp); // "i" porque id es entero
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -51,8 +54,10 @@ if (!empty($cod)) {
     <div id="capaformulario">
     <form action="conect/guardar_tablero.php" method="post" enctype="multipart/form-data">
         <input type="hidden" name="formulario_tipo" value="SeccionPar"> 
-        <input type="hidden" name="cod" value="<?= htmlspecialchars($datos['cod']) ?>">
-        <input type="hidden" name="nombre" value="<?= htmlspecialchars($datos['nombre']) ?>">
+        <input type="hidden" name="id" value="<?= htmlspecialchars($datos['id'] ?? '') ?>">
+        <input type="hidden" name="cod" value="<?= htmlspecialchars($cod) ?>">
+        <input type="hidden" name="codp" value="<?= htmlspecialchars($codp) ?>">
+        <input type="hidden" name="nombre" value="<?= htmlspecialchars($datos['nombre'] ?? '') ?>">
 
         <div class="columna-formulario">
             <table class="tableborderfull">

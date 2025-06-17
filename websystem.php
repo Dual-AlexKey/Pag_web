@@ -4,6 +4,7 @@ include __DIR__ . '/websystem/conect/conexion.php';
 
 // Cerrar sesión si se pasa "?logout=1"
 if (isset($_GET["logout"])) {
+    session_unset();
     session_destroy();
     header("Location: websystem.php");
     exit();

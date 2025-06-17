@@ -88,6 +88,7 @@ CREATE TABLE paginas (
     tituloS VARCHAR(255),
     descripcion TEXT,
     cod varchar(255),
+    codp varchar(20),
     metatags TEXT,
     imagen_referencia VARCHAR(255),
     imagen_social VARCHAR(255),
@@ -96,6 +97,7 @@ CREATE TABLE paginas (
 CREATE TABLE detalles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cod varchar(255),
+    codp varchar(255),
     nombre varchar(255),
     estructsecc VARCHAR(50) DEFAULT NULL,
     mostrar VARCHAR(255) DEFAULT NULL,
@@ -138,21 +140,8 @@ CREATE TABLE log (
 );
 CREATE TABLE subnivel (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    cod VARCHAR(10), -- referencia al nivel 1
-    codpadre varchar(10),
-    codtab VARCHAR(10),
-    nombre VARCHAR(255) NOT NULL,
-	modulo VARCHAR(255) NOT NULL,
-	link VARCHAR(255) NOT NULL,
-	Num_nivel VARCHAR(3),
-	secciones VARCHAR(255),
-	estilos VARCHAR(255),
-    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE subnivel (
-    id INT AUTO_INCREMENT PRIMARY KEY,
     cod VARCHAR(10) NOT NULL,
+    codp VARCHAR(10) NOT NULL,
     nombre VARCHAR(255),
     link VARCHAR(255),
     modulo VARCHAR(255),
@@ -216,5 +205,65 @@ SELECT id FROM tablero WHERE id =28
 
 SELECT id, tabla FROM tablero WHERE id = 21;
 SELECT id, nombre, tabla FROM tablero WHERE tabla = 'tablero';
+
+
+
+
+-- SUBNIVEL
+DROP TRIGGER IF EXISTS before_insert_codp_subnivel;
+DELIMITER $$
+CREATE TRIGGER before_insert_codp_subnivel
+BEFORE INSERT ON subnivel
+FOR EACH ROW
+BEGIN
+    DECLARE max_codp INT;
+
+    SELECT IFNULL(MAX(CAST(SUBSTRING(codp, 4) AS UNSIGNED)), 0) + 1 INTO max_codp
+    FROM subnivel;
+
+    IF NEW.codp IS NULL OR NEW.codp = '' THEN
+        SET NEW.codp = CONCAT('sub', LPAD(max_codp, 3, '0')); -- Prefijo 'sub'
+    END IF;
+END$$
+DELIMITER ;
+
+-- PAGINAS
+DROP TRIGGER IF EXISTS before_insert_codp_paginas;
+DELIMITER $$
+CREATE TRIGGER before_insert_codp_paginas
+BEFORE INSERT ON paginas
+FOR EACH ROW
+BEGIN
+    DECLARE max_codp INT;
+
+    SELECT IFNULL(MAX(CAST(SUBSTRING(codp, 4) AS UNSIGNED)), 0) + 1 INTO max_codp
+    FROM paginas;
+
+    IF NEW.codp IS NULL OR NEW.codp = '' THEN
+        SET NEW.codp = CONCAT('pag', LPAD(max_codp, 3, '0')); -- Prefijo 'pag'
+    END IF;
+END$$
+DELIMITER ;
+
+-- DETALLES
+DROP TRIGGER IF EXISTS before_insert_codp_detalles;
+DELIMITER $$
+CREATE TRIGGER before_insert_codp_detalles
+BEFORE INSERT ON detalles
+FOR EACH ROW
+BEGIN
+    DECLARE max_codp INT;
+
+    SELECT IFNULL(MAX(CAST(SUBSTRING(codp, 4) AS UNSIGNED)), 0) + 1 INTO max_codp
+    FROM detalles;
+
+    IF NEW.codp IS NULL OR NEW.codp = '' THEN
+        SET NEW.codp = CONCAT('det', LPAD(max_codp, 3, '0')); -- Prefijo 'det'
+    END IF;
+END$$
+DELIMITER ;
+
+	
+    
 
 

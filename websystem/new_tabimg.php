@@ -1,59 +1,10 @@
 <?php
 include 'conect/conexion.php';
-//inclusion de informacion
 include('estilo/data.php');
-// Incluir el header.php
 include('estilo/header.php');
-// Incluir el menu.php
 include('estilo/menu.php');
 include('estilo/tabla_menu.php');
 
-// Consultar las tablas que comienzan con 'menu_'
-$tablas_menu = [];
-$query = "SHOW TABLES LIKE 'menu_%'";
-$resultado_tablas = mysqli_query($conexion, $query);
-
-while ($row = mysqli_fetch_row($resultado_tablas)) {
-    $tablas_menu[] = $row[0];  // Almacenar el nombre de las tablas
-}
-
-$codigos_guardados = [];
-$registros_cod = []; // Aquí guardamos los registros únicos por cod
-
-foreach ($tablas_menu as $tabla) {
-    $query = "SELECT * FROM $tabla";
-    $resultado = mysqli_query($conexion, $query);
-
-    while ($row = mysqli_fetch_assoc($resultado)) {
-        $cod = $row['cod'];
-
-        // Guardar solo el primer registro de cada 'cod'
-        if (!in_array($cod, $codigos_guardados)) {
-            $registros_cod[] = $row;
-            $codigos_guardados[] = $cod;
-        }
-    }
-}
-
-// **Paso 2: Filtrar registros por 'codtab' (solo si tienen valor)**
-$codtab_guardados = [];
-$registros_finales = []; // Aquí guardamos los registros finales
-
-foreach ($registros_cod as $row) {
-    $codtab = $row['codtab'] ?? null;
-
-    // Si 'codtab' está vacío, agregarlo sin filtrar
-    if (empty($codtab)) {
-        $registros_finales[] = $row;
-    } 
-    // Si 'codtab' tiene valor, agregarlo solo si es único
-    elseif (!in_array($codtab, $codtab_guardados)) {
-        $registros_finales[] = $row;
-        $codtab_guardados[] = $codtab;
-    }
-}
-
-// **Cargar datos para edición si hay un ID en la URL**
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $datos = [
     'id' => '',
@@ -62,7 +13,7 @@ $datos = [
     'link' => '',
     'tabla' => '',
     'ubicacion' => '',
-    'orden' => '', 
+    'orden' => '',
     'columnas' => '',
     'columnas_moviles' => '',
     'estilo' => '',
@@ -78,26 +29,83 @@ if ($id > 0) {
     $resultado = $stmt->get_result();
 
     if ($resultado->num_rows > 0) {
-        $datos_bd = $resultado->fetch_assoc(); // 🔹 Obtener datos de la BD
-
-        // 🔹 Mezclar `$datos_bd` con `$datos` para asegurar que todas las claves existan
+        $datos_bd = $resultado->fetch_assoc();
         $datos = array_merge($datos, $datos_bd);
-
-        // 🔹 Convertir `margen` a array si tiene valores guardados (separados por ",")
         $datos['margen'] = !empty($datos['margen']) ? explode(',', $datos['margen']) : [];
     }
 
     $stmt->close();
 }
 
-
-
 $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
+$tabla_valores = array_map('trim', explode(',', $tabla_valor));
+
+// 1. Obtener todos los datos de las tablas *_cabecerat y subnivel
+$datos_jerarquicos = [];
+
+$tablas_query = mysqli_query($conexion, "SHOW TABLES");
+while ($row = mysqli_fetch_row($tablas_query)) {
+    if (str_ends_with($row[0], '_cabecerat')) {
+        $res = mysqli_query($conexion, "SELECT nombre, cod, Num_nivel FROM {$row[0]}");
+        while ($fila = mysqli_fetch_assoc($res)) {
+            $datos_jerarquicos[] = [
+                'nombre' => $fila['nombre'],
+                'cod' => $fila['cod'],
+                'Num_nivel' => $fila['Num_nivel'],
+                'seccion' => '',
+            ];
+        }
+    }
+}
+
+$res = mysqli_query($conexion, "SELECT nombre, cod, Num_nivel, secciones FROM subnivel");
+while ($fila = mysqli_fetch_assoc($res)) {
+    $datos_jerarquicos[] = [
+        'nombre' => $fila['nombre'],
+        'cod' => $fila['cod'],
+        'Num_nivel' => $fila['Num_nivel'],
+        'seccion' => $fila['secciones'],
+    ];
+}
+
+// 2. Construir jerarquía usando 'secciones'
+$items = [];
+$relaciones = [];
+
+foreach ($datos_jerarquicos as $item) {
+    $nombre = $item['nombre'];
+    $seccion = $item['seccion'];
+    $items[$nombre] = $item;
+
+    if (!empty($seccion)) {
+        $segmentos = array_filter(explode('/', $seccion));
+        $ultimo = end($segmentos);
+        $penultimo = prev($segmentos);
+
+        if ($ultimo !== $nombre) continue;
+        if ($penultimo) $relaciones[$nombre] = $penultimo;
+    }
+}
+
+$arbol = [];
+foreach ($items as $nombre => $item) {
+    if (!isset($relaciones[$nombre])) {
+        $arbol[$nombre] = &$items[$nombre];
+        $items[$nombre]['hijos'] = [];
+    } else {
+        $padre = $relaciones[$nombre];
+        if (!isset($items[$padre]['hijos'])) {
+            $items[$padre]['hijos'] = [];
+        }
+        $items[$padre]['hijos'][] = &$items[$nombre];
+    }
+}
 
 
-$directorio = "../img/"; // ✅ Directorio correcto basado en la estructura del proyecto
+$directorio = "../img/";
 $archivos = is_dir($directorio) ? scandir($directorio) : [];
 ?>
+
 
 <!-- Contenedor principal con las dos columnas -->
 <!-- 📌 Input oculto para ID -->
@@ -153,25 +161,46 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
                             <div class="columna-tabla">
                                 <table class="tableborderfull">
                                     <?php
-                                    // 🔹 Obtener el valor de `tabla` desde `tablero`
-                                    $tabla_valor = isset($datos['tabla']) ? trim($datos['tabla']) : '';
+                                        // Agrupar por cod
+                                        $estructura_por_cod = [];
+                                        foreach ($datos_jerarquicos as $item) {
+                                            $estructura_por_cod[$item['cod']][] = $item;
+                                        }
 
-                                    // 🔹 Convertir `tabla` en un array si tiene múltiples valores
-                                    $tabla_valores = array_map('trim', explode(',', $tabla_valor)); // 🔥 Divide y elimina espacios extra
+                                        foreach ($estructura_por_cod as $cod => $nodos) {
+                                            foreach ($nodos as $nodo) {
+                                                $nivel = intval($nodo['Num_nivel']);
+                                                $nombre = htmlspecialchars($nodo['nombre']);
+                                                $cod_actual = htmlspecialchars($nodo['cod']);
+                                                $checked = in_array($nombre, $tabla_valores) ? 'checked' : '';
+                                                $tiene_hijos = count($nodos) > 1 && $nivel === 1;
+                                                $grupo_id = "grupo_" . md5($cod_actual);
+                                                $padding = max(0, ($nivel - 1) * 20);
 
-                                    // 🔹 Recorrer los registros de `menu_*` y marcar los checkboxes si `nombre` está en la lista de `tabla`
-                                    foreach ($registros_finales as $datoM) {
-                                        $cod_actual = trim($datoM['cod']);  // ✅ Guardar por `cod`
-                                        $nombre_actual = trim($datoM['nombre']); // ✅ Marcar por `nombre`
+                                                // Estilo para alinear todo sin márgenes extra
+                                                $style_td = "padding: 0; margin: 0;";
+                                                $style_div = "display: flex; align-items: center; padding-left: {$padding}px; gap: 5px;";
 
-                                        // 🔹 Comparar si `nombre_actual` está en la lista de `tabla_valores`
-                                        $checked = in_array($nombre_actual, $tabla_valores) ? 'checked' : '';
+                                                $tr_class = $nivel === 1 ? "nivel-1" : "nivel-hijo $grupo_id";
+                                                $tr_style = $nivel > 1 ? "style='display:none;'" : "";
 
-                                        echo "<tr>";
-                                        echo "<td><input type='checkbox' name='seleccionados[]' value='" . htmlspecialchars($cod_actual) . "' $checked></td>";
-                                        echo "<td>" . htmlspecialchars($nombre_actual) . "</td>";  // Mostrar solo el campo 'nombre'
-                                        echo "</tr>";
-                                    }
+                                                echo "<tr class='$tr_class' $tr_style>";
+                                                echo "<td style='$style_td'>";
+                                                echo "<div style='$style_div'>";
+
+                                                if ($nivel === 1 && $tiene_hijos) {
+                                                    echo "<span class='toggle-hijos' data-target='$grupo_id' style='cursor:pointer;'>+</span>";
+                                                } else {
+                                                    echo "<span style='display:inline-block; width:9px;'></span>";
+                                                }
+
+                                                echo "<input type='checkbox' name='seleccionados[]' value='$cod_actual' $checked>";
+                                                echo "<span>$nombre</span>";
+
+                                                echo "</div></td></tr>";
+                                            }
+                                        }
+
                                     ?>
                                 </table>
                             </div>
@@ -326,6 +355,38 @@ $archivos = is_dir($directorio) ? scandir($directorio) : [];
         </div>
     </div>
 </div>  
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const botonesToggle = document.querySelectorAll(".toggle-hijos");
+
+    botonesToggle.forEach(boton => {
+        boton.addEventListener("click", function () {
+            const target = this.dataset.target;
+            const hijos = document.querySelectorAll(`.${target}`);
+            const visible = hijos[0].style.display !== "none";
+
+            hijos.forEach(fila => {
+                fila.style.display = visible ? "none" : "";
+            });
+
+            this.textContent = visible ? "+" : "-";
+        });
+    });
+
+    document.querySelector(".accion-boton:nth-child(1)").addEventListener("click", () => {
+        document.querySelectorAll(".nivel-hijo").forEach(tr => tr.style.display = "");
+        document.querySelectorAll(".toggle-hijos").forEach(span => span.textContent = "-");
+    });
+
+    document.querySelector(".accion-boton:nth-child(2)").addEventListener("click", () => {
+        document.querySelectorAll(".nivel-hijo").forEach(tr => tr.style.display = "none");
+        document.querySelectorAll(".toggle-hijos").forEach(span => span.textContent = "+");
+    });
+});
+</script>
+
 <?php
 // Incluir el footer.php
 include('estilo/footer.php');

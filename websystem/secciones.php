@@ -5,84 +5,84 @@ include '../contador_visitas.php';
 include('estilo/header.php');
 include('estilo/menu.php');
 
-// 1️⃣ Cargar tablas `menu_*`
-$menu_tables = [];
-$sql = "SHOW TABLES LIKE 'menu_%'";
-$result = $conn->query($sql);
-while ($row = $result->fetch_array()) {
-    $menu_tables[] = $row[0];
-}
+function arbol($conn) {
+    // 1️⃣ Cargar tablas `menu_%` (nivel 1 - padres)
+    $menu_tables = [];
+    $sql = "SHOW TABLES LIKE 'menu_%'";
+    $result = $conn->query($sql);
+    while ($row = $result->fetch_array()) {
+        $menu_tables[] = $row[0];
+    }
 
-// 2️⃣ Cargar datos de `detalles` para orden y nro de ítems
-$detalles_map = [];
-$sql_det = "SELECT nombre, orden, ordensecc FROM detalles";
-$result_det = $conn->query($sql_det);
-if ($result_det) {
-    while ($row = $result_det->fetch_assoc()) {
+    // 2️⃣ Mapas auxiliares
+    $detalles_map = [];
+    $result = $conn->query("SELECT nombre, orden, ordensecc, codp FROM detalles");
+    while ($row = $result->fetch_assoc()) {
         $detalles_map[trim($row['nombre'])] = $row;
     }
-}
 
-// 3️⃣ Cargar registros de `menu_*`
-$registros = [];
-foreach ($menu_tables as $table) {
-    $sql = "SELECT * FROM `$table`";
-    $result = $conn->query($sql);
+    $paginas_map = [];
+    $result = $conn->query("SELECT titulo, codp FROM paginas");
+    while ($row = $result->fetch_assoc()) {
+        $paginas_map[trim($row['titulo'])] = $row;
+    }
+
+    // 3️⃣ Obtener registros nivel 1 (menu_%)
+    $registros = [];
+    foreach ($menu_tables as $table) {
+        $result = $conn->query("SELECT * FROM `$table`");
+        while ($row = $result->fetch_assoc()) {
+            $nombre = trim($row['nombre']);
+            $row['fuente'] = 'menu';
+            $row['secciones'] = ''; // nivel 1 no tiene padre
+
+            $row['orden'] = $detalles_map[$nombre]['orden'] ?? 0;
+            $row['ordensecc'] = $detalles_map[$nombre]['ordensecc'] ?? 0;
+            $row['codpD'] = $detalles_map[$nombre]['codp'] ?? '';
+            $row['codpP'] = $paginas_map[$nombre]['codp'] ?? '';
+            $row['codpS'] = '';
+            $registros[] = $row;
+        }
+    }
+
+    // 4️⃣ Obtener registros de `subnivel` (niveles 2 y 3)
+    $result = $conn->query("SELECT * FROM subnivel ORDER BY Num_nivel ASC");
     while ($row = $result->fetch_assoc()) {
         $nombre = trim($row['nombre']);
-        if (isset($detalles_map[$nombre])) {
-            $row['orden'] = $detalles_map[$nombre]['orden'];
-            $row['ordensecc'] = $detalles_map[$nombre]['ordensecc'];
-        } else {
-            $row['orden'] = 0;
-            $row['ordensecc'] = 0;
-        }
-        $row['fuente'] = 'menu'; // ➕ Indica que viene de menu
+        $row['fuente'] = 'subnivel';
+        $row['orden'] = $detalles_map[$nombre]['orden'] ?? 0;
+        $row['ordensecc'] = $detalles_map[$nombre]['ordensecc'] ?? 0;
+        $row['codpD'] = $detalles_map[$nombre]['codp'] ?? '';
+        $row['codpP'] = $paginas_map[$nombre]['codp'] ?? '';
+        $row['codpS'] = $row['codp'] ?? '';
         $registros[] = $row;
     }
-}
 
-// 4️⃣ Agregar registros desde `subnivel`
-$sql_sub = "SELECT * FROM subnivel ORDER BY Num_nivel ASC";
-$result_sub = $conn->query($sql_sub);
-if ($result_sub) {
-    while ($row = $result_sub->fetch_assoc()) {
-        $nombre = trim($row['nombre']);
-        if (isset($detalles_map[$nombre])) {
-            $row['orden'] = $detalles_map[$nombre]['orden'];
-            $row['ordensecc'] = $detalles_map[$nombre]['ordensecc'];
-        } else {
-            $row['orden'] = 0;
-            $row['ordensecc'] = 0;
-        }
-        $row['fuente'] = 'subnivel'; // ➕ Indica que viene de subnivel
-        $registros[] = $row;
-    }
-}
-
-// 5️⃣ Construir árbol usando `secciones`
-function construirArbol($registros) {
-    $tree = [];
+    // 5️⃣ Construir árbol jerárquico
     $index = [];
+    $tree = [];
 
-    foreach ($registros as $registro) {
-        $nombre = $registro['nombre'];
-        $index[$nombre] = $registro;
-        $index[$nombre]['hijos'] = [];
+    foreach ($registros as $row) {
+        $ruta = trim($row['secciones'] ?? '', '/');
+        $clave = $ruta !== '' ? $ruta . '/' . $row['nombre'] : $row['nombre'];
+        $row['ruta'] = $clave;
+        $row['hijos'] = [];
+        $index[$clave] = $row;
     }
 
-    foreach ($index as &$registro) {
-        $secciones = trim($registro['secciones'] ?? '', '/');
-        if (empty($secciones)) {
-            $tree[] = &$registro;
+    foreach ($index as $clave => &$nodo) {
+        $ruta = trim($nodo['secciones'] ?? '', '/');
+
+        if (empty($ruta)) {
+            // Es un nodo raíz
+            $tree[] = &$nodo;
         } else {
-            $rutas = explode("/", $secciones);
-            $padre_nombre = end($rutas); // padre directo es el último nombre de la ruta
-            if (isset($index[$padre_nombre])) {
-                $index[$padre_nombre]['hijos'][] = &$registro;
+            $clave_padre = $ruta;
+            if (isset($index[$clave_padre])) {
+                $index[$clave_padre]['hijos'][] = &$nodo;
             } else {
-                // Si no encuentra padre, lo agrega como raíz
-                $tree[] = &$registro;
+                // Padre no encontrado, agregar como raíz
+                $tree[] = &$nodo;
             }
         }
     }
@@ -90,7 +90,8 @@ function construirArbol($registros) {
     return $tree;
 }
 
-$tree = construirArbol($registros);
+
+$tree = arbol($conn);
 ?>
 
 <div class="contenido-derecha">
@@ -121,6 +122,11 @@ $tree = construirArbol($registros);
                 $nro_item = htmlspecialchars($nodo['orden'] ?? 0);
                 $vistas = obtener_contador_por_pagina($nombre);
 
+                // Codp separados por tipo
+$codpS = htmlspecialchars($nodo['codpS'] ?? $nodo['codp'] ?? '');
+$codpP = htmlspecialchars($nodo['codpP'] ?? '');
+$codpD = htmlspecialchars($nodo['codpD'] ?? '');
+
                 // Aplicar estilos en negrita si es raíz (nivel 0)
                 $seccion_clase = $nivel == 0 ? 'style="font-weight: bold;"' : '';
 
@@ -136,19 +142,35 @@ $tree = construirArbol($registros);
                 $seccion_destino = empty($nodo['secciones']) ? "editccion.php" : "subseccion.php";
                 $accion_param = empty($nodo['secciones']) ? "" : "&accion=subseccion";
 
+                // Para elementos subnivel, buscar el ID y usarlo en editccion también
+                $id_subnivel = '';
+                if ($nodo['fuente'] === 'subnivel') {
+                    $stmt_id = $conn->prepare("SELECT id FROM subnivel WHERE nombre = ? LIMIT 1");
+                    if ($stmt_id) {
+                        $stmt_id->bind_param("s", $nodo['nombre']);
+                        $stmt_id->execute();
+                        $stmt_id->bind_result($id_result);
+                        if ($stmt_id->fetch()) {
+                            $id_subnivel = $id_result;
+                        }
+                        $stmt_id->close();
+                    }
+                }
+
                 // Imprimir la fila
                 echo "<tr>";
                 echo "<td>||</td>";
-                echo "<td $seccion_clase>{$espacios}<a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param' style='color: black; text-decoration: none;'>$nombre</a></td>";
+                echo "<td $seccion_clase>{$espacios}<a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codpS=$codpS&codtab=$codtab$accion_param' style='color: black; text-decoration: none;'>$nombre</a></td>";
                 echo "<td>$modulo</td>";
                 echo "<td>$orden</td>";
                 echo "<td>$nro_item</td>";
                 echo "<td>$vistas</td>";
 
                 // Botón de edición dinámica (dependiendo de "secciones")
-                echo "<td><a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param' class='btn_st'>
-                        <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Botón Editar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
-                      </a> </td>";
+                $extra_id_sub = ($nodo['fuente'] === 'subnivel') ? "&idSub=$id_subnivel" : '';
+                echo "<td><a href='$seccion_destino?cod=$cod&nombre=$nombre_url&codtab=$codtab$accion_param$extra_id_sub' class='btn_st'>
+                <img src='https://i.ibb.co/nNQjXb7b/wp-editar.png' alt='Botón Editar' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
+                </a> </td>";
 
                 if ($nivel == 2) {
                     // Agregar 5 espacios como proporción
@@ -160,10 +182,10 @@ $tree = construirArbol($registros);
                 }
 
                 // Otros botones
-                echo "<td><a href='seccionpagina.php?cod=$cod&nombre=$nombre_url' class='btn_st'>
+                echo "<td><a href='seccionpagina.php?cod=$cod&nombre=$nombre_url$extra_id_sub&codpD=$codpD' class='btn_st'>
                         <img src='https://i.ibb.co/VYrngfWv/wp-page.png' alt='Botón Página' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                       </a></td>";
-                echo "<td><a href='secciondetalle.php?cod=$cod&nombre=$nombre_url' class='btn_st'>
+                echo "<td><a href='secciondetalle.php?cod=$cod&nombre=$nombre_url$extra_id_sub&codpD=$codpD' class='btn_st'>
                         <img src='https://i.ibb.co/Fq6n7h1M/wp-tools.png' alt='Botón Detalle' style='width: 25px; height: 25px; vertical-align: middle; padding-right: 5px;'>
                       </a></td>";
                       $id_eliminar = $nombre; // Por defecto, usamos cod (para tablas menu_)

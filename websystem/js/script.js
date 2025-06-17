@@ -1,37 +1,31 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const botonesConSubMenu = document.querySelectorAll(".boton.submenu");
-    console.log("JavaScript cargado correctamente.");
 
-    console.log('DOM fully loaded and parsed'); // Verifica que el DOM se cargó correctamente
+    const ruta = window.location.pathname.split("/").pop(); // Ej: "menus.php"
+
+    // Lista de páginas que pertenecen al submenú "Configuración"
+    const paginasConfiguracion = [
+        "webconfig.php",
+        "menus.php",
+        "secciones.php",
+        "tablero.php",
+        // agrega más si es necesario
+    ];
 
     botonesConSubMenu.forEach(function (boton) {
-        boton.addEventListener("click", function () {
-            const menu = boton.nextElementSibling;
-            const expanded = boton.getAttribute("aria-expanded") === "true";
+        const menu = boton.nextElementSibling;
+        const menuId = boton.id;
 
-            // Si el submenú está abierto, lo cerramos
-            if (expanded) {
-                menu.style.display = "none";
-                boton.querySelector(".icono").textContent = "+";
-                boton.setAttribute("aria-expanded", "false");
-            } else {
-                // Cerrar todos los submenús
-                const menusAbiertos = document.querySelectorAll(".menu");
-                menusAbiertos.forEach(function (menuAbierto) {
-                    menuAbierto.style.display = "none";
-                    const icono = menuAbierto.previousElementSibling.querySelector(".icono");
-                    icono.textContent = "+";
-                    menuAbierto.previousElementSibling.setAttribute("aria-expanded", "false");
-                });
-
-                // Abrir el submenú correspondiente
-                menu.style.display = "block";
-                boton.querySelector(".icono").textContent = "-";
-                boton.setAttribute("aria-expanded", "true");
-            }
-        });
+        // Si estamos en una página del submenú, abrirlo
+        if (menuId === "btn1" && paginasConfiguracion.includes(ruta)) {
+            menu.style.display = "block";
+            boton.querySelector(".icono").textContent = "-";
+            boton.setAttribute("aria-expanded", "true");
+        } else {
+            menu.style.display = "none";
+            boton.querySelector(".icono").textContent = "+";
+            boton.setAttribute("aria-expanded", "false");
+        }
     });
-
     const departamentos = {
         peru: [
             "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica",
@@ -106,6 +100,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });    
 });
+const botonesConSubMenu = document.querySelectorAll(".boton.submenu");
+
+// Comportamiento normal de apertura/cierre manual
+botonesConSubMenu.forEach(function (boton) {
+    boton.addEventListener("click", function () {
+        const menu = boton.nextElementSibling;
+        const expanded = boton.getAttribute("aria-expanded") === "true";
+
+        if (expanded) {
+            menu.style.display = "none";
+            boton.querySelector(".icono").textContent = "+";
+            boton.setAttribute("aria-expanded", "false");
+        } else {
+            // Cerrar todos los submenús
+            document.querySelectorAll(".menu").forEach(function (menuAbierto) {
+                menuAbierto.style.display = "none";
+                const icono = menuAbierto.previousElementSibling?.querySelector(".icono");
+                if (icono) icono.textContent = "+";
+                menuAbierto.previousElementSibling?.setAttribute("aria-expanded", "false");
+            });
+
+            // Abrir el seleccionado
+            menu.style.display = "block";
+            boton.querySelector(".icono").textContent = "-";
+            boton.setAttribute("aria-expanded", "true");
+        }
+    });
+});
+
 function cambiarEstilos() {
     const modulo = document.getElementById('modulo').value;
     const estilosDiv = document.getElementById('estilos');

@@ -860,6 +860,7 @@ elseif ($tipoFormulario == "SeccionPag") {
     $tituloS = $_POST['nombreS'] ?? '';
     $descripcion = $_POST['descrip'] ?? '';
     $cod = $_POST['cod'] ?? '';
+    $codp = $_POST['codp'] ?? '';
     $metatags = $_POST['meta'] ?? '';
     $imagen_referencia = $_POST['imagen_link2'] ?? '';
     $imagen_social = $_POST['imagen_link3'] ?? '';
@@ -867,9 +868,9 @@ elseif ($tipoFormulario == "SeccionPag") {
 
 
     // 🔹 Verificar si `cod` ya existe en la base de datos
-    $sql_check = "SELECT cod FROM paginas WHERE cod = ?";
+    $sql_check = "SELECT codp FROM paginas WHERE codp = ?";
     if ($stmt_check = $conn->prepare($sql_check)) {
-        $stmt_check->bind_param("s", $cod);
+        $stmt_check->bind_param("s", $codp);
         $stmt_check->execute();
         $result = $stmt_check->get_result();
         $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
@@ -879,10 +880,10 @@ elseif ($tipoFormulario == "SeccionPag") {
     if ($exists) {
         // 🔹 Si `cod` ya existe, actualizar los datos
         $sql_update = "UPDATE paginas SET titulo=?, contenido=?, tituloS=?, descripcion=?, metatags=?, imagen_referencia=?, imagen_social=? 
-                        WHERE cod=?";
+                        WHERE codp=?";
         
         if ($stmt_update = $conn->prepare($sql_update)) {
-            $stmt_update->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $metatags, $imagen_referencia, $imagen_social, $cod);
+            $stmt_update->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $metatags, $imagen_referencia, $imagen_social, $codp);
             if ($stmt_update->execute()) {
                 echo "✅ Página actualizada correctamente.";
             } else {
@@ -892,11 +893,11 @@ elseif ($tipoFormulario == "SeccionPag") {
         }
     } else {
         // 🔹 Si `cod` no existe, insertar un nuevo registro
-        $sql_insert = "INSERT INTO paginas (titulo, contenido, tituloS, descripcion, cod, metatags, imagen_referencia, imagen_social) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql_insert = "INSERT INTO paginas (titulo, contenido, tituloS, descripcion, cod,codp, metatags, imagen_referencia, imagen_social) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)";
 
         if ($stmt_insert = $conn->prepare($sql_insert)) {
-            $stmt_insert->bind_param("ssssssss", $titulo, $contenido, $tituloS, $descripcion, $cod, $metatags, $imagen_referencia, $imagen_social);
+            $stmt_insert->bind_param("sssssssss", $titulo, $contenido, $tituloS, $descripcion, $cod, $codp, $metatags, $imagen_referencia, $imagen_social);
             if ($stmt_insert->execute()) {
                 echo "✅ Nueva página guardada correctamente.";
             } else {
@@ -921,24 +922,26 @@ elseif ($tipoFormulario == "SeccionPar") {
     $sef_seccion = true;
 
 
+    // Verificar si el nombre ya existe
+    $sql_check = "SELECT nombre FROM detalles WHERE nombre = ?";
+    $exists = false;
 
-    // 🔹 Verificar si `cod` ya existe en la base de datos
-    $sql_check = "SELECT cod FROM detalles WHERE cod = ?";
     if ($stmt_check = $conn->prepare($sql_check)) {
-        $stmt_check->bind_param("s", $cod);
+        $stmt_check->bind_param("s", $nombre);
         $stmt_check->execute();
         $result = $stmt_check->get_result();
-        $exists = $result->num_rows > 0; // 🔹 Si hay resultados, `cod` existe
+        $exists = $result->num_rows > 0;
         $stmt_check->close();
     }
 
     if ($exists) {
-        // 🔹 Si `cod` ya existe, actualizar los datos
-        $sql_update = "UPDATE detalles SET estructsecc=?, nombre=?, mostrar=?, estilosubsec=?, fondsecc=?, galeria=?, barrasubmenu=?, ordensecc=?, orden=?, ordencont=? 
-                        WHERE cod=?";
-        
+        // Si existe, actualizamos
+        $sql_update = "UPDATE detalles 
+                       SET cod=?, estructsecc=?, mostrar=?, estilosubsec=?, fondsecc=?, galeria=?, barrasubmenu=?, ordensecc=?, orden=?, ordencont=? 
+                       WHERE nombre=?";
+
         if ($stmt_update = $conn->prepare($sql_update)) {
-            $stmt_update->bind_param("sssssssssss", $estructsecc, $nombre, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont, $cod);
+            $stmt_update->bind_param("sssssssssss", $cod, $estructsecc, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont, $nombre);
             if ($stmt_update->execute()) {
                 echo "✅ Página actualizada correctamente.";
             } else {
@@ -947,9 +950,9 @@ elseif ($tipoFormulario == "SeccionPar") {
             $stmt_update->close();
         }
     } else {
-        // 🔹 Si `cod` no existe, insertar un nuevo registro
+        // Si no existe, insertamos nuevo
         $sql_insert = "INSERT INTO detalles (cod, nombre, estructsecc, mostrar, estilosubsec, fondsecc, galeria, barrasubmenu, ordensecc, orden, ordencont) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         if ($stmt_insert = $conn->prepare($sql_insert)) {
             $stmt_insert->bind_param("sssssssssss", $cod, $nombre, $estructsecc, $mostrar, $estilosubsec, $fondsecc, $galeria, $barrasubmenu, $ordensecc, $orden, $ordencont);
@@ -962,6 +965,7 @@ elseif ($tipoFormulario == "SeccionPar") {
         }
     }
 }
+
 elseif ($tipoFormulario == "Imagenes_Tablero") {
     $nombre = $_POST['nombre'] ?? '';
     $imagen_1 = $_POST['imagen_1'] ?? '';
